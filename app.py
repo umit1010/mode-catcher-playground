@@ -11,7 +11,10 @@ nlp = spacy.load('en_core_web_lg')
 
 ### NLP FUNCTIONS
 
-def raw_text_to_dictionary(txt: str):
+def parse_raw_text(txt: str,
+                   include_timestamp=False,
+                   include_speaker=False,
+                   include_interviewer=False):
     input_lines = [line.strip() for line in txt.splitlines()]
 
     re_time_splitter = re.compile(r'(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])')
@@ -21,8 +24,22 @@ def raw_text_to_dictionary(txt: str):
     for i, line in enumerate(input_lines):
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(':')
+        speaker = str(speaker)
 
-        data.append({'line':i, 'utterance': utterance.strip()})
+        if not include_interviewer and speaker.lower().find('interviewer') > -1:
+            continue
+
+        row = {'line': i}
+
+        if include_timestamp:
+            row['time'] = time
+
+        if include_speaker:
+            row['speaker'] = speaker
+
+        row['utterance'] = utterance.strip()
+
+        data.append(row)
 
     return data
 
@@ -46,12 +63,30 @@ raw_input = dbc.Textarea(
 
 parse_button = dbc.Button('Parse Utterances', id='parse-button', n_clicks=0)
 
+inclusion_options = dbc.Checklist(
+    options=[
+        {'label': 'Include Timestamp', 'value': 0},
+        {'label': 'Include Speaker', 'value': 1},
+        {'label': 'Ignore Interviewer Utterances', 'value': 2},
+    ],
+    value=[2],
+    id='inclusion-options'
+)
+
 input_accordion = dbc.Accordion(
-    [dbc.AccordionItem([raw_input,
-                       html.P(''),
-                       parse_button],
-                       title="Input",
-                       item_id='0')
+    [
+        dbc.AccordionItem(
+            [
+                raw_input,
+                html.P(''),
+                dbc.Row([
+                    dbc.Col(parse_button),
+                    dbc.Col(inclusion_options)
+                ]),
+                html.P(''),
+            ],
+            title="Input",
+            item_id='0')
      ],
     active_item=0,
     id="input-accordion"
@@ -72,17 +107,55 @@ app.layout = dbc.Container([
     Output('utterances-container', 'children'),
     Output('input-accordion', 'active_item'),
     Input('parse-button', 'n_clicks'),
-    State('raw-text', 'value')
+    State('raw-text', 'value'),
+    State('inclusion-options', 'value')
 )
-def do(c, txt):
+def do(c, txt, options):
     if c is not None:
         if c > 0:
-            return DataTable(raw_text_to_dictionary(txt),
-                             columns=[{'name': 'line', 'id':'line'},
-                                      {'name':'utterance', 'id':'utterance'}],
-                             style_cell={'textAlign': 'left', 'fontSize':'10px'},
-                             style_data={'whiteSpace': 'normal', 'height': 'auto'}
-                             ), "1"
+
+            time = True if 0 in options else False
+            speaker = True if 1 in options else False
+            interviewer = False if 2 in options else True
+
+            parsed_data = parse_raw_text(txt,
+                                         include_timestamp=time,
+                                         include_speaker=speaker,
+                                         include_interviewer=interviewer)
+
+            column_names = [{'name': 'line', 'id': 'line'}]
+
+            if time:
+                column_names.append({'name': 'time', 'id': 'time'})
+
+            if speaker:
+                column_names.append({'name': 'speaker', 'id': 'speaker'})
+
+            column_names.append({'name': 'utterance', 'id': 'utterance'})
+
+            transcript_table = DataTable(
+                parsed_data,
+                columns=column_names,
+                style_cell={
+                    'padding': '16px',
+                    'textAlign': 'left',
+                    'fontSize': 16,
+                    'line-height': '2',
+                    'font-family': 'sans-serif'
+                },
+                style_data={
+                    'whiteSpace': 'normal',
+                    'height': 'auto'
+                }
+            )
+
+            editor_section = [
+                html.H3('Utterance Editor', className='mx-2 mt-2 mb-4'),
+                transcript_table
+            ]
+
+            return editor_section, "1"
+
         else:
             return "", "0"
 
