@@ -136,6 +136,10 @@ def do(c, txt, options):
             transcript_table = DataTable(
                 parsed_data,
                 columns=column_names,
+                style_header={
+                    'fontWeight': 'bold',
+                    'textAlign': 'center'
+                },
                 style_cell={
                     'padding': '16px',
                     'textAlign': 'left',
@@ -146,7 +150,11 @@ def do(c, txt, options):
                 style_data={
                     'whiteSpace': 'normal',
                     'height': 'auto'
-                }
+                },
+                style_data_conditional=[{
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(248, 252, 253)'
+                }]
             )
 
             editor_section = [
