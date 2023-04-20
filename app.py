@@ -1,6 +1,7 @@
-import re
 import dash
 import dash_bootstrap_components as dbc
+import datetime
+import re
 import spacy
 import numpy as np
 import pandas as pd
@@ -9,10 +10,20 @@ from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, dcc, callback, html, Input, Output, State
 
-# ---- NLP ----
+
+# ---- PLATFORM ----
 
 
 nlp = spacy.load('en_core_web_lg')
+
+app = Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True
+)
+
+
+# ---- NLP ----
 
 
 def parse_raw_text(txt: str,
@@ -53,10 +64,8 @@ def process_utterance(raw_text):
 
     all_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
     token_counts = Counter(all_tokens)
-    df = pd.DataFrame.from_dict(token_counts, orient='index') \
-        .reset_index() \
-        .rename(columns={'index': 'token', 0: 'count'}) \
-        .sort_values(by=['count'], ascending=False)
+    data_dict = {'token': list(token_counts.keys()), 'count': list(token_counts.values())}
+    df = pd.DataFrame.from_dict(data_dict)
 
     buttons_for_text = [
         dbc.Button(token.text, color='light', class_name='m-1', size='sm') if token.is_stop
@@ -84,14 +93,11 @@ def process_utterance(raw_text):
 
 # ---- INTERFACE ----
 
+stored_data = dbc.Input(value='', id='stored-data', disabled=True, class_name='d-none')
 
-app = Dash(
-    __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
-)
+# -- input section --
 
-with open('sample-short.txt', 'r') as f:
+with open('sample-mid.txt', 'r') as f:
     sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
 raw_input = dbc.Textarea(
@@ -138,43 +144,61 @@ input_accordion = dbc.Accordion(
     id="input-accordion"
 )
 
-utterances_div = html.Div(id='utterances-div',
-                          className='border rounded p-4')
+# -- utterances section --
+
+
+utterances_wrapper_div = html.Div(
+    [
+        html.H3('Utterance Editor', className='mb-4'),
+        html.Div(
+            [
+                html.P('Processed text will be displayed here as a datatable.', className='lead')
+            ], id='utterances-div'
+        ),
+        html.P(' '),
+        dbc.Button('Generate Graph', id='graph-button', class_name='mt-4', n_clicks=0, disabled=True)
+    ], className='border rounded p-4'
+)
 
 theoretical_codes_list = [
-    'emergence',
+    'emergent',
+    'centralized',
+    'probabilistic',
+    'deterministic',
+    'deliberate feedback loop',
+    'pattern fitting',
     'thinking in levels',
-    'stochasticity',
-    'feedback'
+    'level slippage',
 ]
 
-code_table_rows = [
-    html.Tbody([
-        html.Tr([
-            html.Td(
-                dbc.Switch(
-                    label=code,
-                    value=False,
-                    className='p-1'
-                )
-            ),
-            html.Td(
-                dbc.RadioItems(
-                    options=[
-                        {"label": "yes", "value": -1},
-                        {"label": "vague", "value": 0},
-                        {"label": "no", "value": 1},
-                    ],
-                    value=0,
-                    inline=True,
-                    id=f'code-option-{code}',
-                    class_name='small'
-                )
-            )
-        ])
-        for code in theoretical_codes_list
-    ])
-]
+code_checkboxes = dbc.Container(
+    [
+        html.Div([
+            dbc.Checkbox(label=code)
+        ], className='w-50') for code in theoretical_codes_list
+    ],
+    fluid=True,
+    class_name='d-flex align-content-start flex-wrap'
+)
+
+# -- graph view --
+
+graph_view_wrapper_div = html.Div(
+    [
+        html.H3('Knowledge Graph', className='mb-4'),
+        html.Div(
+            [
+                html.P(
+                    'Knowledge graph will be displayed here once utterances are processed.',
+                    className='lead'
+                ),
+            ], id='graph-div'
+        )
+    ], className='border rounded p-4'
+)
+
+# -- coding modal view --
+
 
 coding_modal = dbc.Modal(
     [
@@ -183,43 +207,30 @@ coding_modal = dbc.Modal(
             close_button=True
         ),
         dbc.ModalBody(
-            dbc.Row(
-                [
-                    dbc.Col('', id='token-buttons'),
-                    dbc.Col(
-                        [
-                            dbc.Row(
-                                dbc.Col([
-                                    html.H4('Frequency map'),
-                                    html.Div(
-                                        'Something must have gone wrong!',
-                                        id='utterance-stats'
-                                    )
-                                ]),
-                            ),
-                            dbc.Row(
-                                dbc.Col(
-                                    [
-                                        html.H4('Theoretical Codes'),
-                                        html.P('not yet functional', className='lead'),
-                                        dbc.Table(
-                                            code_table_rows,
-                                            class_name='border',
-                                            bordered=True,
-                                            hover=True,
-                                            responsive=True,
-                                            striped=True
-                                        )
-                                    ]
-                                ), class_name='mt-4'
+            dbc.Row([
+                dbc.Col('', id='token-buttons'),
+                dbc.Col([
+                    dbc.Row(
+                        dbc.Col([
+                            html.H4('Frequency map'),
+                            html.Div(
+                                'Something must have gone wrong!',
+                                id='utterance-stats'
                             )
-                        ]
+                        ]),
+                    ),
+                    dbc.Row(
+                        dbc.Col(
+                            [
+                                html.H4('Theoretical Codes'),
+                                html.P('not yet functional', className='small text-italic'),
+                                code_checkboxes
+                            ]
+                        ), class_name='mt-4'
                     )
-                ]
-            )
-        )
-    ],
-    id='coding-modal',
+                ])
+            ])
+        )], id='coding-modal',
     # fullscreen=True,
     scrollable=True,
     size='xl',
@@ -230,24 +241,22 @@ coding_modal = dbc.Modal(
 app.layout = dbc.Container(
     [
         dbc.Row(
-            dbc.Col(
-                [
-                    html.H1(children='mode-catcher playground', className='text-center m-4'),
-                    input_accordion,
-                    html.P('')
-                ]
-            )
+            dbc.Col([
+                html.H1(children='mode-catcher playground', className='text-center m-4'),
+                input_accordion,
+                html.P('')
+            ])
         ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        utterances_div,
-                        html.P('')
-                    ]
-                )
-            ]
-        ),
+        dbc.Row([
+            dbc.Col([
+                utterances_wrapper_div,
+                html.P('')
+            ])
+        ]),
+        dbc.Row([
+            dbc.Col([graph_view_wrapper_div, html.P('')])
+        ]),
+        stored_data,
         coding_modal
     ],
     fluid=True,
@@ -260,14 +269,16 @@ app.layout = dbc.Container(
 
 @app.callback(
     Output('utterances-div', 'children'),
+    Output('stored-data', 'value'),
     Output('input-accordion', 'active_item'),
+    Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
     State('raw-text', 'value'),
     State('inclusion-options', 'value')
 )
-def do(c, txt, options):
-    if c is not None:
-        if c > 0:
+def do(n_clicks, txt, options):
+    if n_clicks is not None:
+        if n_clicks > 0:
 
             time = True if 0 in options else False
             speaker = True if 1 in options else False
@@ -316,15 +327,15 @@ def do(c, txt, options):
             )
 
             editor_section = [
-                html.H3('Utterance Editor', className='my-4'),
-                html.P('Click a row to edit.', className='lead my-4'),
+
                 transcript_table
             ]
 
-            return editor_section, "1"
+            return editor_section, parsed_data, "1", False
 
         else:
-            return "", "0"
+            message = [html.P('Processed text will be displayed here as a datatable.', className='lead')]
+            return message, "Nothing is parsed yet!", "0", True
 
 
 @app.callback(
@@ -343,6 +354,21 @@ def open_coding_editor(cell, data):
         return token_buttons, token_treemap, True
     else:
         return "Something went wrong!", "Something went wrong!", False
+
+
+@app.callback(
+    Output('graph-div', 'children'),
+    Input('graph-button', 'n_clicks'),
+    Input('stored-data', 'value')
+)
+def display_network_graph(n_clicks, data):
+    if n_clicks is not None:
+        if n_clicks > 0:
+            new_text = f"data to generate the plot from: [{type(data[0])}] {data}"
+            return new_text
+    else:
+        message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
+        return message
 
 
 # Press the green button in the gutter to run the script.
