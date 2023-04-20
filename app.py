@@ -9,7 +9,8 @@ from dash import Dash, html, callback, Input, Output, State
 nlp = spacy.load('en_core_web_lg')
 
 
-### NLP FUNCTIONS
+# ---- NLP ----
+
 
 def parse_raw_text(txt: str,
                    include_timestamp=False,
@@ -44,11 +45,26 @@ def parse_raw_text(txt: str,
     return data
 
 
-### DASH APP INTERFACE
+def process_utterance(raw_text):
+
+    doc = nlp(raw_text)
+
+    buttonized_text = [
+        dbc.Button(token.text, color='light', class_name='m-1', size='sm') if token.is_stop
+        else html.Span(token.text, className='mx-1') if token.is_punct
+        else dbc.Button(token.text, color='warning', class_name='m-1', size='sm')
+        for token in doc
+    ]
+
+    return buttonized_text
+
+# ---- INTERFACE ----
+
 
 app = Dash(
     __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    suppress_callback_exceptions=True
 )
 
 with open('sample-short.txt', 'r') as f:
@@ -92,19 +108,60 @@ input_accordion = dbc.Accordion(
     id="input-accordion"
 )
 
-utterances_container = dbc.Container(id='utterances-container', class_name='border rounded p-2')
+utterances_div = html.Div(id='utterances-div',
+                          className='border rounded p-4')
 
-app.layout = dbc.Container([
-    html.H1(children='demo playground', className='text-center m-4'),
-    input_accordion,
-    html.P(''),
-    utterances_container,
-    html.P('', className='m-4'),
-])
+coding_modal = dbc.Modal(
+    [
+        dbc.ModalHeader(
+            dbc.ModalTitle('Code and Edit'),
+            close_button=True
+        ),
+        dbc.ModalBody(
+            [
+                'If you are seeing this message, something went wrong!'
+            ],
+            id='coding-contents'
+        )
+    ],
+    id='coding-modal',
+    size='xl',
+    is_open=False,
+    centered=True
+)
+
+app.layout = dbc.Container(
+    [
+        dbc.Row(
+            dbc.Col(
+                [
+                    html.H1(children='mode-catcher playground', className='text-center m-4'),
+                    input_accordion,
+                    html.P('')
+                ]
+            )
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        utterances_div,
+                        html.P('')
+                    ]
+                )
+            ]
+        ),
+        coding_modal
+    ],
+     fluid=True,
+     class_name='p-4'
+)
+
+# ---- CALLBACKS ----
 
 
 @app.callback(
-    Output('utterances-container', 'children'),
+    Output('utterances-div', 'children'),
     Output('input-accordion', 'active_item'),
     Input('parse-button', 'n_clicks'),
     State('raw-text', 'value'),
@@ -151,14 +208,18 @@ def do(c, txt, options):
                     'whiteSpace': 'normal',
                     'height': 'auto'
                 },
-                style_data_conditional=[{
-                    'if': {'row_index': 'odd'},
-                    'backgroundColor': 'rgb(248, 252, 253)'
-                }]
+                style_data_conditional=[
+                    {
+                        'if': {'row_index': 'odd'},
+                        'backgroundColor': 'rgb(248, 252, 253)'
+                    }
+                ],
+                id='data-table'
             )
 
             editor_section = [
-                html.H3('Utterance Editor', className='mx-2 mt-2 mb-4'),
+                html.H3('Utterance Editor', className='my-4'),
+                html.P('Click a row to edit.', className='lead my-4'),
                 transcript_table
             ]
 
@@ -166,6 +227,22 @@ def do(c, txt, options):
 
         else:
             return "", "0"
+
+
+@app.callback(
+    Output('coding-contents', 'children'),
+    Output('coding-modal', 'is_open'),
+    Input('data-table', 'active_cell'),
+    Input('data-table', 'data')
+)
+def open_coding_editor(cell, data):
+    if cell is not None:
+        i, j = cell['row'], cell['column_id']
+        cell_text = str(data[i][j])
+        processed_text = process_utterance(cell_text)
+        return processed_text, True
+    else:
+        return "Something went wrong!", False
 
 
 # Press the green button in the gutter to run the script.
