@@ -2,14 +2,17 @@ import re
 import dash
 import dash_bootstrap_components as dbc
 import spacy
+import numpy as np
 import pandas as pd
+import plotly.express as px
+from collections import Counter
 from dash.dash_table import DataTable
-from dash import Dash, html, callback, Input, Output, State
-
-nlp = spacy.load('en_core_web_lg')
-
+from dash import Dash, dcc, callback, html, Input, Output, State
 
 # ---- NLP ----
+
+
+nlp = spacy.load('en_core_web_lg')
 
 
 def parse_raw_text(txt: str,
@@ -48,6 +51,13 @@ def parse_raw_text(txt: str,
 def process_utterance(raw_text):
     doc = nlp(raw_text)
 
+    all_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+    token_counts = Counter(all_tokens)
+    df = pd.DataFrame.from_dict(token_counts, orient='index') \
+        .reset_index() \
+        .rename(columns={'index': 'token', 0: 'count'}) \
+        .sort_values(by=['count'], ascending=False)
+
     buttons_for_text = [
         dbc.Button(token.text, color='light', class_name='m-1', size='sm') if token.is_stop
         else html.Span(token.text, className='mx-1') if token.is_punct
@@ -55,7 +65,21 @@ def process_utterance(raw_text):
         for token in doc
     ]
 
-    return buttons_for_text
+    fig = px.treemap(
+        df,
+        path=[px.Constant('tokens'), 'token'],
+        values='count',
+        color='count',
+        hover_data='token',
+        color_continuous_scale='RdBu',
+        color_continuous_midpoint=df['count'].mean()
+    )
+
+    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+
+    token_treemap = dcc.Graph(figure=fig, responsive=True, style={'height': '200px'})
+
+    return buttons_for_text, token_treemap
 
 
 # ---- INTERFACE ----
@@ -117,10 +141,45 @@ input_accordion = dbc.Accordion(
 utterances_div = html.Div(id='utterances-div',
                           className='border rounded p-4')
 
+theoretical_codes_list = [
+    'emergence',
+    'thinking in levels',
+    'stochasticity',
+    'feedback'
+]
+
+code_table_rows = [
+    html.Tbody([
+        html.Tr([
+            html.Td(
+                dbc.Switch(
+                    label=code,
+                    value=False,
+                    className='p-1'
+                )
+            ),
+            html.Td(
+                dbc.RadioItems(
+                    options=[
+                        {"label": "yes", "value": -1},
+                        {"label": "vague", "value": 0},
+                        {"label": "no", "value": 1},
+                    ],
+                    value=0,
+                    inline=True,
+                    id=f'code-option-{code}',
+                    class_name='small'
+                )
+            )
+        ])
+        for code in theoretical_codes_list
+    ])
+]
+
 coding_modal = dbc.Modal(
     [
         dbc.ModalHeader(
-            dbc.ModalTitle('Code and Edit'),
+            dbc.ModalTitle('Modify'),
             close_button=True
         ),
         dbc.ModalBody(
@@ -130,23 +189,34 @@ coding_modal = dbc.Modal(
                     dbc.Col(
                         [
                             dbc.Row(
-                                dbc.Col('token stats', id='utterance-stats'),
+                                dbc.Col([
+                                    html.H4('Frequency map'),
+                                    html.Div(
+                                        'Something must have gone wrong!',
+                                        id='utterance-stats'
+                                    )
+                                ]),
                             ),
                             dbc.Row(
                                 dbc.Col(
                                     [
-                                        html.H3('Theoretical Codes'),
-                                        html.P('Choose any theoretical code that applies to this utterance')
-                                    ],
-                                    id='theoretical-codes'
-                                )
+                                        html.H4('Theoretical Codes'),
+                                        html.P('not yet functional', className='lead'),
+                                        dbc.Table(
+                                            code_table_rows,
+                                            class_name='border',
+                                            bordered=True,
+                                            hover=True,
+                                            responsive=True,
+                                            striped=True
+                                        )
+                                    ]
+                                ), class_name='mt-4'
                             )
-                        ],
-                        id='utterance-coder'
+                        ]
                     )
                 ]
-            ),
-            id='coding-contents'
+            )
         )
     ],
     id='coding-modal',
@@ -259,6 +329,7 @@ def do(c, txt, options):
 
 @app.callback(
     Output('token-buttons', 'children'),
+    Output('utterance-stats', 'children'),
     Output('coding-modal', 'is_open'),
     Input('data-table', 'active_cell'),
     Input('data-table', 'data')
@@ -267,11 +338,11 @@ def open_coding_editor(cell, data):
     if cell is not None:
         i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
-        processed_text = process_utterance(cell_text)
+        token_buttons, token_treemap = process_utterance(cell_text)
 
-        return processed_text, True
+        return token_buttons, token_treemap, True
     else:
-        return "Something went wrong!", False
+        return "Something went wrong!", "Something went wrong!", False
 
 
 # Press the green button in the gutter to run the script.
