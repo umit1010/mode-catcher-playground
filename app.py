@@ -46,17 +46,17 @@ def parse_raw_text(txt: str,
 
 
 def process_utterance(raw_text):
-
     doc = nlp(raw_text)
 
-    buttonized_text = [
+    buttons_for_text = [
         dbc.Button(token.text, color='light', class_name='m-1', size='sm') if token.is_stop
         else html.Span(token.text, className='mx-1') if token.is_punct
         else dbc.Button(token.text, color='warning', class_name='m-1', size='sm')
         for token in doc
     ]
 
-    return buttonized_text
+    return buttons_for_text
+
 
 # ---- INTERFACE ----
 
@@ -86,6 +86,8 @@ inclusion_options = dbc.Checklist(
         {'label': 'Ignore Interviewer Utterances', 'value': 2},
     ],
     value=[2],
+    inline=True,
+    class_name='mb-4',
     id='inclusion-options'
 )
 
@@ -95,15 +97,19 @@ input_accordion = dbc.Accordion(
             [
                 raw_input,
                 html.P(''),
-                dbc.Row([
-                    dbc.Col(parse_button),
-                    dbc.Col(inclusion_options)
-                ]),
+                dbc.Row(
+                    dbc.Col(
+                        [
+                            inclusion_options,
+                            parse_button
+                        ]
+                    ),
+                ),
                 html.P(''),
             ],
             title="Input",
             item_id='0')
-     ],
+    ],
     active_item=0,
     id="input-accordion"
 )
@@ -118,13 +124,34 @@ coding_modal = dbc.Modal(
             close_button=True
         ),
         dbc.ModalBody(
-            [
-                'If you are seeing this message, something went wrong!'
-            ],
+            dbc.Row(
+                [
+                    dbc.Col('', id='token-buttons'),
+                    dbc.Col(
+                        [
+                            dbc.Row(
+                                dbc.Col('token stats', id='utterance-stats'),
+                            ),
+                            dbc.Row(
+                                dbc.Col(
+                                    [
+                                        html.H3('Theoretical Codes'),
+                                        html.P('Choose any theoretical code that applies to this utterance')
+                                    ],
+                                    id='theoretical-codes'
+                                )
+                            )
+                        ],
+                        id='utterance-coder'
+                    )
+                ]
+            ),
             id='coding-contents'
         )
     ],
     id='coding-modal',
+    # fullscreen=True,
+    scrollable=True,
     size='xl',
     is_open=False,
     centered=True
@@ -153,9 +180,10 @@ app.layout = dbc.Container(
         ),
         coding_modal
     ],
-     fluid=True,
-     class_name='p-4'
+    fluid=True,
+    class_name='p-4'
 )
+
 
 # ---- CALLBACKS ----
 
@@ -230,16 +258,17 @@ def do(c, txt, options):
 
 
 @app.callback(
-    Output('coding-contents', 'children'),
+    Output('token-buttons', 'children'),
     Output('coding-modal', 'is_open'),
     Input('data-table', 'active_cell'),
     Input('data-table', 'data')
 )
 def open_coding_editor(cell, data):
     if cell is not None:
-        i, j = cell['row'], cell['column_id']
+        i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
         processed_text = process_utterance(cell_text)
+
         return processed_text, True
     else:
         return "Something went wrong!", False
