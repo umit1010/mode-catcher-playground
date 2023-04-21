@@ -75,23 +75,23 @@ def process_utterance(raw_text):
 
     # buttons_for_text = None
 
-    buttons_for_text = [
-        dbc.Button(
+    buttons_for_text = html.Div([
+        html.Span(dbc.Button(
             token.text,
             id={'type': 'toggle-token', 'index': token.lemma_, 'stop':True},
             n_clicks=0,
             color='light',
             class_name='m-1',
-            size='sm') if nlp.vocab[token.lemma].is_stop
+            size='sm')) if nlp.vocab[token.lemma].is_stop
         else html.Span(token.text, className='mx-1') if nlp.vocab[token.lemma].is_punct
-        else dbc.Button(token.text,
+        else html.Span(dbc.Button(token.text,
                         id={'type': 'toggle-token', 'index': token.lemma_, 'stop':False},
                         n_clicks=0,
                         color='warning',
                         class_name='m-1',
-                        size='sm')
+                        size='sm'))
         for token in doc
-    ]
+    ])
 
     fig = px.treemap(
         df,
@@ -186,8 +186,8 @@ def generate_co_occurrence_graph(data_dict_list, model=None):
 
     # plot the nodes
 
-    node_x = []
-    node_y = []
+    # node_x = []
+    # node_y = []
 
     # for n in pos:
     #     x, y = pos[n]
@@ -199,9 +199,11 @@ def generate_co_occurrence_graph(data_dict_list, model=None):
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
-        mode='markers',
+        mode='markers+text',
         hovertext=labels,
         hoverinfo='text',
+        text=labels,
+        textposition="top center",
         marker=dict(
             showscale=True,
             colorscale='Portland',
