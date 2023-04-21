@@ -194,29 +194,25 @@ def generate_co_occurrence_graph(data_dict_list):
         hoverinfo='text',
         marker=dict(
             showscale=True,
-            # colorscale options
-            # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-            # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-            # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
             colorscale='Portland',
             reversescale=False,
             color=node_sizes,
             size=node_sizes,
-            colorbar=dict(
-                thickness=15,
-                title='Frequencies',
-                xanchor='left',
-                titleside='right'
-            ),
-            line_width=2)
+            line_width=1
+        )
     )
 
-    fig = go.Figure(data=[edge_trace, node_trace],
-                    layout=go.Layout(
-                        hovermode='closest',
-                        height=800
-                    )
-                    )
+    fig = go.Figure(
+        data=[edge_trace, node_trace],
+        layout=go.Layout(
+            hovermode='closest',
+            height=800,
+            showlegend=False
+        )
+    )
+
+    fig.update_xaxes(range=[-1.5, 1.5])
+    fig.update_yaxes(range=[-1.5, 1.5])
 
     return dcc.Graph(figure=fig)
 
@@ -497,7 +493,7 @@ def open_coding_editor(cell, data):
     Input('graph-slider', 'value')
 )
 def display_network_graph(n_clicks, data, slider_value):
-    print(n_clicks, slider_value)
+
     if n_clicks is not None:
         if n_clicks > 0 and slider_value == 1:
             return generate_co_occurrence_graph(data[0:1]), len(data), 0
@@ -506,6 +502,7 @@ def display_network_graph(n_clicks, data, slider_value):
     else:
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
         return message, 2, 1
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
