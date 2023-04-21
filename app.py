@@ -325,7 +325,7 @@ graph_view_wrapper_div = html.Div(
                 )
             ], id='graph-div'
         ),
-        dcc.Slider(min=0, max=40, step=1, id='graph-slider')
+        dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider')
     ], className='border rounded p-4'
 )
 
@@ -490,17 +490,22 @@ def open_coding_editor(cell, data):
 
 @app.callback(
     Output('graph-div', 'children'),
+    Output('graph-slider', 'max'),
+    Output('graph-slider', 'value'),
     Input('graph-button', 'n_clicks'),
-    Input('stored-data', 'data')
+    Input('stored-data', 'data'),
+    Input('graph-slider', 'value')
 )
-def display_network_graph(n_clicks, data):
+def display_network_graph(n_clicks, data, slider_value):
+    print(n_clicks, slider_value)
     if n_clicks is not None:
-        if n_clicks > 0:
-            return generate_co_occurrence_graph(data)
+        if n_clicks > 0 and slider_value == 1:
+            return generate_co_occurrence_graph(data[0:1]), len(data), 0
+        elif n_clicks > 0 and slider_value > 1:
+            return generate_co_occurrence_graph(data[0:slider_value]), len(data), slider_value
     else:
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
-        return message
-
+        return message, 2, 1
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
