@@ -64,13 +64,16 @@ def parse_raw_text(txt: str,
     return data
 
 
-def process_utterance(raw_text, model=None):
-    doc = model(raw_text)
+def process_utterance(raw_text):
 
-    all_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+    doc = nlp(raw_text)
+
+    all_tokens = [token.lemma_ for token in doc if not nlp.vocab[token.lemma].is_stop and not nlp.vocab[token.lemma].is_punct]
     token_counts = Counter(all_tokens)
     data_dict = {'token': list(token_counts.keys()), 'count': list(token_counts.values())}
     df = pd.DataFrame.from_dict(data_dict)
+
+    # buttons_for_text = None
 
     buttons_for_text = [
         dbc.Button(
@@ -144,9 +147,6 @@ def generate_co_occurrence_graph(data_dict_list, model=None):
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
     edges = []
-
-    # print(nlp.vocab.strings['yeah'])
-    # print(df[11852442279192850303])
 
     for i in range(len(unique_tokens)):
         row = unique_tokens[i]
@@ -446,7 +446,7 @@ def create_utterance_table(parse_clicks, txt, options):
             transcript_table = DataTable(
                 parsed_data,
                 columns=column_names,
-                page_size=6,
+                # page_size=6, # causes issues with the active_cell logic at the moment
                 style_header={
                     'fontWeight': 'bold',
                     'textAlign': 'left'
@@ -497,10 +497,7 @@ def open_coding_editor(cell, toggle_clicks, data):
             if 1 in toggle_clicks:
 
                 toggled_token = ctx.triggered_id['index']
-
                 was_stop = ctx.triggered_id['stop']
-
-                print(toggled_token, was_stop)
 
                 if was_stop:
                     nlp.vocab[toggled_token].is_stop = False
@@ -509,7 +506,7 @@ def open_coding_editor(cell, toggle_clicks, data):
 
         i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
-        token_buttons, token_treemap = process_utterance(cell_text, model=nlp)
+        token_buttons, token_treemap = process_utterance(cell_text)
 
         return token_buttons, token_treemap, True
     else:
