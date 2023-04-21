@@ -1,11 +1,13 @@
 import dash
 import dash_bootstrap_components as dbc
 import datetime
+import networkx as nx
+import numpy as np
 import re
 import spacy
-import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, dcc, callback, html, Input, Output, State
@@ -14,7 +16,7 @@ from dash import Dash, dcc, callback, html, Input, Output, State
 # ---- PLATFORM ----
 
 
-nlp = spacy.load('en_core_web_lg')
+nlp = spacy.load('en_core_web_sm')
 
 app = Dash(
     __name__,
@@ -37,6 +39,10 @@ def parse_raw_text(txt: str,
     data = []
 
     for i, line in enumerate(input_lines):
+
+        if len(line.replace('\n', '').strip()) == 0:
+            continue
+
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(':')
         speaker = str(speaker)
@@ -91,13 +97,138 @@ def process_utterance(raw_text):
     return buttons_for_text, token_treemap
 
 
+def generate_co_occurrence_graph(data_dict_list):
+
+    # generate unique lemmas list and create a co-occurrence matrix dataframe
+    combined_text = " ".join([line['utterance'] for line in data_dict_list])
+    combined_doc = nlp(combined_text)
+    all_tokens = [token.lemma for token in combined_doc if not token.is_punct and not token.is_stop]
+    token_counts = Counter(all_tokens)
+    unique_tokens = list(token_counts.keys())
+    df = pd.DataFrame({'token': unique_tokens}, columns=unique_tokens, index=unique_tokens).fillna(0)
+
+    # first, fill each token's counts in the matrix ([same col, same row] = count)
+    for token in unique_tokens:
+        df.loc[token, token] = token_counts[token]
+
+    # next, iterate over each line's unique tokens and add them to the matrix
+    for line in data_dict_list:
+        line_doc = nlp(line['utterance'])
+        line_tokens = list(set([token.lemma for token in line_doc if not token.is_punct and not token.is_stop]))
+
+        # first loop is iterating over each token
+        # second loop iterates over the tokens after the current token
+        for i in range(len(line_tokens)):
+            row = line_tokens[i]
+            for j in range(i + 1, len(line_tokens)):
+                col = line_tokens[j]
+                df[row][col] += 1
+                df[col][row] += 1
+
+    # lastly, create the graph
+    labels = [nlp.vocab.strings[token] for token in unique_tokens]
+
+    # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
+    node_sizes = [df[token][token] * 5 for token in unique_tokens]
+
+    nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
+
+    edges = []
+
+    # print(nlp.vocab.strings['yeah'])
+    # print(df[11852442279192850303])
+
+    for i in range(len(unique_tokens)):
+        row = unique_tokens[i]
+        for j in range(i + 1, len(unique_tokens)):
+            col = unique_tokens[j]
+            if df[row][col] > 1:
+                edges.append((row, col))
+
+    # create the network
+    G = nx.Graph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+
+    # generate a spring layout for node locations
+    layout_seed = np.random.RandomState(42)
+    pos = nx.spring_layout(G, iterations=3, seed=layout_seed)
+
+    edge_x = []
+    edge_y = []
+
+    for edge in G.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=1, color='#888'),
+        hoverinfo='none',
+        mode='lines'
+    )
+
+    # plot the nodes
+
+    node_x = []
+    node_y = []
+
+    # for n in pos:
+    #     x, y = pos[n]
+    #     node_x.append(x)
+    #     node_y.append(y)
+
+    node_x = [pos[i].tolist()[0] for i in pos]
+    node_y = [pos[i].tolist()[1] for i in pos]
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hovertext=labels,
+        hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            # colorscale options
+            # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+            # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+            # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+            colorscale='Portland',
+            reversescale=False,
+            color=node_sizes,
+            size=node_sizes,
+            colorbar=dict(
+                thickness=15,
+                title='Frequencies',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2)
+    )
+
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        hovermode='closest',
+                        height=800
+                    )
+                    )
+
+    return dcc.Graph(figure=fig)
+
+
 # ---- INTERFACE ----
 
-stored_data = dbc.Input(value='', id='stored-data', disabled=True, class_name='d-none')
+# stored_data = dbc.Input(value='', id='stored-data', disabled=True, class_name='d-none')
+stored_data = dcc.Store(id='stored-data', storage_type='memory')
 
 # -- input section --
 
-with open('sample-mid.txt', 'r') as f:
+with open('sample-medium.txt', 'r') as f:
     sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
 raw_input = dbc.Textarea(
@@ -191,9 +322,10 @@ graph_view_wrapper_div = html.Div(
                 html.P(
                     'Knowledge graph will be displayed here once utterances are processed.',
                     className='lead'
-                ),
+                )
             ], id='graph-div'
-        )
+        ),
+        dcc.Slider(min=0, max=40, step=1, id='graph-slider')
     ], className='border rounded p-4'
 )
 
@@ -269,14 +401,14 @@ app.layout = dbc.Container(
 
 @app.callback(
     Output('utterances-div', 'children'),
-    Output('stored-data', 'value'),
+    Output('stored-data', 'data'),
     Output('input-accordion', 'active_item'),
     Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
     State('raw-text', 'value'),
     State('inclusion-options', 'value')
 )
-def do(n_clicks, txt, options):
+def create_utterance_table(n_clicks, txt, options):
     if n_clicks is not None:
         if n_clicks > 0:
 
@@ -302,12 +434,13 @@ def do(n_clicks, txt, options):
             transcript_table = DataTable(
                 parsed_data,
                 columns=column_names,
+                page_size=6,
                 style_header={
                     'fontWeight': 'bold',
-                    'textAlign': 'center'
+                    'textAlign': 'left'
                 },
                 style_cell={
-                    'padding': '16px',
+                    'padding': '12px',
                     'textAlign': 'left',
                     'fontSize': 16,
                     'line-height': '2',
@@ -327,7 +460,6 @@ def do(n_clicks, txt, options):
             )
 
             editor_section = [
-
                 transcript_table
             ]
 
@@ -359,13 +491,12 @@ def open_coding_editor(cell, data):
 @app.callback(
     Output('graph-div', 'children'),
     Input('graph-button', 'n_clicks'),
-    Input('stored-data', 'value')
+    Input('stored-data', 'data')
 )
 def display_network_graph(n_clicks, data):
     if n_clicks is not None:
         if n_clicks > 0:
-            new_text = f"data to generate the plot from: [{type(data[0])}] {data}"
-            return new_text
+            return generate_co_occurrence_graph(data)
     else:
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
         return message
