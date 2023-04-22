@@ -12,11 +12,10 @@ from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, ALL, ctx, dcc, callback, html, Input, Output, State
 
-
 # ---- PLATFORM ----
 
 
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_sm', exclude=["ner"])
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -65,10 +64,10 @@ def parse_raw_text(txt: str,
 
 
 def process_utterance(raw_text):
-
     doc = nlp(raw_text)
 
-    all_tokens = [token.lemma_ for token in doc if not nlp.vocab[token.lemma].is_stop and not nlp.vocab[token.lemma].is_punct]
+    all_tokens = [token.lemma_ for token in doc if not nlp.vocab[token.lemma].is_stop
+                  and not nlp.vocab[token.lemma].is_punct]
     token_counts = Counter(all_tokens)
     data_dict = {'token': list(token_counts.keys()), 'count': list(token_counts.values())}
     df = pd.DataFrame.from_dict(data_dict)
@@ -78,18 +77,18 @@ def process_utterance(raw_text):
     buttons_for_text = html.Div([
         html.Span(dbc.Button(
             token.text,
-            id={'type': 'toggle-token', 'index': token.lemma_, 'stop':True},
+            id={'type': 'toggle-token', 'index': token.lemma_, 'stop': True},
             n_clicks=0,
             color='light',
             class_name='m-1',
             size='sm')) if nlp.vocab[token.lemma].is_stop
         else html.Span(token.text, className='mx-1') if nlp.vocab[token.lemma].is_punct
         else html.Span(dbc.Button(token.text,
-                        id={'type': 'toggle-token', 'index': token.lemma_, 'stop':False},
-                        n_clicks=0,
-                        color='warning',
-                        class_name='m-1',
-                        size='sm'))
+                                  id={'type': 'toggle-token', 'index': token.lemma_, 'stop': False},
+                                  n_clicks=0,
+                                  color='warning',
+                                  class_name='m-1',
+                                  size='sm'))
         for token in doc
     ])
 
@@ -111,11 +110,11 @@ def process_utterance(raw_text):
 
 
 def generate_co_occurrence_graph(data_dict_list, model=None):
-
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
     combined_doc = model(combined_text)
-    all_tokens = [token.lemma for token in combined_doc if not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]
+    all_tokens = [token.lemma for token in combined_doc if
+                  not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]
     token_counts = Counter(all_tokens)
     unique_tokens = list(token_counts.keys())
     df = pd.DataFrame({'token': unique_tokens}, columns=unique_tokens, index=unique_tokens).fillna(0)
@@ -127,7 +126,8 @@ def generate_co_occurrence_graph(data_dict_list, model=None):
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
         line_doc = nlp(line['utterance'])
-        line_tokens = list(set([token.lemma for token in line_doc if not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]))
+        line_tokens = list(set([token.lemma for token in line_doc if
+                                not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]))
 
         # first loop is iterating over each token
         # second loop iterates over the tokens after the current token
@@ -236,11 +236,11 @@ stored_data = dcc.Store(id='stored-data', storage_type='memory')
 
 # -- input section --
 
-with open('sample-medium.txt', 'r') as f:
+with open('samples/demo.txt', 'r') as f:
     sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
 # process the whole text once to build the vocabulary
-#   so that when we are turning on-off tokens, spacy knows them
+#   so that later processing is faster
 first_pass = nlp(sample_text)
 
 raw_input = dbc.Textarea(
@@ -254,8 +254,8 @@ parse_button = dbc.Button('Parse Utterances', id='parse-button', n_clicks=0)
 
 inclusion_options = dbc.Checklist(
     options=[
-        {'label': 'Include Timestamp', 'value': 0},
-        {'label': 'Include Speaker', 'value': 1},
+        {'label': 'Display Timestamp', 'value': 0},
+        {'label': 'Display Speaker', 'value': 1},
         {'label': 'Ignore Interviewer Utterances', 'value': 2},
     ],
     value=[2],
@@ -386,7 +386,9 @@ app.layout = dbc.Container(
     [
         dbc.Row(
             dbc.Col([
-                html.H1(children='mode-catcher playground', className='text-center m-4'),
+                html.H1([
+                    'mode-catcher ', html.Em('playground')
+                ], className='text-center m-4'),
                 input_accordion,
                 html.P('')
             ])
@@ -421,7 +423,6 @@ app.layout = dbc.Container(
     State('inclusion-options', 'value')
 )
 def create_utterance_table(parse_clicks, txt, options):
-
     if parse_clicks is not None:
 
         if parse_clicks > 0:
@@ -488,11 +489,10 @@ def create_utterance_table(parse_clicks, txt, options):
     Output('utterance-stats', 'children'),
     Output('coding-modal', 'is_open'),
     Input('data-table', 'active_cell'),
-    Input({'type':'toggle-token', 'index': ALL, 'stop': ALL}, 'n_clicks'),
+    Input({'type': 'toggle-token', 'index': ALL, 'stop': ALL}, 'n_clicks'),
     Input('stored-data', 'data')
 )
 def open_coding_editor(cell, toggle_clicks, data):
-
     if cell is not None:
 
         if len(toggle_clicks) > 0:
@@ -524,12 +524,10 @@ def open_coding_editor(cell, toggle_clicks, data):
     Input('stored-data', 'data')
 )
 def display_network_graph(n_clicks, slider_value, data):
-
     if n_clicks is not None:
-
-        if n_clicks > 0 and slider_value == 1:
+        if n_clicks > 0 and ctx.triggered_id == 'graph-button':
             return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
-        elif n_clicks > 0 and slider_value > 1:
+        elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
             return generate_co_occurrence_graph(data[0:slider_value], model=nlp), len(data), slider_value
     else:
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
