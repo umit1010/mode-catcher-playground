@@ -13,7 +13,6 @@ from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, ALL, ctx, dcc, callback, html, Input, Output, State
 from pathlib import Path
-from spacy.lang.en.stop_words import STOP_WORDS
 
 # ---- PLATFORM ----
 
@@ -152,16 +151,16 @@ def process_utterance(raw_text):
     return buttons_for_text, token_treemap
 
 
-def pickle_model(case_name):
+def pickle_model(mode_name):
 
     models_folder = Path('./models/')
     models_folder.mkdir(exist_ok=True)
 
-    case_folder = models_folder / case_name
-    case_folder.mkdir(exist_ok=True)
+    mode_folder = models_folder / mode_name
+    mode_folder.mkdir(exist_ok=True)
 
-    stopwords_file = case_folder / 'stopwords.pickle'
-    theoretical_codes_file = case_folder / 'theoretical_codes.pickle'
+    stopwords_file = mode_folder / 'stopwords.pickle'
+    theoretical_codes_file = mode_folder / 'theoretical_codes.pickle'
 
     with open(stopwords_file, 'wb') as swf:
         pickle.dump({'stopped': stopped_words,
@@ -298,23 +297,42 @@ stored_data = dcc.Store(id='stored-data', storage_type='memory')
 
 # -- input section --
 
+INPUT_FOLDER = 'samples'
+
+input_folder_path = Path(INPUT_FOLDER)
+
+file_list = ['__manual entry__']
+
+if input_folder_path.is_dir():
+    text_files = [f.name for f in input_folder_path.glob('*.txt')]
+    if len(text_files) > 0:
+        file_list.extend(text_files)
+
+input_file_dropdown = dbc.Select(
+    file_list,
+    id='input-file-dropdown',
+    value='demo.txt'
+)
+
 INITIAL_INPUT = 'demo'
 
-with open(f'samples/{INITIAL_INPUT}.txt', 'r') as f:
+with open(f'{INPUT_FOLDER}/{INITIAL_INPUT}.txt', 'r') as f:
     sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
-case_name_input = dbc.Input(id='case-name-input',
+mode_name = dbc.Input(id='mode-name',
                             value=INITIAL_INPUT,
-                            placeholder="Enter case name ...")
+                            placeholder="Enter mode name ...")
 
-raw_input = dbc.Textarea(
+raw_text = dbc.Textarea(
     placeholder="Copy and paste some text here.",
     value=sample_text,
     rows=10,
     id='raw-text'
 )
 
-parse_button = dbc.Button('Parse Utterances', id='parse-button', n_clicks=0)
+parse_button = dbc.Button('Parse Utterances',
+                          id='parse-button',
+                          n_clicks=0)
 
 inclusion_options = dbc.Checklist(
     options=[
@@ -335,15 +353,22 @@ input_accordion = dbc.Accordion(
             [
                 dbc.Row([
                     dbc.Col([
-                        dbc.Label('Case name:'),
-                        case_name_input,
+                        dbc.Label('Input File:'),
+                        input_file_dropdown,
                         html.P('')
-                    ], width=12, lg=6)
+                    ], width=10, lg=6)
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Label('Mode name:'),
+                        mode_name,
+                        html.P('')
+                    ], width=10, lg=6)
                 ]),
                 dbc.Row([
                     dbc.Col([
                         dbc.Label('Transcript:'),
-                        raw_input,
+                        raw_text,
                         html.P('')
                     ])
                 ]),
@@ -485,6 +510,41 @@ app.layout = dbc.Container(
 
 
 # ---- CALLBACKS ----
+@app.callback(
+    Output('raw-text', 'value'),
+    Output('mode-name', 'value'),
+    Input('input-file-dropdown', 'value')
+)
+def load_input_file(file_name: str):
+
+    if file_name == '__manual entry__':
+        return "", ""
+
+    file_path = Path(INPUT_FOLDER) / file_name
+    mode_name = file_name.removesuffix('.txt')
+
+    if not file_path.is_file():
+        return "It doesn't seem like that file exists anymore.", mode_name
+
+    with open(file_path, 'r') as f:
+        file_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
+
+    if len(file_text) > 0:
+        return file_text, mode_name
+
+    return "File was there, but it had no text.", mode_name
+
+@app.callback(
+    Output('parse-button', 'disabled'),
+    Input('mode-name', 'value'),
+    Input('raw-text', 'value')
+)
+def activate_parse_button(name: str, text: str):
+
+    if len(name.strip()) > 0 and len(text.strip()) > 0:
+        return False
+
+    return True
 
 
 @app.callback(
@@ -493,12 +553,12 @@ app.layout = dbc.Container(
     Output('input-accordion', 'active_item'),
     Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
-    Input('case-name-input', 'value'),
+    State('mode-name-input', 'value'),
     State('raw-text', 'value'),
     State('inclusion-options', 'value'),
     prevent_initial_call=True
 )
-def utterance_table(parse_clicks, case_name, txt, options):
+def utterance_table(parse_clicks, mode_name, txt, options):
 
     global stopped_words
     global unstopped_words
@@ -511,7 +571,7 @@ def utterance_table(parse_clicks, case_name, txt, options):
             # # if "Reset Vocabulary" option is not selected
             # # and if there's already an existing vocabulary, load it from the disk
             # # otherwise, create a new blank vocabulary
-            model_path = Path(f'./models/{str(case_name).strip()}/')
+            model_path = Path(f'./models/{str(mode_name).strip()}/')
             if model_path.is_dir():
                 stopwords_file = model_path / 'stopwords.pickle'
                 theoretical_codes_file = model_path / 'theoretical_codes.pickle'
@@ -648,22 +708,26 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Output('graph-slider', 'value'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
-    Input('stored-data', 'data'),
-    Input('case-name-input', 'value'),
+    State('stored-data', 'data'),
+    State('mode-name-input', 'value'),
     prevent_initial_call=True
 )
-def network_graph(n_clicks, slider_value, data, case_name):
+def network_graph(n_clicks, slider_value, data, mode_name):
+
     if n_clicks is not None:
+
         if n_clicks > 0 and ctx.triggered_id == 'graph-button':
-            # nlp.vocab.to_disk(f'./vocabs/{case_name}/')
-            pickle_model(case_name)
+
+            pickle_model(mode_name)
             return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
+
         elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
             return generate_co_occurrence_graph(data[0:slider_value], model=nlp), len(data), slider_value
+
     else:
+
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
         return message, 2, 1
-
 
 
 # Press the green button in the gutter to run the script.
