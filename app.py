@@ -77,8 +77,7 @@ def parse_raw_text(txt: str,
 
         data.append(row)
 
-        if len(assigned_codes) == 0:
-            assigned_codes[i] = [False] * len(theoretical_code_list)
+        assigned_codes[i] = [False] * len(theoretical_code_list)
 
     return data
 
@@ -99,7 +98,6 @@ def generate_code_checkboxes(line_num, values=None):
         className='d-flex align-content-start flex-wrap',
         id='code-checkboxes-container'
     )
-
     return container
 
 
@@ -553,7 +551,7 @@ def activate_parse_button(name: str, text: str):
     Output('input-accordion', 'active_item'),
     Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
-    State('mode-name-input', 'value'),
+    State('mode-name', 'value'),
     State('raw-text', 'value'),
     State('inclusion-options', 'value'),
     prevent_initial_call=True
@@ -658,7 +656,7 @@ def utterance_table(parse_clicks, mode_name, txt, options):
     Input('data-table', 'active_cell'),
     Input({'type': 'toggle-token', 'index': ALL, 'stop': ALL}, 'n_clicks'),
     Input({'type': 'code-checkbox', 'index': ALL}, 'value'),
-    Input('stored-data', 'data'),
+    State('stored-data', 'data'),
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes, data):
@@ -709,7 +707,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
     State('stored-data', 'data'),
-    State('mode-name-input', 'value'),
+    State('mode-name', 'value'),
     prevent_initial_call=True
 )
 def network_graph(n_clicks, slider_value, data, mode_name):
