@@ -11,17 +11,30 @@ import plotly.graph_objects as go
 from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, ALL, ctx, dcc, callback, html, Input, Output, State
+from pathlib import Path
 
 # ---- PLATFORM ----
 
+nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
 
-nlp = spacy.load('en_core_web_sm', exclude=["ner"])
+assigned_codes = dict()
+
+theoretical_code_list = [
+    'emergent',
+    'centralized',
+    'probabilistic',
+    'deterministic',
+    'deliberate feedback loop',
+    'pattern fitting',
+    'thinking in levels',
+    'level slippage',
+]
+
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True
 )
-
 
 # ---- NLP ----
 
@@ -60,7 +73,29 @@ def parse_raw_text(txt: str,
 
         data.append(row)
 
+        assigned_codes[i] = [False] * len(theoretical_code_list)
+
     return data
+
+
+def generate_code_checkboxes(line_num, values=None):
+
+    if values is not None:
+        assigned_codes[line_num] = values
+
+    container = html.Div(
+        [
+            html.Div([
+                dbc.Checkbox(label=code[1],
+                             value=assigned_codes[line_num][code[0]],
+                             id={'type': 'code-checkbox', 'index': code[1]})
+            ], className='w-50') for code in enumerate(theoretical_codes_list)
+        ],
+        className='d-flex align-content-start flex-wrap',
+        id='code-checkboxes-container'
+    )
+
+    return container
 
 
 def process_utterance(raw_text):
@@ -104,7 +139,9 @@ def process_utterance(raw_text):
 
     fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
 
-    token_treemap = dcc.Graph(figure=fig, responsive=True, style={'height': '200px'})
+    token_treemap = dcc.Graph(figure=fig,
+                              responsive=True,
+                              style={'height': '200px'})
 
     return buttons_for_text, token_treemap
 
@@ -231,17 +268,18 @@ def generate_co_occurrence_graph(data_dict_list, model=None):
 
 # ---- INTERFACE ----
 
-# stored_data = dbc.Input(value='', id='stored-data', disabled=True, class_name='d-none')
 stored_data = dcc.Store(id='stored-data', storage_type='memory')
 
 # -- input section --
 
-with open('samples/demo.txt', 'r') as f:
+INITIAL_INPUT = 'demo'
+
+with open(f'samples/{INITIAL_INPUT}.txt', 'r') as f:
     sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
-# process the whole text once to build the vocabulary
-#   so that later processing is faster
-first_pass = nlp(sample_text)
+case_name_input = dbc.Input(id='case-name-input',
+                            value=INITIAL_INPUT,
+                            placeholder="Enter case name ...")
 
 raw_input = dbc.Textarea(
     placeholder="Copy and paste some text here.",
@@ -257,6 +295,7 @@ inclusion_options = dbc.Checklist(
         {'label': 'Display Timestamp', 'value': 0},
         {'label': 'Display Speaker', 'value': 1},
         {'label': 'Ignore Interviewer Utterances', 'value': 2},
+        {'label': 'Reset Vocabulary', 'value':3}
     ],
     value=[2],
     inline=True,
@@ -268,8 +307,20 @@ input_accordion = dbc.Accordion(
     [
         dbc.AccordionItem(
             [
-                raw_input,
-                html.P(''),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Label('Case name:'),
+                        case_name_input,
+                        html.P('')
+                    ], width=12, lg=6)
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Label('Transcript:'),
+                        raw_input,
+                        html.P('')
+                    ])
+                ]),
                 dbc.Row(
                     dbc.Col(
                         [
@@ -283,7 +334,7 @@ input_accordion = dbc.Accordion(
             title="Input",
             item_id='0')
     ],
-    active_item=0,
+    active_item='0',
     id="input-accordion"
 )
 
@@ -314,14 +365,11 @@ theoretical_codes_list = [
     'level slippage',
 ]
 
-code_checkboxes = dbc.Container(
-    [
-        html.Div([
-            dbc.Checkbox(label=code)
-        ], className='w-50') for code in theoretical_codes_list
-    ],
+code_checkboxes_container = dbc.Container(
+    "",
     fluid=True,
-    class_name='d-flex align-content-start flex-wrap'
+    class_name='d-flex align-content-start flex-wrap',
+    id='code-checkboxes-container'
 )
 
 # -- graph view --
@@ -368,7 +416,7 @@ coding_modal = dbc.Modal(
                             [
                                 html.H4('Theoretical Codes'),
                                 html.P('not yet functional', className='small text-italic'),
-                                code_checkboxes
+                                code_checkboxes_container
                             ]
                         ), class_name='mt-4'
                     )
@@ -419,13 +467,24 @@ app.layout = dbc.Container(
     Output('input-accordion', 'active_item'),
     Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
+    Input('case-name-input', 'value'),
     State('raw-text', 'value'),
-    State('inclusion-options', 'value')
+    State('inclusion-options', 'value'),
+    prevent_initial_call=True
 )
-def create_utterance_table(parse_clicks, txt, options):
+def utterance_table(parse_clicks, case_name, txt, options):
     if parse_clicks is not None:
 
         if parse_clicks > 0:
+
+            # # if "Reset Vocabulary" option is not selected
+            # # and if there's already an existing vocabulary, load it from the disk
+            # # otherwise, create a new blank vocabulary
+            # model_path = f'./vocabs/{str(case_name).strip()}/'
+            # if 3 not in options and Path(model_path).is_dir():
+            #     print("want me to load from disk, but don't know how ...")
+            # else:
+            #     print("want me to create new, but don't know how ...")
 
             time = True if 0 in options else False
             speaker = True if 1 in options else False
@@ -435,6 +494,7 @@ def create_utterance_table(parse_clicks, txt, options):
                                          include_timestamp=time,
                                          include_speaker=speaker,
                                          include_interviewer=interviewer)
+
 
             column_names = [{'name': 'line', 'id': 'line'}]
 
@@ -449,7 +509,6 @@ def create_utterance_table(parse_clicks, txt, options):
             transcript_table = DataTable(
                 parsed_data,
                 columns=column_names,
-                # page_size=6, # causes issues with the active_cell logic at the moment
                 style_header={
                     'fontWeight': 'bold',
                     'textAlign': 'left'
@@ -487,12 +546,16 @@ def create_utterance_table(parse_clicks, txt, options):
 @app.callback(
     Output('token-buttons', 'children'),
     Output('utterance-stats', 'children'),
+    Output('code-checkboxes-container', 'children'),
     Output('coding-modal', 'is_open'),
     Input('data-table', 'active_cell'),
     Input({'type': 'toggle-token', 'index': ALL, 'stop': ALL}, 'n_clicks'),
-    Input('stored-data', 'data')
+    Input({'type': 'code-checkbox', 'index': ALL}, 'value'),
+    Input('stored-data', 'data'),
+    prevent_initial_call=True
 )
-def open_coding_editor(cell, toggle_clicks, data):
+def coding_editor(cell, toggle_clicks, checked_codes, data):
+
     if cell is not None:
 
         if len(toggle_clicks) > 0:
@@ -510,9 +573,22 @@ def open_coding_editor(cell, toggle_clicks, data):
         cell_text = str(data[i][j])
         token_buttons, token_treemap = process_utterance(cell_text)
 
-        return token_buttons, token_treemap, True
+        line_num = int(data[i]['line'])
+        if len(checked_codes) > 0:
+            if type(ctx.triggered_id) is not str:
+                if ctx.triggered_id['type'] == 'code-checkbox':
+                    codes = generate_code_checkboxes(line_num, checked_codes)
+                else:
+                    codes = generate_code_checkboxes(line_num)
+            else:
+                codes = generate_code_checkboxes(line_num)
+        else:
+            codes = generate_code_checkboxes(line_num)
+
+        return token_buttons, token_treemap, codes, True
+
     else:
-        return "Something went wrong!", "Something went wrong!", False
+        return "Something", "went", "wrong", False
 
 
 @app.callback(
@@ -521,17 +597,21 @@ def open_coding_editor(cell, toggle_clicks, data):
     Output('graph-slider', 'value'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
-    Input('stored-data', 'data')
+    Input('stored-data', 'data'),
+    Input('case-name-input', 'value'),
+    prevent_initial_call=True
 )
-def display_network_graph(n_clicks, slider_value, data):
+def network_graph(n_clicks, slider_value, data, case_name):
     if n_clicks is not None:
         if n_clicks > 0 and ctx.triggered_id == 'graph-button':
+            # nlp.vocab.to_disk(f'./vocabs/{case_name}/')
             return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
         elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
             return generate_co_occurrence_graph(data[0:slider_value], model=nlp), len(data), slider_value
     else:
         message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
         return message, 2, 1
+
 
 
 # Press the green button in the gutter to run the script.
