@@ -6,16 +6,21 @@ import numpy as np
 import re
 import spacy
 import pandas as pd
+import pickle
 import plotly.express as px
 import plotly.graph_objects as go
 from collections import Counter
 from dash.dash_table import DataTable
 from dash import Dash, ALL, ctx, dcc, callback, html, Input, Output, State
 from pathlib import Path
+from spacy.lang.en.stop_words import STOP_WORDS
 
 # ---- PLATFORM ----
 
 nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+
+stopped_words = set()
+unstopped_words = set()
 
 assigned_codes = dict()
 
@@ -145,6 +150,26 @@ def process_utterance(raw_text):
 
     return buttons_for_text, token_treemap
 
+
+def pickle_model(case_name):
+
+    models_folder = Path('./models/')
+    models_folder.mkdir(exist_ok=True)
+
+    case_folder = models_folder / case_name
+    case_folder.mkdir(exist_ok=True)
+
+    stopwords_file = case_folder / 'stopwords.pickle'
+    theoretical_codes_file = case_folder / 'theoretical_codes.pickle'
+
+    with open(stopwords_file, 'wb') as swf:
+        pickle.dump({'stopped': stopped_words,
+                     'unstopped': unstopped_words},
+                    swf,
+                    protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open(theoretical_codes_file, 'wb') as tcf:
+        pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 def generate_co_occurrence_graph(data_dict_list, model=None):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
@@ -295,7 +320,7 @@ inclusion_options = dbc.Checklist(
         {'label': 'Display Timestamp', 'value': 0},
         {'label': 'Display Speaker', 'value': 1},
         {'label': 'Ignore Interviewer Utterances', 'value': 2},
-        {'label': 'Reset Vocabulary', 'value':3}
+        {'label': 'Reset Model', 'value':3}
     ],
     value=[2],
     inline=True,
@@ -480,7 +505,26 @@ def utterance_table(parse_clicks, case_name, txt, options):
             # # if "Reset Vocabulary" option is not selected
             # # and if there's already an existing vocabulary, load it from the disk
             # # otherwise, create a new blank vocabulary
-            # model_path = f'./vocabs/{str(case_name).strip()}/'
+            model_path = Path(f'./models/{str(case_name).strip()}/')
+            if model_path.is_dir():
+                stopwords_file = model_path / 'stopwords.pickle'
+                # theoretical_codes_file = model_path / 'theoretical_codes.pickle'
+
+                if stopwords_file.is_file():
+                    with open(stopwords_file, 'rb') as swf:
+                        loaded_stopwords = pickle.load(swf)
+                    print(loaded_stopwords)
+                    loaded_stopped_words = loaded_stopwords['stopped']
+                    loaded_unstopped_words = loaded_stopwords['unstopped']
+
+                    nlp.Defaults.stop_words.update(loaded_stopped_words)
+                    nlp.Defaults.stop_words.discard(loaded_unstopped_words)
+
+                    print('yay')
+                else:
+                    print('no file!')
+
+            # print(Path(model_path).is_dir())
             # if 3 not in options and Path(model_path).is_dir():
             #     print("want me to load from disk, but don't know how ...")
             # else:
@@ -566,8 +610,12 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
 
                 if was_stop:
                     nlp.vocab[toggled_token].is_stop = False
+                    unstopped_words.add(toggled_token)
+                    stopped_words.discard(toggled_token)
                 else:
                     nlp.vocab[toggled_token].is_stop = True
+                    unstopped_words.discard(toggled_token)
+                    stopped_words.add(toggled_token)
 
         i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
@@ -605,6 +653,7 @@ def network_graph(n_clicks, slider_value, data, case_name):
     if n_clicks is not None:
         if n_clicks > 0 and ctx.triggered_id == 'graph-button':
             # nlp.vocab.to_disk(f'./vocabs/{case_name}/')
+            pickle_model(case_name)
             return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
         elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
             return generate_co_occurrence_graph(data[0:slider_value], model=nlp), len(data), slider_value
