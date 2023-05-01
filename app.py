@@ -28,10 +28,10 @@ theoretical_code_list = [
     'centralized',
     'probabilistic',
     'deterministic',
-    'deliberate feedback loop',
-    'pattern fitting',
-    'thinking in levels',
-    'level slippage',
+    'feedback',
+    'fitting',
+    'levels',
+    'slippage',
 ]
 
 app = Dash(
@@ -78,7 +78,8 @@ def parse_raw_text(txt: str,
 
         data.append(row)
 
-        assigned_codes[i] = [False] * len(theoretical_code_list)
+        if len(assigned_codes) == 0:
+            assigned_codes[i] = [False] * len(theoretical_code_list)
 
     return data
 
@@ -169,7 +170,7 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
+def generate_graph(data_dict_list, model=None, with_codes=False):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
     combined_doc = model(combined_text)
@@ -183,9 +184,25 @@ def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
     for token in unique_tokens:
         df.loc[token, token] = token_counts[token]
 
+    # if theoretical codes need to be in the graph,
+    #   run them through the model first so that they are part of the vocab
+    if with_codes:
+        codes_list = " ".join(theoretical_code_list)
+        model(codes_list)
+
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
-        line_doc = nlp(line['utterance'])
+        utterance_to_parse = line['utterance']
+
+        if with_codes:
+            selections = assigned_codes[line['line']]
+            codes_to_append = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
+            utterance_to_parse = f'{utterance_to_parse} {codes_to_append}'
+
+        # now parse the utterance through spacy
+
+        line_doc = model(utterance_to_parse)
+
         line_tokens = list(set([token.lemma for token in line_doc if
                                 not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]))
 
@@ -223,7 +240,6 @@ def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
     pos = nx.spring_layout(G, iterations=3, seed=layout_seed)
-
     edge_x = []
     edge_y = []
 
@@ -243,16 +259,6 @@ def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
         hoverinfo='none',
         mode='lines'
     )
-
-    # plot the nodes
-
-    # node_x = []
-    # node_y = []
-
-    # for n in pos:
-    #     x, y = pos[n]
-    #     node_x.append(x)
-    #     node_y.append(y)
 
     node_x = [pos[i].tolist()[0] for i in pos]
     node_y = [pos[i].tolist()[1] for i in pos]
@@ -278,7 +284,8 @@ def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
         data=[edge_trace, node_trace],
         layout=go.Layout(
             hovermode='closest',
-            height=800,
+            height=600,
+            margin=dict(l=0, r=0, t=40, b=40),
             showlegend=False
         )
     )
@@ -309,7 +316,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='cj.txt'
+    value='demo.txt'
 )
 
 mode_name = dbc.Input(id='mode-name',
@@ -384,11 +391,11 @@ input_accordion = dbc.Accordion(
 
 # -- utterances section --
 
-generate_graph = dbc.Button('Generate Graph',
-                            id='graph-button',
-                            class_name='mt-4',
-                            n_clicks=0,
-                            disabled=True)
+graph_button = dbc.Button('Generate Graph',
+                          id='graph-button',
+                          class_name='mt-4',
+                          n_clicks=0,
+                          disabled=True)
 
 utterances_wrapper_div = html.Div(
     [
@@ -399,7 +406,7 @@ utterances_wrapper_div = html.Div(
             ], id='utterances-div'
         ),
         html.P(' '),
-        generate_graph
+        graph_button
     ], className='border rounded p-4'
 )
 
@@ -751,7 +758,7 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, data, name):
         if window == 1:
             end = start + 1
 
-    return generate_co_occurrence_graph(data[start:end], model=nlp, with_codes=code_pref), len(data), line
+    return generate_graph(data[start:end], model=nlp, with_codes=code_pref), len(data), line
 
 
 # Press the green button in the gutter to run the script.
