@@ -78,7 +78,8 @@ def parse_raw_text(txt: str,
 
         data.append(row)
 
-        assigned_codes[i] = [False] * len(theoretical_code_list)
+        if len(assigned_codes) == 0:
+            assigned_codes[i] = [False] * len(theoretical_code_list)
 
     return data
 
@@ -498,6 +499,11 @@ app.layout = dbc.Container(
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, case_name, txt, options):
+
+    global stopped_words
+    global unstopped_words
+    global assigned_codes
+
     if parse_clicks is not None:
 
         if parse_clicks > 0:
@@ -508,27 +514,25 @@ def utterance_table(parse_clicks, case_name, txt, options):
             model_path = Path(f'./models/{str(case_name).strip()}/')
             if model_path.is_dir():
                 stopwords_file = model_path / 'stopwords.pickle'
-                # theoretical_codes_file = model_path / 'theoretical_codes.pickle'
+                theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
                 if stopwords_file.is_file():
+
                     with open(stopwords_file, 'rb') as swf:
                         loaded_stopwords = pickle.load(swf)
-                    print(loaded_stopwords)
-                    loaded_stopped_words = loaded_stopwords['stopped']
-                    loaded_unstopped_words = loaded_stopwords['unstopped']
 
-                    nlp.Defaults.stop_words.update(loaded_stopped_words)
-                    nlp.Defaults.stop_words.discard(loaded_unstopped_words)
+                    stopped_words = loaded_stopwords['stopped']
+                    unstopped_words = loaded_stopwords['unstopped']
 
-                    print('yay')
-                else:
-                    print('no file!')
+                    nlp.Defaults.stop_words.update(stopped_words)
+                    nlp.Defaults.stop_words.discard(unstopped_words)
 
-            # print(Path(model_path).is_dir())
-            # if 3 not in options and Path(model_path).is_dir():
-            #     print("want me to load from disk, but don't know how ...")
-            # else:
-            #     print("want me to create new, but don't know how ...")
+                if theoretical_codes_file.is_file():
+
+                    with open(theoretical_codes_file, 'rb') as tcf:
+                        saved_codes = pickle.load(tcf)
+
+                    assigned_codes = saved_codes
 
             time = True if 0 in options else False
             speaker = True if 1 in options else False
@@ -538,7 +542,6 @@ def utterance_table(parse_clicks, case_name, txt, options):
                                          include_timestamp=time,
                                          include_speaker=speaker,
                                          include_interviewer=interviewer)
-
 
             column_names = [{'name': 'line', 'id': 'line'}]
 
