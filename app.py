@@ -40,6 +40,7 @@ app = Dash(
     suppress_callback_exceptions=True
 )
 
+
 # ---- NLP ----
 
 
@@ -83,7 +84,6 @@ def parse_raw_text(txt: str,
 
 
 def generate_code_checkboxes(line_num, values=None):
-
     if values is not None:
         assigned_codes[line_num] = values
 
@@ -150,7 +150,6 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
-
     models_folder = Path('./models/')
     models_folder.mkdir(exist_ok=True)
 
@@ -170,7 +169,7 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_co_occurrence_graph(data_dict_list, model=None):
+def generate_co_occurrence_graph(data_dict_list, model=None, with_codes=False):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
     combined_doc = model(combined_text)
@@ -310,21 +309,16 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='demo.txt'
+    value='cj.txt'
 )
 
-INITIAL_INPUT = 'demo'
-
-with open(f'{INPUT_FOLDER}/{INITIAL_INPUT}.txt', 'r') as f:
-    sample_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
-
 mode_name = dbc.Input(id='mode-name',
-                            value=INITIAL_INPUT,
-                            placeholder="Enter mode name ...")
+                      value="",
+                      placeholder="Enter mode name ...")
 
 raw_text = dbc.Textarea(
     placeholder="Copy and paste some text here.",
-    value=sample_text,
+    value="",
     rows=10,
     id='raw-text'
 )
@@ -338,7 +332,7 @@ inclusion_options = dbc.Checklist(
         {'label': 'Display Timestamp', 'value': 0},
         {'label': 'Display Speaker', 'value': 1},
         {'label': 'Ignore Interviewer Utterances', 'value': 2},
-        {'label': 'Reset Model', 'value':3}
+        {'label': 'Reset Model', 'value': 3}
     ],
     value=[2],
     inline=True,
@@ -390,18 +384,6 @@ input_accordion = dbc.Accordion(
 
 # -- utterances section --
 
-graph_options = dbc.Checklist(
-    options=[
-        {'label': 'Include Theoretical Codes', 'value': 0},
-        {'label': 'DMC Mode', 'value': 1},
-        {'label': 'Save Model', 'value': 2}
-    ],
-    value=[2],
-    inline=True,
-    class_name='mt-4',
-    id='graph-options'
-)
-
 generate_graph = dbc.Button('Generate Graph',
                             id='graph-button',
                             class_name='mt-4',
@@ -417,7 +399,6 @@ utterances_wrapper_div = html.Div(
             ], id='utterances-div'
         ),
         html.P(' '),
-        graph_options,
         generate_graph
     ], className='border rounded p-4'
 )
@@ -442,17 +423,45 @@ code_checkboxes_container = dbc.Container(
 
 # -- graph view --
 
+graph_options = dbc.Row([
+    dbc.Col(
+        dbc.Checkbox(label="Theoretical Codes", id='include-codes', value=False),
+        width=12, lg=2
+    ),
+    dbc.Col(
+        [
+            dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False),
+            html.Div(
+                [
+                    html.Span('Window: ', className='mx-1'),
+                    dcc.Input(id='dmc-window',
+                              type="number",
+                              min=1, max=9, step=2,
+                              value=3),
+                    html.Span('utterances ', className='mx-2'),
+                ], className='mx-4'
+            )
+        ],
+        width=12, lg=6
+    )
+])
+
 graph_view_wrapper_div = html.Div(
     [
         html.H3('Knowledge Graph', className='mb-4'),
+        html.P(' '),
+        graph_options,
+        html.P(' '),
         html.Div(
             [
+                html.P(' '),
                 html.P(
                     'Knowledge graph will be displayed once you generate it.',
-                    className='lead'
-                )
+                    className='lead text-center m-4 p-4'),
+                html.P(' ')
             ], id='graph-div'
         ),
+        html.P(' '),
         dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider')
     ], className='border rounded p-4'
 )
@@ -533,7 +542,6 @@ app.layout = dbc.Container(
     Input('input-file-dropdown', 'value')
 )
 def load_input_file(file_name: str):
-
     if file_name == '__manual entry__':
         return "", ""
 
@@ -551,13 +559,13 @@ def load_input_file(file_name: str):
 
     return "File was there, but it had no text.", mode_name
 
+
 @app.callback(
     Output('parse-button', 'disabled'),
     Input('mode-name', 'value'),
     Input('raw-text', 'value')
 )
 def activate_parse_button(name: str, text: str):
-
     if len(name.strip()) > 0 and len(text.strip()) > 0:
         return False
 
@@ -576,7 +584,6 @@ def activate_parse_button(name: str, text: str):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, mode_name, txt, options):
-
     global stopped_words
     global unstopped_words
     global assigned_codes
@@ -594,7 +601,6 @@ def utterance_table(parse_clicks, mode_name, txt, options):
                 theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
                 if stopwords_file.is_file():
-
                     with open(stopwords_file, 'rb') as swf:
                         loaded_stopwords = pickle.load(swf)
 
@@ -605,7 +611,6 @@ def utterance_table(parse_clicks, mode_name, txt, options):
                     nlp.Defaults.stop_words.discard(unstopped_words)
 
                 if theoretical_codes_file.is_file():
-
                     with open(theoretical_codes_file, 'rb') as tcf:
                         saved_codes = pickle.load(tcf)
 
@@ -679,7 +684,6 @@ def utterance_table(parse_clicks, mode_name, txt, options):
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes, data):
-
     if cell is not None:
 
         if len(toggle_clicks) > 0:
@@ -725,34 +729,29 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Output('graph-slider', 'value'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
+    Input('include-codes', 'value'),
+    Input('dmc-mode', 'value'),
+    Input('dmc-window', 'value'),
     State('stored-data', 'data'),
     State('mode-name', 'value'),
-    State('graph-options', 'value'),
     prevent_initial_call=True
 )
-def knowledge_graph(n_clicks, slider_value, data, name, options):
-    if n_clicks is not None:
+def knowledge_graph(n_clicks, line, code_pref, dmc, window, data, name):
+    # first, let's pickle the user generated model
+    pickle_model(name)
 
-        if n_clicks > 0 and ctx.triggered_id == 'graph-button':
+    start = 0
+    end = line
 
-            if 0 in options:
-                print("You want me to include theoretical codes")
+    if dmc:
+        r = int((window - 1) / 2)
+        start = max(0, line - r)
+        end = min(len(data), line + r)
 
-            if 1 in options:
-                print("You want me to show the DMC viewer, not the cumulative one")
+        if window == 1:
+            end = start + 1
 
-            if 2 in options:
-                pickle_model(name)
-
-            return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
-
-        elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
-            return generate_co_occurrence_graph(data[0:slider_value], model=nlp), len(data), slider_value
-
-    else:
-
-        message = [html.P('Knowledge graph will be displayed here once utterances are processed.')]
-        return message, 2, 1
+    return generate_co_occurrence_graph(data[start:end], model=nlp, with_codes=code_pref), len(data), line
 
 
 # Press the green button in the gutter to run the script.
