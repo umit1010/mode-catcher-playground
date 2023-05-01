@@ -169,6 +169,7 @@ def pickle_model(mode_name):
     with open(theoretical_codes_file, 'wb') as tcf:
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
+
 def generate_co_occurrence_graph(data_dict_list, model=None):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
@@ -389,6 +390,23 @@ input_accordion = dbc.Accordion(
 
 # -- utterances section --
 
+graph_options = dbc.Checklist(
+    options=[
+        {'label': 'Include Theoretical Codes', 'value': 0},
+        {'label': 'DMC Mode', 'value': 1},
+        {'label': 'Save Model', 'value': 2}
+    ],
+    value=[2],
+    inline=True,
+    class_name='mt-4',
+    id='graph-options'
+)
+
+generate_graph = dbc.Button('Generate Graph',
+                            id='graph-button',
+                            class_name='mt-4',
+                            n_clicks=0,
+                            disabled=True)
 
 utterances_wrapper_div = html.Div(
     [
@@ -399,7 +417,8 @@ utterances_wrapper_div = html.Div(
             ], id='utterances-div'
         ),
         html.P(' '),
-        dbc.Button('Generate Graph', id='graph-button', class_name='mt-4', n_clicks=0, disabled=True)
+        graph_options,
+        generate_graph
     ], className='border rounded p-4'
 )
 
@@ -429,7 +448,7 @@ graph_view_wrapper_div = html.Div(
         html.Div(
             [
                 html.P(
-                    'Knowledge graph will be displayed here once utterances are processed.',
+                    'Knowledge graph will be displayed once you generate it.',
                     className='lead'
                 )
             ], id='graph-div'
@@ -708,15 +727,23 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Input('graph-slider', 'value'),
     State('stored-data', 'data'),
     State('mode-name', 'value'),
+    State('graph-options', 'value'),
     prevent_initial_call=True
 )
-def network_graph(n_clicks, slider_value, data, mode_name):
-
+def knowledge_graph(n_clicks, slider_value, data, name, options):
     if n_clicks is not None:
 
         if n_clicks > 0 and ctx.triggered_id == 'graph-button':
 
-            pickle_model(mode_name)
+            if 0 in options:
+                print("You want me to include theoretical codes")
+
+            if 1 in options:
+                print("You want me to show the DMC viewer, not the cumulative one")
+
+            if 2 in options:
+                pickle_model(name)
+
             return generate_co_occurrence_graph(data[0:1], model=nlp), len(data), 0
 
         elif n_clicks > 0 and slider_value > 1 and ctx.triggered_id == 'graph-slider':
