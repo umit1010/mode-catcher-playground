@@ -173,38 +173,47 @@ def pickle_model(mode_name):
 def generate_graph(data_dict_list, model=None, with_codes=False):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
+
     combined_doc = model(combined_text)
     all_tokens = [token.lemma for token in combined_doc if
                   not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]
+
+    # if we need to display theoretical codes,
+    #       append them once to the end of the doc
+    #       so that they are added to the model's vocabulary
+    if with_codes:
+        codes_text = " ".join(theoretical_code_list)
+        codes_doc = model(codes_text)
+        code_tokens = [c.lemma for c in codes_doc]
+        all_tokens.extend(code_tokens)
+        # combined_text = f'{combined_text} {" ".join(theoretical_code_list)}'
+
     token_counts = Counter(all_tokens)
     unique_tokens = list(token_counts.keys())
+
     df = pd.DataFrame({'token': unique_tokens}, columns=unique_tokens, index=unique_tokens).fillna(0)
 
     # first, fill each token's counts in the matrix ([same col, same row] = count)
     for token in unique_tokens:
         df.loc[token, token] = token_counts[token]
 
-    # if theoretical codes need to be in the graph,
-    #   run them through the model first so that they are part of the vocab
-    if with_codes:
-        codes_list = " ".join(theoretical_code_list)
-        model(codes_list)
-
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
-        utterance_to_parse = line['utterance']
 
-        if with_codes:
-            selections = assigned_codes[line['line']]
-            codes_to_append = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
-            utterance_to_parse = f'{utterance_to_parse} {codes_to_append}'
+        line_text = line['utterance']
 
-        # now parse the utterance through spacy
-
-        line_doc = model(utterance_to_parse)
+        line_doc = model(line_text)
+        # line_doc = model(line['utterance'])
 
         line_tokens = list(set([token.lemma for token in line_doc if
                                 not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]))
+
+        # append the theoretical codes to the list of tokens in the line
+        if with_codes:
+            selections = assigned_codes[line['line']]
+            codes_to_include = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
+            code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
+            line_tokens.extend(code_tokens)
 
         # first loop is iterating over each token
         # second loop iterates over the tokens after the current token
