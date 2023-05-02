@@ -78,13 +78,14 @@ def parse_raw_text(txt: str,
 
         data.append(row)
 
-        if len(assigned_codes) == 0:
+        if i not in assigned_codes.keys():
             assigned_codes[i] = [False] * len(theoretical_code_list)
 
     return data
 
 
 def generate_code_checkboxes(line_num, values=None):
+
     if values is not None:
         assigned_codes[line_num] = values
 
@@ -181,6 +182,7 @@ def generate_graph(data_dict_list, model=None, with_codes=False):
     # if we need to display theoretical codes,
     #       append them once to the end of the doc
     #       so that they are added to the model's vocabulary
+    code_tokens = list()
     if with_codes:
         codes_text = " ".join(theoretical_code_list)
         codes_doc = model(codes_text)
@@ -196,6 +198,10 @@ def generate_graph(data_dict_list, model=None, with_codes=False):
     # first, fill each token's counts in the matrix ([same col, same row] = count)
     for token in unique_tokens:
         df.loc[token, token] = token_counts[token]
+
+    # make all code counts 0 for now
+    for code in code_tokens:
+        df.loc[code, code] = 0
 
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
@@ -218,11 +224,15 @@ def generate_graph(data_dict_list, model=None, with_codes=False):
         # first loop is iterating over each token
         # second loop iterates over the tokens after the current token
         for i in range(len(line_tokens)):
+
             row = line_tokens[i]
+
             for j in range(i + 1, len(line_tokens)):
                 col = line_tokens[j]
                 df[row][col] += 1
                 df[col][row] += 1
+
+            # for code in code_tokens:
 
     # lastly, create the graph
     labels = [nlp.vocab.strings[token] for token in unique_tokens]
@@ -341,14 +351,21 @@ raw_text = dbc.Textarea(
 
 parse_button = dbc.Button('Parse Utterances',
                           id='parse-button',
+                          size='lg',
+                          n_clicks=0)
+
+reset_button = dbc.Button('Reset Mode',
+                          id='reset-button',
+                          color='danger',
+                          outline=True,
+                          class_name='ms-auto',
                           n_clicks=0)
 
 inclusion_options = dbc.Checklist(
     options=[
         {'label': 'Display Timestamp', 'value': 0},
         {'label': 'Display Speaker', 'value': 1},
-        {'label': 'Ignore Interviewer Utterances', 'value': 2},
-        {'label': 'Reset Model', 'value': 3}
+        {'label': 'Ignore Interviewer Utterances', 'value': 2}
     ],
     value=[2],
     inline=True,
@@ -360,36 +377,45 @@ input_accordion = dbc.Accordion(
     [
         dbc.AccordionItem(
             [
-                dbc.Row([
+                dbc.Row(
                     dbc.Col([
                         dbc.Label('Input File:'),
                         input_file_dropdown,
                         html.P('')
                     ], width=10, lg=6)
-                ]),
-                dbc.Row([
+                ),
+                dbc.Row(
                     dbc.Col([
                         dbc.Label('Mode name:'),
                         mode_name,
                         html.P('')
                     ], width=10, lg=6)
-                ]),
-                dbc.Row([
+                ),
+                dbc.Row(
                     dbc.Col([
                         dbc.Label('Transcript:'),
                         raw_text,
                         html.P('')
                     ])
-                ]),
-                dbc.Row(
-                    dbc.Col(
-                        [
-                            inclusion_options,
-                            parse_button
-                        ]
-                    ),
                 ),
+                dbc.Row(
+                    dbc.Col([
+                        inclusion_options,
+                        parse_button,
+                    ]),
+                ),
+                dbc.Row([
+                    dbc.Col([
+                        reset_button,
+                    ], class_name='d-flex align-items-end')
+                ]),
                 html.P(''),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div('', id='reset-message-div', className='ms-auto'),
+                    ], class_name='d-flex align-items-end')
+                ]),
+
             ],
             title="Input",
             item_id='0')
@@ -403,6 +429,7 @@ input_accordion = dbc.Accordion(
 graph_button = dbc.Button('Generate Graph',
                           id='graph-button',
                           class_name='mt-4',
+                          size='lg',
                           n_clicks=0,
                           disabled=True)
 
@@ -589,6 +616,34 @@ def activate_parse_button(name: str, text: str):
 
 
 @app.callback(
+    Output('reset-message-div', 'children'),
+    Input('reset-button', 'n_clicks'),
+    State('mode-name', 'value'),
+)
+def reset_mode(nclicks, name):
+
+    if ctx.triggered_id == "reset-button":
+        model_path = Path(f'./models/{str(name).strip()}/')
+
+        if model_path.is_dir():
+
+            stopwords_file = model_path / 'stopwords.pickle'
+            theoretical_codes_file = model_path / 'theoretical_codes.pickle'
+
+            if stopwords_file.is_file(): stopwords_file.unlink()
+
+            if theoretical_codes_file.is_file(): theoretical_codes_file.unlink()
+
+            for key in assigned_codes:
+                assigned_codes[key] = [False] * len(theoretical_code_list)
+
+            return "Existing mode files were cleared. Page refresh is recommended."
+
+        else:
+            return "No action taken because existing model couldn't be found."
+
+
+@app.callback(
     Output('utterances-div', 'children'),
     Output('stored-data', 'data'),
     Output('input-accordion', 'active_item'),
@@ -599,7 +654,7 @@ def activate_parse_button(name: str, text: str):
     State('inclusion-options', 'value'),
     prevent_initial_call=True
 )
-def utterance_table(parse_clicks, mode_name, txt, options):
+def utterance_table(parse_clicks, name, txt, options):
     global stopped_words
     global unstopped_words
     global assigned_codes
@@ -608,10 +663,7 @@ def utterance_table(parse_clicks, mode_name, txt, options):
 
         if parse_clicks > 0:
 
-            # # if "Reset Vocabulary" option is not selected
-            # # and if there's already an existing vocabulary, load it from the disk
-            # # otherwise, create a new blank vocabulary
-            model_path = Path(f'./models/{str(mode_name).strip()}/')
+            model_path = Path(f'./models/{str(name).strip()}/')
             if model_path.is_dir():
                 stopwords_file = model_path / 'stopwords.pickle'
                 theoretical_codes_file = model_path / 'theoretical_codes.pickle'
