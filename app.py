@@ -472,14 +472,10 @@ graph_options = dbc.Row([
         width=12, lg=2
     ),
     dbc.Col(
-        [
-            dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False, class_name='mx-4'),
-
-        ],
+        dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False, class_name='mx-4'),
         width=12, lg=2
     ),
-    dbc.Col(
-        [
+    dbc.Col([
             html.Span('DMC Window:  ', className='mx-2'),
             dcc.Input(id='dmc-window',
                       type="number",
@@ -487,8 +483,9 @@ graph_options = dbc.Row([
                       className='ml-4',
                       value=3, style={'margin-top': '-6px', 'width': '60px'}),
             html.Span('utterances ', className='mx-2'),
-        ], class_name='d-flex',
-        width=12, lg=6
+            ],
+            class_name='d-flex',
+            width=12, lg=6
     )
 ])
 
