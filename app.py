@@ -45,7 +45,6 @@ app = Dash(
 
 
 def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
-
     input_lines = [line.strip().replace('\n', '')
                    for line in txt.splitlines()
                    if len(line.strip()) > 0 and line.count(':') > 2]
@@ -83,7 +82,6 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
 
 
 def generate_code_checkboxes(line_num, values=None):
-
     if values is not None:
         assigned_codes[line_num] = values
 
@@ -169,7 +167,7 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3):
+def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3, size=2):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
 
@@ -236,7 +234,8 @@ def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3):
     labels = [nlp.vocab.strings[token] for token in unique_tokens]
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
-    node_sizes = [df[token][token] * 2 for token in unique_tokens]
+    node_counts = [df[token][token] for token in unique_tokens]
+    node_sizes = [token * size for token in node_counts]
 
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
@@ -291,7 +290,7 @@ def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3):
             showscale=True,
             colorscale='Portland',
             reversescale=False,
-            color=node_sizes,
+            color=node_counts,
             size=node_sizes,
             line_width=1
         )
@@ -310,7 +309,7 @@ def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3):
     fig.update_xaxes(range=[-1.5, 1.5])
     fig.update_yaxes(range=[-1.5, 1.5])
 
-    return dcc.Graph(figure=fig)
+    return dcc.Graph(figure=fig, config={'displayModeBar': True})
 
 
 # ---- INTERFACE ----
@@ -464,47 +463,67 @@ code_checkboxes_container = dbc.Container(
 
 # -- graph view --
 
-graph_options = dbc.Row([
+graph_type = dbc.Row([
     dbc.Col(
         dbc.Checkbox(label="Theoretical Codes", id='include-codes', value=False),
-        width=12, lg=2
+        xs=12, md=6, xl=2,
+        class_name='mt-3'
+
     ),
     dbc.Col(
-        dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False, class_name='mx-4'),
-        width=12, lg=2
-    ),
-    dbc.Col([
-            html.Span('DMC Window:  ', className='mx-2'),
-            dcc.Input(id='dmc-window',
-                      type="number",
-                      min=1, max=9, step=2,
-                      className='ml-4',
-                      value=3,
-                      style={'margin-top': '-6px', 'width': '60px'}),
-            html.Span('utterances ', className='mx-2'),
-            ],
-            class_name='d-flex',
-            width=12, lg=3
-    ),
-    dbc.Col([
-            html.Span('Layout:  ', className='mx-2'),
-            dcc.Input(id='layout-iterations',
-                      type="number",
-                      min=1, max=10, step=1,
-                      className='ml-4',
-                      value=3, style={'margin-top': '-6px', 'width': '60px'}),
-            html.Span('iterations ', className='mx-2'),
-            ],
-            class_name='d-flex',
-            width=12, lg=3
-    ),
+        dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False),
+        xs=12, md=6, xl=2,
+        class_name='mt-3'
+    )
 ])
+
+grap_options = dbc.Row([
+    dbc.Col([
+        html.Span('DMC Window: ', className='me-4'),
+        dcc.Input(id='dmc-window',
+                  type="number",
+                  min=1, max=11, step=2,
+                  value=3,
+                  style={'margin-top': '-6px'}
+                  ),
+        html.Span('utterances ', className='ms-2'),
+    ],
+        md=12, lg=3,
+        class_name='d-flex mt-3'
+    ),
+    dbc.Col([
+        html.Span('Graph Layout: ', className='me-4'),
+        dcc.Input(id='layout-iterations',
+                  type="number",
+                  min=1, max=10, step=1,
+                  value=3,
+                  style={'margin-top': '-6px'}
+                  ),
+        html.Span('iterations ', className='ms-2'),
+    ],
+        md=12, lg=3,
+        class_name='d-flex mt-3'
+    ),
+    dbc.Col([
+        html.Span('Node Size: ', className='me-4'),
+        dcc.Input(id='node-size',
+                  type="number",
+                  min=2, max=18, step=2,
+                  value=6,
+                  style={'margin-top': '-6px'},
+                  className='ms-4'
+                  ),
+    ],
+        md=12, lg=3,
+        class_name='d-flex mt-3'
+    )
+], class_name='my-4', justify='center')
 
 graph_view_wrapper_div = html.Div(
     [
         html.H3('Knowledge Graph', className='mb-4'),
         html.P(' '),
-        graph_options,
+        graph_type,
         html.P(' '),
         html.Div(
             [
@@ -515,8 +534,8 @@ graph_view_wrapper_div = html.Div(
                 html.P(' ')
             ], id='graph-div'
         ),
-        html.P(' '),
-        dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider')
+        grap_options,
+        dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider', className='my-4')
     ], className='border rounded p-4'
 )
 
@@ -632,7 +651,6 @@ def activate_parse_button(name: str, text: str):
     State('mode-name', 'value'),
 )
 def reset_mode(nclicks, name):
-
     if ctx.triggered_id == "reset-button":
         model_path = Path(f'./models/{str(name).strip()}/')
 
@@ -812,11 +830,12 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Input('dmc-mode', 'value'),
     Input('dmc-window', 'value'),
     Input('layout-iterations', 'value'),
+    Input('node-size', 'value'),
     State('stored-data', 'data'),
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
-def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, data, name):
+def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, nsize, data, name):
     # first, let's pickle the user generated model
     pickle_model(name)
 
@@ -831,7 +850,7 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, data, name):
         if window == 1:
             end = start + 1
 
-    return generate_graph(data[start:end], model=nlp, with_codes=code_pref, iterations=layout), len(data), line
+    return generate_graph(data[start:end], model=nlp, with_codes=code_pref, iterations=layout, size=nsize), len(data), line
 
 
 # Press the green button in the gutter to run the script.
