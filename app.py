@@ -3,7 +3,6 @@ import pickle
 import re
 from collections import Counter
 from pathlib import Path
-
 import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
@@ -13,15 +12,18 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
+from spacy.lang.en.stop_words import STOP_WORDS
 
 # ---- PLATFORM ----
 
-nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+nlp = spacy.blank("en")
 
 stopped_words = set()
 unstopped_words = set()
 
 assigned_codes = dict()
+
+active_text = ""
 
 theoretical_code_list = [
     'emergent',
@@ -49,6 +51,11 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
                    for line in txt.splitlines()
                    if len(line.strip()) > 0 and line.count(':') > 2]
 
+    global active_text
+
+    active_text = ""
+
+    # parse the text line by line
     re_time_splitter = re.compile(r'(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])')
 
     data = []
@@ -57,8 +64,7 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
         input_lines = [line for line in input_lines if line.lower().count('interviewer') == 0]
 
     for i, line in enumerate(input_lines):
-        if len(re_time_splitter.split(line)) < 3:
-            print(line)
+
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(':')
         speaker = str(speaker)
@@ -72,6 +78,9 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
             row['speaker'] = speaker
 
         row['utterance'] = utterance.strip()
+
+        # add just the utterance to the active text for later use
+        active_text = f'{active_text} {row["utterance"]}'
 
         data.append(row)
 
@@ -102,13 +111,16 @@ def generate_code_checkboxes(line_num, values=None):
 def process_utterance(raw_text):
     doc = nlp(raw_text)
 
-    all_tokens = [token.lemma_ for token in doc if not nlp.vocab[token.lemma].is_stop
-                  and not nlp.vocab[token.lemma].is_punct]
-    token_counts = Counter(all_tokens)
-    data_dict = {'token': list(token_counts.keys()), 'count': list(token_counts.values())}
-    df = pd.DataFrame.from_dict(data_dict)
+    all_tokens = [token.lemma_
+                  for token in doc
+                  if not nlp.vocab[token.lemma].is_stop and not nlp.vocab[token.lemma].is_punct
+                  ]
 
-    # buttons_for_text = None
+    token_counts = Counter(all_tokens)
+
+    data_dict = {'token': list(token_counts.keys()), 'count': list(token_counts.values())}
+
+    df = pd.DataFrame.from_dict(data_dict)
 
     buttons_for_text = html.Div([
         html.Span(dbc.Button(
@@ -168,15 +180,20 @@ def pickle_model(mode_name):
 
 
 def generate_graph(data_dict_list,
-                   model=None,
+                   case_name="",
                    with_codes=False,
                    dmc_window_start=0,  # if > 1, dmc mode is activated
                    layout_iterations=3,
                    node_size_multiplier=2):
+
+    global nlp
+
+    num_lines = len(data_dict_list)
+
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
+    combined_doc = nlp(combined_text)
 
-    combined_doc = model(combined_text)
     all_tokens = [token.lemma for token in combined_doc if
                   not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]
 
@@ -186,7 +203,7 @@ def generate_graph(data_dict_list,
     code_tokens = list()
     if with_codes:
         codes_text = " ".join(theoretical_code_list)
-        codes_doc = model(codes_text)
+        codes_doc = nlp(codes_text)
         code_tokens = [c.lemma for c in codes_doc]
         all_tokens.extend(code_tokens)
         # combined_text = f'{combined_text} {" ".join(theoretical_code_list)}'
@@ -206,7 +223,8 @@ def generate_graph(data_dict_list,
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
 
-        line_doc = model(line['utterance'])
+        # line_doc = model(line['utterance'])
+        line_doc = nlp(line['utterance'])
 
         line_tokens = list(set([token.lemma for token in line_doc
                                 if not nlp.vocab[token.lemma].is_punct
@@ -244,11 +262,12 @@ def generate_graph(data_dict_list,
                     df[col][row] += 1
 
     # lastly, create the graph
-    labels = [nlp.vocab.strings[token] for token in unique_tokens]
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
     node_counts = [df[token][token] for token in unique_tokens]
-    node_sizes = [token * node_size_multiplier for token in node_counts]
+
+    # moved this below to use degree centrality for node sizes, not counts
+    # node_sizes = [token * node_size_multiplier for token in node_counts]
 
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
@@ -268,13 +287,22 @@ def generate_graph(data_dict_list,
             if connections >= weight_cutoff:  # I add connections even if two tokens co-occur once
                 G.add_edge(row, col, weight=connections)
 
+    # calculate the metrics
+    node_degrees = [G.degree[token] for token in unique_tokens]
+    node_sizes = [G.degree[token] * node_size_multiplier for token in unique_tokens]
+
+    # create labels with additional information
+    labels = [nlp.vocab.strings[token] for token in unique_tokens]
+    hover_texts = [f'<b>{nlp.vocab.strings[token]}</b> <br> n: {node_counts[idx]} <br> d: {node_degrees[idx]}'
+                   for (idx, token) in enumerate(unique_tokens)]
+
+    print(nx.average_clustering(G))
+
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
-    pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed)
+    pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed, scale=4)
     # pos = nx.random_layout(G,seed=layout_seed)    # comment out to test random
     # pos = nx.circular_layout(G)                   # comment out to test random
-
-    # calculate simple network metrics here in the near future
 
     # create the plotly graph for the network
     edge_x = []
@@ -305,7 +333,7 @@ def generate_graph(data_dict_list,
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
-        hovertext=labels,
+        hovertext=hover_texts,
         hoverinfo='text',
         text=labels,
         textposition="top center",
@@ -319,15 +347,21 @@ def generate_graph(data_dict_list,
         )
     )
 
+    type_label = "Cumulative" if dmc_window_start < 1 else "DMC"
+
     fig = go.Figure(
         data=[edge_trace, node_trace],
         layout=go.Layout(
+            title=f"{case_name} | {type_label} View @ at {num_lines}",
             hovermode='closest',
             height=600,
             margin=dict(l=0, r=0, t=40, b=40),
             showlegend=False
         )
     )
+
+    fig.update_xaxes(showticklabels=False)
+    fig.update_yaxes(showticklabels=False)
 
     return dcc.Graph(figure=fig, config={'displayModeBar': True})
 
@@ -352,7 +386,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='01_cj2.txt'
+    value='00_demo.txt'
 )
 
 mode_name = dbc.Input(id='mode-name',
@@ -690,9 +724,9 @@ def reset_mode(nclicks, name):
             stopwords_file = model_path / 'stopwords.pickle'
             theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
-            if stopwords_file.is_file(): stopwords_file.unlink()
+            if stopwords_file.is_file() : stopwords_file.unlink()
 
-            if theoretical_codes_file.is_file(): theoretical_codes_file.unlink()
+            if theoretical_codes_file.is_file() : theoretical_codes_file.unlink()
 
             for key in assigned_codes:
                 assigned_codes[key] = [False] * len(theoretical_code_list)
@@ -715,9 +749,11 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, name, txt, options):
+
     global stopped_words
     global unstopped_words
     global assigned_codes
+    global nlp
 
     if parse_clicks is not None:
 
@@ -735,8 +771,15 @@ def utterance_table(parse_clicks, name, txt, options):
                     stopped_words = loaded_stopwords['stopped']
                     unstopped_words = loaded_stopwords['unstopped']
 
-                    nlp.Defaults.stop_words.update(stopped_words)
-                    nlp.Defaults.stop_words.discard(unstopped_words)
+                    STOP_WORDS.update(stopped_words)
+                    STOP_WORDS.discard(unstopped_words)
+
+                    # reload the model because it only pulls default stopwords when loading
+                    nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+
+                    # first pass the text through the model to generate the vocabulary,
+                    #   so that we do not have to do it on other functions elsewhere
+                    nlp(txt)
 
                 if theoretical_codes_file.is_file():
                     with open(theoretical_codes_file, 'rb') as tcf:
@@ -823,11 +866,15 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
                 if was_stop:
                     nlp.vocab[toggled_token].is_stop = False
                     unstopped_words.add(toggled_token)
+                    unstopped_words.add(toggled_token.lower())
                     stopped_words.discard(toggled_token)
+                    stopped_words.discard(toggled_token.lower())
                 else:
                     nlp.vocab[toggled_token].is_stop = True
                     unstopped_words.discard(toggled_token)
+                    unstopped_words.discard(toggled_token.lower())
                     stopped_words.add(toggled_token)
+                    stopped_words.add(toggled_token.lower())
 
         i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
@@ -866,7 +913,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
-def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, nsize, data, name):
+def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, multiplier, data, name):
     # first, let's pickle the user generated model
     pickle_model(name)
 
@@ -882,10 +929,10 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, nsize, data,
             num_lines = start + 1
 
     graph = generate_graph(data[0:num_lines],
-                           model=nlp,
+                           case_name=name,
                            with_codes=code_pref,
                            layout_iterations=layout,
-                           node_size_multiplier=nsize,
+                           node_size_multiplier=multiplier,
                            dmc_window_start=start)
 
     return graph, len(data), line
