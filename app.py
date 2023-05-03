@@ -70,7 +70,7 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
         speaker, utterance = speaker_speech.strip().split(':')
         speaker = str(speaker)
 
-        row = {'line': i}
+        row = {'line': i + 1}
 
         if timestamp:
             row['time'] = time
@@ -236,7 +236,7 @@ def generate_graph(data_dict_list,
 
         # append the theoretical codes to the list of tokens in the line
         if with_codes:
-            selections = assigned_codes[line['line']]
+            selections = assigned_codes[line['line'] - 1]
             codes_to_include = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
             code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
             line_tokens.extend(code_tokens)
@@ -263,7 +263,7 @@ def generate_graph(data_dict_list,
                     df[row][col] += 1
                     df[col][row] += 1
 
-                elif line['line'] > dmc_window_start - 1:
+                elif (line['line'] - 1) > dmc_window_start - 1:
 
                     df[row][col] += 1
                     df[col][row] += 1
@@ -385,37 +385,39 @@ def generate_graph(data_dict_list,
 
     # metrics plots
 
-    graph_metrics = "No nodes with degree higher than zero (0)."
+    graph_metrics = f"No tokens with non-zero degree." if num_lines > 1 else "Nothing to display yet!"
 
     # first create a sorted list of degrees for plotting as a scatter plot and histogram
     connected_nodes = dict(
         [(node_labels[idx], degree)
          for (idx, degree) in enumerate(node_degrees)
-         if degree > weight_cutoff]
+         if degree > 0]
     )
 
     # only attempt to plot if there are any tokens with degree higher than 0
     if len(connected_nodes) > 0:
 
-        ave_degree = sum(node_degrees) / len(node_degrees) if len(node_degrees) > 0 else 0
+        ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
 
         fig_metrics = make_subplots(rows=1, cols=2,
-                                    subplot_titles=(f"Average degree: {ave_degree:.3f}",
-                                                    f"Average clustering: {ave_clustering:.3f}"
-                                                    )
+                                    subplot_titles=(
+                                        f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
+                                        f"n<sub>connected</sub> = {len(connected_nodes)} | "
+                                        f"n<sub>total</sub> = {G.number_of_nodes()}",
+                                        f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
+                                        )
                                     )
+        if ave_degree > 0:
+            degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+            fig_metrics.add_trace(
+                go.Scatter(
+                    y=degree_degrees,
+                    x=degree_labels
+                ),
+                row=1, col=1
+            )
 
-        degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
-
-        fig_metrics.add_trace(
-            go.Scatter(
-                y=degree_degrees,
-                x=degree_labels
-            ),
-            row=1, col=1
-        )
-
-        graph_metrics = dcc.Graph(figure=fig_metrics)
+            graph_metrics = dcc.Graph(figure=fig_metrics)
 
         # now let's get clustering coefficients for nodes if it's > 0
 
@@ -425,17 +427,19 @@ def generate_graph(data_dict_list,
              if node_clustering[key] > 0]
         )
 
-        cluster_labels, cluster_coefficients = zip(*list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
+        # only display the plot if there are clusters
+        if len(clustered_nodes) > 0:
+            cluster_labels, cluster_coefficients = zip(*list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
 
-        fig_metrics.add_trace(
-            go.Scatter(
-                y=cluster_coefficients,
-                x=cluster_labels
-            ),
-            row=1, col=2
-        )
+            fig_metrics.add_trace(
+                go.Scatter(
+                    y=cluster_coefficients,
+                    x=cluster_labels
+                ),
+                row=1, col=2
+            )
 
-        fig_metrics.update_layout(showlegend=False)
+        fig_metrics.update_layout(showlegend=False, margin=dict(l=0, r=0, t=40, b=40))
 
     return graph_network, graph_metrics
 
@@ -958,7 +962,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
         cell_text = str(data[i][j])
         token_buttons, token_treemap = process_utterance(cell_text)
 
-        line_num = int(data[i]['line'])
+        line_num = int(data[i]['line'] - 1)
         if len(checked_codes) > 0:
             if type(ctx.triggered_id) is not str:
                 if ctx.triggered_id['type'] == 'code-checkbox':
@@ -997,7 +1001,7 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, multiplier, 
     pickle_model(name)
 
     start = 0
-    num_lines = line
+    num_lines = line if line < len(data) else len(data)
 
     if dmc:
         r = int((window - 1) / 2)
