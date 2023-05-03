@@ -44,34 +44,32 @@ app = Dash(
 # ---- NLP ----
 
 
-def parse_raw_text(txt: str,
-                   include_timestamp=False,
-                   include_speaker=False,
-                   include_interviewer=False):
-    input_lines = [line.strip() for line in txt.splitlines()]
+def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
+
+    input_lines = [line.strip().replace('\n', '')
+                   for line in txt.splitlines()
+                   if len(line.strip()) > 0 and line.count(':') > 2]
 
     re_time_splitter = re.compile(r'(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])')
 
     data = []
 
+    if not interviewer:
+        input_lines = [line for line in input_lines if line.lower().count('interviewer') == 0]
+
     for i, line in enumerate(input_lines):
-
-        if len(line.replace('\n', '').strip()) == 0:
-            continue
-
+        if len(re_time_splitter.split(line)) < 3:
+            print(line)
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(':')
         speaker = str(speaker)
 
-        if not include_interviewer and speaker.lower().find('interviewer') > -1:
-            continue
-
         row = {'line': i}
 
-        if include_timestamp:
+        if timestamp:
             row['time'] = time
 
-        if include_speaker:
+        if speaker:
             row['speaker'] = speaker
 
         row['utterance'] = utterance.strip()
@@ -171,7 +169,7 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_graph(data_dict_list, model=None, with_codes=False):
+def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3):
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
 
@@ -238,7 +236,7 @@ def generate_graph(data_dict_list, model=None, with_codes=False):
     labels = [nlp.vocab.strings[token] for token in unique_tokens]
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
-    node_sizes = [df[token][token] * 5 for token in unique_tokens]
+    node_sizes = [df[token][token] * 2 for token in unique_tokens]
 
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
@@ -258,7 +256,7 @@ def generate_graph(data_dict_list, model=None, with_codes=False):
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
-    pos = nx.spring_layout(G, iterations=3, seed=layout_seed)
+    pos = nx.spring_layout(G, iterations=iterations, seed=layout_seed)
     edge_x = []
     edge_y = []
 
@@ -328,14 +326,14 @@ input_folder_path = Path(INPUT_FOLDER)
 file_list = ['__manual entry__']
 
 if input_folder_path.is_dir():
-    text_files = [f.name for f in input_folder_path.glob('*.txt')]
+    text_files = [f.name for f in sorted(input_folder_path.glob('*.txt'))]
     if len(text_files) > 0:
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='demo.txt'
+    value='01_cj2.txt'
 )
 
 mode_name = dbc.Input(id='mode-name',
@@ -481,12 +479,25 @@ graph_options = dbc.Row([
                       type="number",
                       min=1, max=9, step=2,
                       className='ml-4',
-                      value=3, style={'margin-top': '-6px', 'width': '60px'}),
+                      value=3,
+                      style={'margin-top': '-6px', 'width': '60px'}),
             html.Span('utterances ', className='mx-2'),
             ],
             class_name='d-flex',
-            width=12, lg=6
-    )
+            width=12, lg=3
+    ),
+    dbc.Col([
+            html.Span('Layout:  ', className='mx-2'),
+            dcc.Input(id='layout-iterations',
+                      type="number",
+                      min=1, max=10, step=1,
+                      className='ml-4',
+                      value=3, style={'margin-top': '-6px', 'width': '60px'}),
+            html.Span('iterations ', className='mx-2'),
+            ],
+            class_name='d-flex',
+            width=12, lg=3
+    ),
 ])
 
 graph_view_wrapper_div = html.Div(
@@ -689,9 +700,9 @@ def utterance_table(parse_clicks, name, txt, options):
             interviewer = False if 2 in options else True
 
             parsed_data = parse_raw_text(txt,
-                                         include_timestamp=time,
-                                         include_speaker=speaker,
-                                         include_interviewer=interviewer)
+                                         timestamp=time,
+                                         speaker=speaker,
+                                         interviewer=interviewer)
 
             column_names = [{'name': 'line', 'id': 'line'}]
 
@@ -800,11 +811,12 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Input('include-codes', 'value'),
     Input('dmc-mode', 'value'),
     Input('dmc-window', 'value'),
+    Input('layout-iterations', 'value'),
     State('stored-data', 'data'),
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
-def knowledge_graph(n_clicks, line, code_pref, dmc, window, data, name):
+def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, data, name):
     # first, let's pickle the user generated model
     pickle_model(name)
 
@@ -819,7 +831,7 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, data, name):
         if window == 1:
             end = start + 1
 
-    return generate_graph(data[start:end], model=nlp, with_codes=code_pref), len(data), line
+    return generate_graph(data[start:end], model=nlp, with_codes=code_pref, iterations=layout), len(data), line
 
 
 # Press the green button in the gutter to run the script.
