@@ -167,7 +167,13 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3, size=2):
+def generate_graph(data_dict_list,
+                   model=None,
+                   with_codes=False,
+                   window=0,  # if > 1, dmc mode is activated
+                   iterations=3,
+                   size=2):
+
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
 
@@ -239,19 +245,17 @@ def generate_graph(data_dict_list, model=None, with_codes=False, iterations=3, s
 
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
-    edges = []
+    # create the network
+    G = nx.Graph()
+    G.add_nodes_from(nodes)
 
     for i in range(len(unique_tokens)):
         row = unique_tokens[i]
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
-            if df[row][col] > 1:
-                edges.append((row, col))
-
-    # create the network
-    G = nx.Graph()
-    G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
+            connections = df[row][col]
+            if connections > 1:
+                G.add_edge(row, col, weight=connections)
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
