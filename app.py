@@ -196,7 +196,10 @@ def generate_graph(data_dict_list,
     combined_doc = nlp(combined_text)
 
     all_tokens = [token.lemma for token in combined_doc if
-                  not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]
+                  not nlp.vocab[token.lemma].is_punct
+                  and not nlp.vocab[token.lemma].is_stop
+                  and not token.is_punct
+                  and not token.is_stop]
 
     # if we need to display theoretical codes,
     #       append them once to the end of the doc
@@ -215,8 +218,8 @@ def generate_graph(data_dict_list,
     df = pd.DataFrame({'token': unique_tokens}, columns=unique_tokens, index=unique_tokens).fillna(0)
 
     # first, fill each token's counts in the matrix ([same col, same row] = count)
-    for token in unique_tokens:
-        df.loc[token, token] = token_counts[token]
+    # for token in unique_tokens:
+    #     df.loc[token, token] = token_counts[token]
 
     # make all code counts 0 for now
     for code in code_tokens:
@@ -243,6 +246,9 @@ def generate_graph(data_dict_list,
         for i in range(len(line_tokens)):
 
             row = line_tokens[i]
+
+            # count of the token
+            df[row][row] += 1
 
             for j in range(i + 1, len(line_tokens)):
 
@@ -288,7 +294,7 @@ def generate_graph(data_dict_list,
     # calculate the metrics
     node_degrees = [G.degree[token] for token in unique_tokens]
     node_clustering = nx.clustering(G)
-    ave_clustering = nx.average_clustering(G)
+    ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
     # create representation attributes (size, color, text, etc)
     #   I add 1 to node size because the ones with degree 0 disappear
@@ -358,7 +364,7 @@ def generate_graph(data_dict_list,
         data=[edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
-                text=f"{case_name} | μ clustering = {ave_clustering:.3f} | {type_label} View @ at {num_lines}",
+                text=f"{case_name} | {type_label} View @ at {num_lines}",
                 x=0.5,
                 xanchor='center'
             ),
@@ -391,8 +397,13 @@ def generate_graph(data_dict_list,
     # only attempt to plot if there are any tokens with degree higher than 0
     if len(connected_nodes) > 0:
 
+        ave_degree = sum(node_degrees) / len(node_degrees) if len(node_degrees) > 0 else 0
+
         fig_metrics = make_subplots(rows=1, cols=2,
-                                    subplot_titles=("Degrees", "Clustering"))
+                                    subplot_titles=(f"Average degree: {ave_degree:.3f}",
+                                                    f"Average clustering: {ave_clustering:.3f}"
+                                                    )
+                                    )
 
         degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
 
