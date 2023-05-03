@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
@@ -266,9 +267,6 @@ def generate_graph(data_dict_list,
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
     node_counts = [df[token][token] for token in unique_tokens]
 
-    # moved this below to use degree centrality for node sizes, not counts
-    # node_sizes = [token * node_size_multiplier for token in node_counts]
-
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
     # create the network
@@ -289,14 +287,20 @@ def generate_graph(data_dict_list,
 
     # calculate the metrics
     node_degrees = [G.degree[token] for token in unique_tokens]
-    node_sizes = [G.degree[token] * node_size_multiplier for token in unique_tokens]
+    node_clustering = nx.clustering(G)
+    ave_clustering = nx.average_clustering(G)
 
-    # create labels with additional information
-    labels = [nlp.vocab.strings[token] for token in unique_tokens]
-    hover_texts = [f'<b>{nlp.vocab.strings[token]}</b> <br> n: {node_counts[idx]} <br> d: {node_degrees[idx]}'
+    # create representation attributes (size, color, text, etc)
+    #   I add 1 to node size because the ones with degree 0 disappear
+    node_sizes = [((G.degree[token] + 1) * node_size_multiplier) for token in unique_tokens]
+
+    node_labels = [nlp.vocab.strings[token] for token in unique_tokens]
+
+    hover_texts = [f'<b>{node_labels[idx]}</b> <br> '
+                   f'𝑓: {node_counts[idx]} <br> '
+                   f'deg: {node_degrees[idx]} <br>'
+                   f'clustering: {node_clustering[token]:.3f} <br>'
                    for (idx, token) in enumerate(unique_tokens)]
-
-    print(nx.average_clustering(G))
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
@@ -335,7 +339,7 @@ def generate_graph(data_dict_list,
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        text=labels,
+        text=node_labels,
         textposition="top center",
         marker=dict(
             showscale=True,
@@ -343,16 +347,24 @@ def generate_graph(data_dict_list,
             reversescale=False,
             color=node_counts,
             size=node_sizes,
-            line_width=1
+            line_width=1,
+            colorbar=dict(title=dict(text='𝑓'))
         )
     )
 
     type_label = "Cumulative" if dmc_window_start < 1 else "DMC"
 
-    fig = go.Figure(
+    fig_graph = go.Figure(
         data=[edge_trace, node_trace],
         layout=go.Layout(
-            title=f"{case_name} | {type_label} View @ at {num_lines}",
+            title=dict(
+                text=f"{case_name} | μ clustering = {ave_clustering:.3f} | {type_label} View @ at {num_lines}",
+                x=0.5,
+                xanchor='center'
+            ),
+            font=dict(
+                size=16
+            ),
             hovermode='closest',
             height=600,
             margin=dict(l=0, r=0, t=40, b=40),
@@ -360,10 +372,61 @@ def generate_graph(data_dict_list,
         )
     )
 
-    fig.update_xaxes(showticklabels=False)
-    fig.update_yaxes(showticklabels=False)
+    fig_graph.update_xaxes(showticklabels=False)
+    fig_graph.update_yaxes(showticklabels=False)
 
-    return dcc.Graph(figure=fig, config={'displayModeBar': True})
+    graph_network = dcc.Graph(figure=fig_graph, config={'displayModeBar': True})
+
+    # metrics plots
+
+    graph_metrics = "No nodes with degree higher than zero (0)."
+
+    # first create a sorted list of degrees for plotting as a scatter plot and histogram
+    connected_nodes = dict(
+        [(node_labels[idx], degree)
+         for (idx, degree) in enumerate(node_degrees)
+         if degree > weight_cutoff]
+    )
+
+    # only attempt to plot if there are any tokens with degree higher than 0
+    if len(connected_nodes) > 0:
+
+        fig_metrics = make_subplots(rows=1, cols=2,
+                                    subplot_titles=("Degrees", "Clustering"))
+
+        degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+
+        fig_metrics.add_trace(
+            go.Scatter(
+                y=degree_degrees,
+                x=degree_labels
+            ),
+            row=1, col=1
+        )
+
+        graph_metrics = dcc.Graph(figure=fig_metrics)
+
+        # now let's get clustering coefficients for nodes if it's > 0
+
+        clustered_nodes = dict(
+            [(node_labels[idx], node_clustering[key])
+             for (idx, key) in enumerate(node_clustering)
+             if node_clustering[key] > 0]
+        )
+
+        cluster_labels, cluster_coefficients = zip(*list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
+
+        fig_metrics.add_trace(
+            go.Scatter(
+                y=cluster_coefficients,
+                x=cluster_labels
+            ),
+            row=1, col=2
+        )
+
+        fig_metrics.update_layout(showlegend=False)
+
+    return graph_network, graph_metrics
 
 
 # ---- INTERFACE ----
@@ -386,7 +449,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='00_demo.txt'
+    value='01_cj2.txt'
 )
 
 mode_name = dbc.Input(id='mode-name',
@@ -400,7 +463,7 @@ raw_text = dbc.Textarea(
     id='raw-text'
 )
 
-parse_button = dbc.Button('Parse Utterances',
+parse_button = dbc.Button('Parse',
                           id='parse-button',
                           size='lg',
                           n_clicks=0)
@@ -592,6 +655,10 @@ metrics_viewer_wrapper_div = html.Div(
     [
         html.H3('Metrics', className='mb-4'),
         html.P(' '),
+        html.Div(
+            'Will be updated once the graph is generated.',
+            id='metrics-div'
+        )
     ], className='border rounded p-4'
 )
 
@@ -902,6 +969,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Output('graph-div', 'children'),
     Output('graph-slider', 'max'),
     Output('graph-slider', 'value'),
+    Output('metrics-div', 'children'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
     Input('include-codes', 'value'),
@@ -928,14 +996,14 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, multiplier, 
         if window == 1:
             num_lines = start + 1
 
-    graph = generate_graph(data[0:num_lines],
+    graph, stats = generate_graph(data[0:num_lines],
                            case_name=name,
                            with_codes=code_pref,
                            layout_iterations=layout,
                            node_size_multiplier=multiplier,
                            dmc_window_start=start)
 
-    return graph, len(data), line
+    return graph, len(data), line, stats
 
 
 # Press the green button in the gutter to run the script.
