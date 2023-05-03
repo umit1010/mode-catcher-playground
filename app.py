@@ -170,9 +170,9 @@ def pickle_model(mode_name):
 def generate_graph(data_dict_list,
                    model=None,
                    with_codes=False,
-                   window=0,  # if > 1, dmc mode is activated
-                   iterations=3,
-                   size=2):
+                   dmc_window_start=0,  # if > 1, dmc mode is activated
+                   layout_iterations=3,
+                   node_size_multiplier=2):
 
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
@@ -204,17 +204,14 @@ def generate_graph(data_dict_list,
     # make all code counts 0 for now
     for code in code_tokens:
         df.loc[code, code] = 0
-
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
 
-        line_text = line['utterance']
+        line_doc = model(line['utterance'])
 
-        line_doc = model(line_text)
-        # line_doc = model(line['utterance'])
-
-        line_tokens = list(set([token.lemma for token in line_doc if
-                                not nlp.vocab[token.lemma].is_punct and not nlp.vocab[token.lemma].is_stop]))
+        line_tokens = list(set([token.lemma for token in line_doc
+                                if not nlp.vocab[token.lemma].is_punct
+                                and not nlp.vocab[token.lemma].is_stop]))
 
         # append the theoretical codes to the list of tokens in the line
         if with_codes:
@@ -230,18 +227,29 @@ def generate_graph(data_dict_list,
             row = line_tokens[i]
 
             for j in range(i + 1, len(line_tokens)):
-                col = line_tokens[j]
-                df[row][col] += 1
-                df[col][row] += 1
 
-            # for code in code_tokens:
+                col = line_tokens[j]
+
+                # if no window is provided,
+                #    or if we have the same row and col (i.e., count), just add it to the table
+                # if we have a window, then we will only calculate co-occurrences
+                #    between nodes within that window
+                if dmc_window_start < 1 or row == col:
+
+                    df[row][col] += 1
+                    df[col][row] += 1
+
+                elif line['line'] > dmc_window_start - 1:
+
+                    df[row][col] += 1
+                    df[col][row] += 1
 
     # lastly, create the graph
     labels = [nlp.vocab.strings[token] for token in unique_tokens]
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
     node_counts = [df[token][token] for token in unique_tokens]
-    node_sizes = [token * size for token in node_counts]
+    node_sizes = [token * node_size_multiplier for token in node_counts]
 
     nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
 
@@ -254,24 +262,30 @@ def generate_graph(data_dict_list,
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
             connections = df[row][col]
-            if connections > 1:
+            if connections > 0:  # I add connections even if two tokens co-occur once
                 G.add_edge(row, col, weight=connections)
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
-    pos = nx.spring_layout(G, iterations=iterations, seed=layout_seed)
+    pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed)
     edge_x = []
     edge_y = []
 
+    # if in cumulative mode, min 2 co-occurrences are needed to display a link
+    #       in dmc mode, even one is shown
+    weight_cutoff = 2 if dmc_window_start < 1 else 2
+
     for edge in G.edges():
-        x0, y0 = pos[edge[0]]
-        x1, y1 = pos[edge[1]]
-        edge_x.append(x0)
-        edge_x.append(x1)
-        edge_x.append(None)
-        edge_y.append(y0)
-        edge_y.append(y1)
-        edge_y.append(None)
+        edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
+        if edge_attr['weight'] >= weight_cutoff:  # only show the link if tokens co-occur more than once
+            x0, y0 = pos[edge[0]]
+            x1, y1 = pos[edge[1]]
+            edge_x.append(x0)
+            edge_x.append(x1)
+            edge_x.append(None)
+            edge_y.append(y0)
+            edge_y.append(y1)
+            edge_y.append(None)
 
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
@@ -452,10 +466,10 @@ theoretical_codes_list = [
     'centralized',
     'probabilistic',
     'deterministic',
-    'deliberate feedback loop',
-    'pattern fitting',
-    'thinking in levels',
-    'level slippage',
+    'feedback',
+    'fitting',
+    'levels',
+    'slippage',
 ]
 
 code_checkboxes_container = dbc.Container(
@@ -467,7 +481,7 @@ code_checkboxes_container = dbc.Container(
 
 # -- graph view --
 
-graph_type = dbc.Row([
+graph_type_row = dbc.Row([
     dbc.Col(
         dbc.Checkbox(label="Theoretical Codes", id='include-codes', value=False),
         xs=12, md=6, xl=2,
@@ -481,7 +495,7 @@ graph_type = dbc.Row([
     )
 ])
 
-grap_options = dbc.Row([
+grap_options_row = dbc.Row([
     dbc.Col([
         html.Span('DMC Window: ', className='me-4'),
         dcc.Input(id='dmc-window',
@@ -527,7 +541,7 @@ graph_view_wrapper_div = html.Div(
     [
         html.H3('Knowledge Graph', className='mb-4'),
         html.P(' '),
-        graph_type,
+        graph_type_row,
         html.P(' '),
         html.Div(
             [
@@ -538,8 +552,15 @@ graph_view_wrapper_div = html.Div(
                 html.P(' ')
             ], id='graph-div'
         ),
-        grap_options,
+        grap_options_row,
         dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider', className='my-4')
+    ], className='border rounded p-4'
+)
+
+stats_viewer_wrapper_div = html.Div(
+    [
+        html.H3('Stats', className='mb-4'),
+        html.P(' '),
     ], className='border rounded p-4'
 )
 
@@ -595,15 +616,24 @@ app.layout = dbc.Container(
                 html.P('')
             ])
         ),
-        dbc.Row([
+        dbc.Row(
             dbc.Col([
                 utterances_wrapper_div,
                 html.P('')
             ])
-        ]),
-        dbc.Row([
-            dbc.Col([graph_view_wrapper_div, html.P('')])
-        ]),
+        ),
+        dbc.Row(
+            dbc.Col([
+                graph_view_wrapper_div,
+                html.P('')
+            ])
+        ),
+        dbc.Row(
+            dbc.Col([
+                stats_viewer_wrapper_div,
+                html.P('')
+            ])
+        ),
         stored_data,
         coding_modal
     ],
@@ -844,17 +874,22 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, nsize, data,
     pickle_model(name)
 
     start = 0
-    end = line
+    num_lines = line
 
     if dmc:
         r = int((window - 1) / 2)
         start = max(0, line - r)
-        end = min(len(data), line + r)
+        num_lines = min(len(data), line + r)
 
         if window == 1:
-            end = start + 1
+            num_lines = start + 1
 
-    return generate_graph(data[start:end], model=nlp, with_codes=code_pref, iterations=layout, size=nsize), len(data), line
+    return generate_graph(data[0:num_lines],
+                          model=nlp,
+                          with_codes=code_pref,
+                          layout_iterations=layout,
+                          node_size_multiplier=nsize,
+                          dmc_window_start=start), len(data), line
 
 
 # Press the green button in the gutter to run the script.
