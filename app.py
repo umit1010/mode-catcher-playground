@@ -1,18 +1,18 @@
-import dash
 import dash_bootstrap_components as dbc
-import datetime
+import pickle
+import re
+from collections import Counter
+from pathlib import Path
+
+import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
-import re
-import spacy
 import pandas as pd
-import pickle
 import plotly.express as px
 import plotly.graph_objects as go
-from collections import Counter
+import spacy
+from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
-from dash import Dash, ALL, ctx, dcc, callback, html, Input, Output, State
-from pathlib import Path
 
 # ---- PLATFORM ----
 
@@ -173,7 +173,6 @@ def generate_graph(data_dict_list,
                    dmc_window_start=0,  # if > 1, dmc mode is activated
                    layout_iterations=3,
                    node_size_multiplier=2):
-
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
 
@@ -257,27 +256,33 @@ def generate_graph(data_dict_list,
     G = nx.Graph()
     G.add_nodes_from(nodes)
 
+    # if in cumulative mode, min 2 co-occurrences are needed to display a link
+    #       in dmc mode, even one is shown
+    weight_cutoff = 2 if dmc_window_start < 1 else 1
+
     for i in range(len(unique_tokens)):
         row = unique_tokens[i]
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
             connections = df[row][col]
-            if connections > 0:  # I add connections even if two tokens co-occur once
+            if connections >= weight_cutoff:  # I add connections even if two tokens co-occur once
                 G.add_edge(row, col, weight=connections)
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
     pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed)
+    # pos = nx.random_layout(G,seed=layout_seed)    # comment out to test random
+    # pos = nx.circular_layout(G)                   # comment out to test random
+
+    # calculate simple network metrics here in the near future
+
+    # create the plotly graph for the network
     edge_x = []
     edge_y = []
 
-    # if in cumulative mode, min 2 co-occurrences are needed to display a link
-    #       in dmc mode, even one is shown
-    weight_cutoff = 2 if dmc_window_start < 1 else 2
-
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] >= weight_cutoff:  # only show the link if tokens co-occur more than once
+        if edge_attr['weight'] >= weight_cutoff:  # only show link if co-occur > cutoff
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             edge_x.append(x0)
@@ -323,9 +328,6 @@ def generate_graph(data_dict_list,
             showlegend=False
         )
     )
-
-    fig.update_xaxes(range=[-1.5, 1.5])
-    fig.update_yaxes(range=[-1.5, 1.5])
 
     return dcc.Graph(figure=fig, config={'displayModeBar': True})
 
@@ -482,20 +484,21 @@ code_checkboxes_container = dbc.Container(
 # -- graph view --
 
 graph_type_row = dbc.Row([
+
     dbc.Col(
         dbc.Checkbox(label="Theoretical Codes", id='include-codes', value=False),
         xs=12, md=6, xl=2,
-        class_name='mt-3'
+        class_name='mt-3'),
 
-    ),
     dbc.Col(
         dbc.Checkbox(label="DMC Mode", id='dmc-mode', value=False),
         xs=12, md=6, xl=2,
-        class_name='mt-3'
-    )
+        class_name='mt-3')
+
 ])
 
 grap_options_row = dbc.Row([
+
     dbc.Col([
         html.Span('DMC Window: ', className='me-4'),
         dcc.Input(id='dmc-window',
@@ -505,23 +508,8 @@ grap_options_row = dbc.Row([
                   style={'margin-top': '-6px'}
                   ),
         html.Span('utterances ', className='ms-2'),
-    ],
-        md=12, lg=3,
-        class_name='d-flex mt-3'
-    ),
-    dbc.Col([
-        html.Span('Graph Layout: ', className='me-4'),
-        dcc.Input(id='layout-iterations',
-                  type="number",
-                  min=1, max=10, step=1,
-                  value=3,
-                  style={'margin-top': '-6px'}
-                  ),
-        html.Span('iterations ', className='ms-2'),
-    ],
-        md=12, lg=3,
-        class_name='d-flex mt-3'
-    ),
+    ], md=12, xl=3, class_name='d-flex mt-3'),
+
     dbc.Col([
         html.Span('Node Size: ', className='me-4'),
         dcc.Input(id='node-size',
@@ -531,10 +519,19 @@ grap_options_row = dbc.Row([
                   style={'margin-top': '-6px'},
                   className='ms-4'
                   ),
-    ],
-        md=12, lg=3,
-        class_name='d-flex mt-3'
-    )
+    ], md=12, xl=3, class_name='d-flex mt-3'),
+
+    dbc.Col([
+        html.Span('Spring: ', className='me-4'),
+        dcc.Input(id='layout-iterations',
+                  type="number",
+                  min=1, max=10, step=1,
+                  value=3,
+                  style={'margin-top': '-6px'}
+                  ),
+        html.Span('iterations ', className='ms-2'),
+    ], md=12, xl=3, class_name='d-flex mt-3'),
+
 ], class_name='my-4', justify='center')
 
 graph_view_wrapper_div = html.Div(
@@ -557,9 +554,9 @@ graph_view_wrapper_div = html.Div(
     ], className='border rounded p-4'
 )
 
-stats_viewer_wrapper_div = html.Div(
+metrics_viewer_wrapper_div = html.Div(
     [
-        html.H3('Stats', className='mb-4'),
+        html.H3('Metrics', className='mb-4'),
         html.P(' '),
     ], className='border rounded p-4'
 )
@@ -630,7 +627,7 @@ app.layout = dbc.Container(
         ),
         dbc.Row(
             dbc.Col([
-                stats_viewer_wrapper_div,
+                metrics_viewer_wrapper_div,
                 html.P('')
             ])
         ),
@@ -884,12 +881,14 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, nsize, data,
         if window == 1:
             num_lines = start + 1
 
-    return generate_graph(data[0:num_lines],
-                          model=nlp,
-                          with_codes=code_pref,
-                          layout_iterations=layout,
-                          node_size_multiplier=nsize,
-                          dmc_window_start=start), len(data), line
+    graph = generate_graph(data[0:num_lines],
+                           model=nlp,
+                           with_codes=code_pref,
+                           layout_iterations=layout,
+                           node_size_multiplier=nsize,
+                           dmc_window_start=start)
+
+    return graph, len(data), line
 
 
 # Press the green button in the gutter to run the script.
