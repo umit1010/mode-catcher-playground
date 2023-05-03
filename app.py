@@ -435,7 +435,7 @@ graph_button = dbc.Button('Generate Graph',
 
 utterances_wrapper_div = html.Div(
     [
-        html.H3('Utterance Editor', className='mb-4'),
+        html.H3('Revise and Code', className='mb-4'),
         html.Div(
             [
                 html.P('Processed text will be displayed here as a datatable.', className='lead')
