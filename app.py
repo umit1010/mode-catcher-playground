@@ -611,8 +611,8 @@ grap_options_row = dbc.Row([
         html.Span('Node Size: ', className='me-4'),
         dcc.Input(id='node-size',
                   type="number",
-                  min=2, max=18, step=2,
-                  value=6,
+                  min=2, max=18, step=1,
+                  value=2,
                   style={'margin-top': '-6px'},
                   className='ms-4'
                   ),
