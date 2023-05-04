@@ -304,7 +304,7 @@ def generate_graph(data_dict_list,
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
             connections = df.loc[row, col]
-            if connections >= weight_cutoff:  # I add connections even if two tokens co-occur once
+            if connections > 0:  # I add connections even if two tokens co-occur once, but don't show them
                 G.add_edge(row, col, weight=connections)
 
     # calculate the metrics
@@ -422,7 +422,7 @@ def generate_graph(data_dict_list,
                                         f"n<sub>connected</sub> = {len(connected_nodes)} | "
                                         f"n<sub>total</sub> = {G.number_of_nodes()}",
                                         f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
-                                        )
+                                        ),
                                     )
         if ave_degree > 0:
             degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
@@ -456,9 +456,14 @@ def generate_graph(data_dict_list,
                 row=1, col=2
             )
 
-        fig_metrics.update_yaxes(range=[0, 50], row=1, col=1)
+        fig_metrics.update_yaxes(range=[0, 60], row=1, col=1)
         fig_metrics.update_yaxes(range=[0, 1.1], row=1, col=2)
-        fig_metrics.update_layout(showlegend=False, margin=dict(l=0, r=0, t=40, b=40))
+        fig_metrics.update_layout(showlegend=False,
+                                  title=dict(
+                                      text=f"density = {nx.density(G):.3f}",
+                                      x=0.5, xanchor='center'),
+                                  margin=dict(l=0, r=0, t=40, b=40)
+                                  )
 
     return graph_network, graph_metrics
 
@@ -656,8 +661,8 @@ grap_options_row = dbc.Row([
         html.Span('Spring: ', className='me-4'),
         dcc.Input(id='layout-iterations',
                   type="number",
-                  min=1, max=10, step=1,
-                  value=3,
+                  min=0, max=50, step=2,
+                  value=4,
                   style={'margin-top': '-6px'}
                   ),
         html.Span('iterations ', className='ms-2'),
