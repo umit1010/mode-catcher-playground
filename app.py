@@ -1,30 +1,27 @@
-import dash_bootstrap_components as dbc
 import pickle
 import re
 from collections import Counter
 from pathlib import Path
+
 import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
-from spacy.lang.en.stop_words import STOP_WORDS
+from plotly.subplots import make_subplots
 
 # ---- PLATFORM ----
 
-nlp = spacy.blank("en")
+nlp = None
 
 stopped_words = set()
 unstopped_words = set()
 
 assigned_codes = dict()
-
-active_text = ""
 
 theoretical_code_list = [
     'emergent',
@@ -47,14 +44,14 @@ app = Dash(
 # ---- NLP ----
 
 
-def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
+def parse_raw_text(txt: str,
+                   timestamp=False,
+                   speaker=False,
+                   interviewer=False):
+
     input_lines = [line.strip().replace('\n', '')
                    for line in txt.splitlines()
                    if len(line.strip()) > 0 and line.count(':') > 2]
-
-    global active_text
-
-    active_text = ""
 
     # parse the text line by line
     re_time_splitter = re.compile(r'(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])')
@@ -79,9 +76,6 @@ def parse_raw_text(txt: str, timestamp=False, speaker=False, interviewer=False):
             row['speaker'] = speaker
 
         row['utterance'] = utterance.strip()
-
-        # add just the utterance to the active text for later use
-        active_text = f'{active_text} {row["utterance"]}'
 
         data.append(row)
 
@@ -110,7 +104,10 @@ def generate_code_checkboxes(line_num, values=None):
 
 
 def process_utterance(raw_text):
-    doc = nlp(raw_text)
+
+    global nlp
+
+    doc = nlp(raw_text.strip().lower())
 
     all_tokens = [token.lemma_
                   for token in doc
@@ -161,6 +158,10 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
+
+    global STOP_WORDS
+    global nlp
+
     models_folder = Path('./models/')
     models_folder.mkdir(exist_ok=True)
 
@@ -171,13 +172,14 @@ def pickle_model(mode_name):
     theoretical_codes_file = mode_folder / 'theoretical_codes.pickle'
 
     with open(stopwords_file, 'wb') as swf:
-        pickle.dump({'stopped': stopped_words,
-                     'unstopped': unstopped_words},
+        pickle.dump((stopped_words, unstopped_words),
                     swf,
                     protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(theoretical_codes_file, 'wb') as tcf:
-        pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(assigned_codes,
+                    tcf,
+                    protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def generate_graph(data_dict_list,
@@ -193,7 +195,7 @@ def generate_graph(data_dict_list,
 
     # generate unique lemmas list and create a co-occurrence matrix dataframe
     combined_text = " ".join([line['utterance'] for line in data_dict_list])
-    combined_doc = nlp(combined_text)
+    combined_doc = nlp(combined_text.strip().lower())
 
     all_tokens = [token.lemma for token in combined_doc if
                   not nlp.vocab[token.lemma].is_punct
@@ -205,6 +207,7 @@ def generate_graph(data_dict_list,
     #       append them once to the end of the doc
     #       so that they are added to the model's vocabulary
     code_tokens = list()
+
     if with_codes:
         codes_text = " ".join(theoretical_code_list)
         codes_doc = nlp(codes_text)
@@ -215,8 +218,9 @@ def generate_graph(data_dict_list,
     token_counts = Counter(all_tokens)
     unique_tokens = list(token_counts.keys())
 
-    df = pd.DataFrame({'token': unique_tokens}, columns=unique_tokens, index=unique_tokens).fillna(0)
+    df = pd.DataFrame(columns=unique_tokens, index=unique_tokens).fillna(0)
 
+    # raw count of token (including multiple instances in one line)
     # first, fill each token's counts in the matrix ([same col, same row] = count)
     # for token in unique_tokens:
     #     df.loc[token, token] = token_counts[token]
@@ -224,15 +228,17 @@ def generate_graph(data_dict_list,
     # make all code counts 0 for now
     for code in code_tokens:
         df.loc[code, code] = 0
+
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
 
-        # line_doc = model(line['utterance'])
-        line_doc = nlp(line['utterance'])
+        line_doc = nlp(line['utterance'].strip().lower())
 
         line_tokens = list(set([token.lemma for token in line_doc
                                 if not nlp.vocab[token.lemma].is_punct
-                                and not nlp.vocab[token.lemma].is_stop]))
+                                and not nlp.vocab[token.lemma].is_stop
+                                and not token.is_punct
+                                and not token.is_stop]))
 
         # append the theoretical codes to the list of tokens in the line
         if with_codes:
@@ -247,12 +253,22 @@ def generate_graph(data_dict_list,
 
             row = line_tokens[i]
 
-            # count of the token
-            df[row][row] += 1
+            # hacky solution to the keyerror --- COME BACK TO FIGURE OUT WHY
+            if row not in df.index or row not in df.columns:
+                continue
+
+            # count of the token as only 1 per line
+            df.loc[row, row] += 1
 
             for j in range(i + 1, len(line_tokens)):
 
                 col = line_tokens[j]
+
+                if col == row: continue
+
+                # hacky solution to the keyerror --- COME BACK TO FIGURE OUT WHY
+                if col not in df.index or col not in df.columns:
+                    continue
 
                 # if no window is provided,
                 #    or if we have the same row and col (i.e., count), just add it to the table
@@ -260,20 +276,20 @@ def generate_graph(data_dict_list,
                 #    between nodes within that window
                 if dmc_window_start < 1 or row == col:
 
-                    df[row][col] += 1
-                    df[col][row] += 1
+                    df.loc[row, col] += 1
+                    df.loc[col, row] += 1
 
                 elif (line['line'] - 1) > dmc_window_start - 1:
 
-                    df[row][col] += 1
-                    df[col][row] += 1
+                    df.loc[row, col] += 1
+                    df.loc[col, row] += 1
 
     # lastly, create the graph
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
-    node_counts = [df[token][token] for token in unique_tokens]
+    node_counts = [df.loc[token,token] for token in unique_tokens]
 
-    nodes = [(token, {'weight': df[token][token]}) for token in unique_tokens]
+    nodes = [(token, {'weight': df.loc[token, token]}) for token in unique_tokens]
 
     # create the network
     G = nx.Graph()
@@ -287,7 +303,7 @@ def generate_graph(data_dict_list,
         row = unique_tokens[i]
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
-            connections = df[row][col]
+            connections = df.loc[row, col]
             if connections >= weight_cutoff:  # I add connections even if two tokens co-occur once
                 G.add_edge(row, col, weight=connections)
 
@@ -298,7 +314,8 @@ def generate_graph(data_dict_list,
 
     # create representation attributes (size, color, text, etc)
     #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [((G.degree[token] + 1) * node_size_multiplier) for token in unique_tokens]
+    node_sizes = [(n * node_size_multiplier) for n in node_counts]
+    node_colors = [(G.degree[token] + 1) for token in unique_tokens]
 
     node_labels = [nlp.vocab.strings[token] for token in unique_tokens]
 
@@ -351,10 +368,10 @@ def generate_graph(data_dict_list,
             showscale=True,
             colorscale='Portland',
             reversescale=False,
-            color=node_counts,
+            color=node_colors,
             size=node_sizes,
             line_width=1,
-            colorbar=dict(title=dict(text='𝑓'))
+            colorbar=dict(title=dict(text='degree'))
         )
     )
 
@@ -439,6 +456,8 @@ def generate_graph(data_dict_list,
                 row=1, col=2
             )
 
+        fig_metrics.update_yaxes(range=[0, 50], row=1, col=1)
+        fig_metrics.update_yaxes(range=[0, 1.1], row=1, col=2)
         fig_metrics.update_layout(showlegend=False, margin=dict(l=0, r=0, t=40, b=40))
 
     return graph_network, graph_metrics
@@ -464,14 +483,14 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='01_cj2.txt'
+    value='01_cj2_depronouned.txt'
 )
 
-mode_name = dbc.Input(id='mode-name',
-                      value="",
-                      placeholder="Enter mode name ...")
+mode_name_input = dbc.Input(id='mode-name',
+                            value="",
+                            placeholder="Enter mode name ...")
 
-raw_text = dbc.Textarea(
+raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.",
     value="",
     rows=10,
@@ -516,14 +535,14 @@ input_accordion = dbc.Accordion(
                 dbc.Row(
                     dbc.Col([
                         dbc.Label('Mode name:'),
-                        mode_name,
+                        mode_name_input,
                         html.P('')
                     ], width=10, lg=6)
                 ),
                 dbc.Row(
                     dbc.Col([
                         dbc.Label('Transcript:'),
-                        raw_text,
+                        raw_text_input,
                         html.P('')
                     ])
                 ),
@@ -662,7 +681,12 @@ graph_view_wrapper_div = html.Div(
             ], id='graph-div'
         ),
         grap_options_row,
-        dcc.Slider(min=1, max=2, step=1, value=1, id='graph-slider', className='my-4')
+        dcc.Slider(id='graph-slider',
+                   min=1, max=2, step=1,
+                   value=1,
+                   marks=None,
+                   tooltip={"placement": "bottom", "always_visible": True},
+                   className='my-4')
     ], className='border rounded p-4'
 )
 
@@ -832,42 +856,51 @@ def reset_mode(nclicks, name):
 )
 def utterance_table(parse_clicks, name, txt, options):
 
-    global stopped_words
-    global unstopped_words
     global assigned_codes
     global nlp
+    global stopped_words
+    global unstopped_words
+
+    loaded_stopwords = set()
 
     if parse_clicks is not None:
 
         if parse_clicks > 0:
 
             model_path = Path(f'./models/{str(name).strip()}/')
-            if model_path.is_dir():
+            default_stopwords_file = Path('./config') / 'default_stopwords.pickle'
+
+            if not model_path.is_dir():
+                with open(default_stopwords_file, 'rb') as dswf:
+                    stopped_words = pickle.load(dswf)
+            else:
                 stopwords_file = model_path / 'stopwords.pickle'
                 theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
                 if stopwords_file.is_file():
                     with open(stopwords_file, 'rb') as swf:
-                        loaded_stopwords = pickle.load(swf)
-
-                    stopped_words = loaded_stopwords['stopped']
-                    unstopped_words = loaded_stopwords['unstopped']
-
-                    STOP_WORDS.update(stopped_words)
-                    STOP_WORDS.discard(unstopped_words)
-
-                    # reload the model because it only pulls default stopwords when loading
-                    nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
-
-                    # first pass the text through the model to generate the vocabulary,
-                    #   so that we do not have to do it on other functions elsewhere
-                    nlp(txt)
+                        stopped_words, unstopped_words = pickle.load(swf)
+                else:
+                    with open(default_stopwords_file, 'rb') as dswf:
+                        stopped_words = pickle.load(dswf)
 
                 if theoretical_codes_file.is_file():
                     with open(theoretical_codes_file, 'rb') as tcf:
                         saved_codes = pickle.load(tcf)
 
                     assigned_codes = saved_codes
+
+            # reload the model because it only pulls default stopwords when loading
+            nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+
+            nlp(' '.join(stopped_words))
+            nlp(' '.join(unstopped_words))
+
+            for word in stopped_words:
+                nlp.vocab[word].is_stop = True
+
+            for word in unstopped_words:
+                nlp.vocab[word].is_stop = False
 
             time = True if 0 in options else False
             speaker = True if 1 in options else False
@@ -937,6 +970,9 @@ def utterance_table(parse_clicks, name, txt, options):
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes, data):
+
+    global STOP_WORDS
+
     if cell is not None:
 
         if len(toggle_clicks) > 0:
@@ -947,16 +983,12 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
 
                 if was_stop:
                     nlp.vocab[toggled_token].is_stop = False
-                    unstopped_words.add(toggled_token)
-                    unstopped_words.add(toggled_token.lower())
                     stopped_words.discard(toggled_token)
-                    stopped_words.discard(toggled_token.lower())
+                    unstopped_words.add(toggled_token)
                 else:
                     nlp.vocab[toggled_token].is_stop = True
-                    unstopped_words.discard(toggled_token)
-                    unstopped_words.discard(toggled_token.lower())
                     stopped_words.add(toggled_token)
-                    stopped_words.add(toggled_token.lower())
+                    unstopped_words.discard(toggled_token)
 
         i, j = cell['row'], 'utterance'
         cell_text = str(data[i][j])
