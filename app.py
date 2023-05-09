@@ -187,6 +187,7 @@ def generate_graph(data_dict_list,
                    min_co=1,
                    min_dmc_co=2,
                    node_size_multiplier=2):
+
     global nlp
 
     num_lines = len(data_dict_list)
@@ -668,6 +669,16 @@ grap_options_row = html.Div(
         dbc.Row([
 
             dbc.Col([
+                html.Span('Min Tokens per Line: ', className='me-4'),
+                dcc.Input(id='min-tokens',
+                          type="number",
+                          min=1, max=20, step=1,
+                          value=3,
+                          style={'margin-top': '-6px'}
+                          ),
+            ], md=12, xl=3, class_name='d-flex mt-3'),
+
+            dbc.Col([
                 html.Span('Min Co-occurrence: ', className='me-4'),
                 dcc.Input(id='min-co',
                           type="number",
@@ -724,7 +735,7 @@ grap_options_row = html.Div(
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
 
-        ])
+        ], class_name='my-4', justify='center')
     ], className='my-4'
 )
 
