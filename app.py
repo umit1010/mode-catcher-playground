@@ -48,7 +48,6 @@ def parse_raw_text(txt: str,
                    timestamp=False,
                    speaker=False,
                    interviewer=False):
-
     input_lines = [line.strip().replace('\n', '')
                    for line in txt.splitlines()
                    if len(line.strip()) > 0 and line.count(':') > 2]
@@ -104,7 +103,6 @@ def generate_code_checkboxes(line_num, values=None):
 
 
 def process_utterance(raw_text):
-
     global nlp
 
     doc = nlp(raw_text.strip().lower())
@@ -158,7 +156,6 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
-
     global STOP_WORDS
     global nlp
 
@@ -187,8 +184,9 @@ def generate_graph(data_dict_list,
                    with_codes=False,
                    dmc_window_start=0,  # if > 1, dmc mode is activated
                    layout_iterations=3,
+                   min_co=1,
+                   min_dmc_co=2,
                    node_size_multiplier=2):
-
     global nlp
 
     num_lines = len(data_dict_list)
@@ -287,7 +285,7 @@ def generate_graph(data_dict_list,
     # lastly, create the graph
 
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
-    node_counts = [df.loc[token,token] for token in unique_tokens]
+    node_counts = [df.loc[token, token] for token in unique_tokens]
 
     nodes = [(token, {'weight': df.loc[token, token]}) for token in unique_tokens]
 
@@ -295,16 +293,12 @@ def generate_graph(data_dict_list,
     G = nx.Graph()
     G.add_nodes_from(nodes)
 
-    # if in cumulative mode, min 2 co-occurrences are needed to display a link
-    #       in dmc mode, even one is shown
-    weight_cutoff = 2 if dmc_window_start < 1 else 1
-
     for i in range(len(unique_tokens)):
         row = unique_tokens[i]
         for j in range(i + 1, len(unique_tokens)):
             col = unique_tokens[j]
             connections = df.loc[row, col]
-            if connections > 0:  # I add connections even if two tokens co-occur once, but don't show them
+            if connections >= min_co:  # I add connections even if two tokens co-occur once, but don't show them
                 G.add_edge(row, col, weight=connections)
 
     # calculate the metrics
@@ -337,7 +331,7 @@ def generate_graph(data_dict_list,
 
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] >= weight_cutoff:  # only show link if co-occur > cutoff
+        if edge_attr['weight'] >= min_dmc_co:
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             edge_x.append(x0)
@@ -349,10 +343,38 @@ def generate_graph(data_dict_list,
 
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
-        line=dict(width=1, color='#888'),
+        line=dict(width=2, color='#888'),
         hoverinfo='none',
         mode='lines'
     )
+
+    # create a representation of the connections among tokens
+    # that co occur more than min_co but less than min_dmc_co
+    if min_co < min_dmc_co:
+
+        light_edge_x = []
+        light_edge_y = []
+
+        for edge in G.edges():
+            edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
+            if edge_attr['weight'] <= min_co:  # only show link if co-occur > cutoff
+                x0, y0 = pos[edge[0]]
+                x1, y1 = pos[edge[1]]
+                light_edge_x.append(x0)
+                light_edge_x.append(x1)
+                light_edge_x.append(None)
+                light_edge_y.append(y0)
+                light_edge_y.append(y1)
+                light_edge_y.append(None)
+
+        light_edge_trace = go.Scatter(
+            x=light_edge_x, y=light_edge_y,
+            line=dict(width=0.1, color='#AAA'),
+            hoverinfo='none',
+            mode='lines'
+        )
+    else:
+        light_edge_trace = go.Scatter()
 
     node_x = [pos[i].tolist()[0] for i in pos]
     node_y = [pos[i].tolist()[1] for i in pos]
@@ -378,7 +400,7 @@ def generate_graph(data_dict_list,
     type_label = "Cumulative" if dmc_window_start < 1 else "DMC"
 
     fig_graph = go.Figure(
-        data=[edge_trace, node_trace],
+        data=[light_edge_trace, edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
                 text=f"{case_name} | {type_label} View @ at {num_lines}",
@@ -422,10 +444,11 @@ def generate_graph(data_dict_list,
                                         f"n<sub>connected</sub> = {len(connected_nodes)} | "
                                         f"n<sub>total</sub> = {G.number_of_nodes()}",
                                         f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
-                                        ),
+                                    ),
                                     )
         if ave_degree > 0:
-            degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+            degree_labels, degree_degrees = zip(
+                *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
             fig_metrics.add_trace(
                 go.Scatter(
                     y=degree_degrees,
@@ -446,7 +469,8 @@ def generate_graph(data_dict_list,
 
         # only display the plot if there are clusters
         if len(clustered_nodes) > 0:
-            cluster_labels, cluster_coefficients = zip(*list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
+            cluster_labels, cluster_coefficients = zip(
+                *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
 
             fig_metrics.add_trace(
                 go.Scatter(
@@ -488,7 +512,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='01_cj2_depronouned.txt'
+    value='00_demo.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
@@ -548,14 +572,13 @@ input_accordion = dbc.Accordion(
                     dbc.Col([
                         dbc.Label('Transcript:'),
                         raw_text_input,
-                        html.P('')
                     ])
                 ),
                 dbc.Row(
                     dbc.Col([
                         inclusion_options,
                         parse_button,
-                    ]),
+                    ], class_name='mt-4'),
                 ),
                 dbc.Row([
                     dbc.Col([
@@ -574,17 +597,11 @@ input_accordion = dbc.Accordion(
             item_id='0')
     ],
     active_item='0',
-    id="input-accordion"
+    id="input-accordion",
+    className='my-4'
 )
 
 # -- utterances section --
-
-graph_button = dbc.Button('Generate Graph',
-                          id='graph-button',
-                          class_name='mt-4',
-                          size='lg',
-                          n_clicks=0,
-                          disabled=True)
 
 utterances_wrapper_div = html.Div(
     [
@@ -593,10 +610,22 @@ utterances_wrapper_div = html.Div(
             [
                 html.P('Processed text will be displayed here as a datatable.', className='lead')
             ], id='utterances-div'
-        ),
-        html.P(' '),
+        )
+    ], className='border rounded p-4 my-4'
+)
+
+graph_button = dbc.Button('Generate Graph',
+                          id='graph-button',
+                          class_name='mt-4',
+                          size='lg',
+                          n_clicks=0,
+                          disabled=True)
+
+generate_div = html.Div(
+    [
         graph_button
-    ], className='border rounded p-4'
+    ],
+    className='border rounded p-4 my-4'
 )
 
 theoretical_codes_list = [
@@ -633,42 +662,71 @@ graph_type_row = dbc.Row([
 
 ])
 
-grap_options_row = dbc.Row([
+grap_options_row = html.Div(
+    [
+        html.H4("Structure", className='my-4'),
+        dbc.Row([
 
-    dbc.Col([
-        html.Span('DMC Window: ', className='me-4'),
-        dcc.Input(id='dmc-window',
-                  type="number",
-                  min=1, max=11, step=2,
-                  value=3,
-                  style={'margin-top': '-6px'}
-                  ),
-        html.Span('utterances ', className='ms-2'),
-    ], md=12, xl=3, class_name='d-flex mt-3'),
+            dbc.Col([
+                html.Span('Min Co-occurrence: ', className='me-4'),
+                dcc.Input(id='min-co',
+                          type="number",
+                          min=1, max=10, step=1,
+                          value=1,
+                          style={'margin-top': '-6px'}
+                          ),
+            ], md=12, xl=3, class_name='d-flex mt-3'),
 
-    dbc.Col([
-        html.Span('Node Size: ', className='me-4'),
-        dcc.Input(id='node-size',
-                  type="number",
-                  min=2, max=18, step=1,
-                  value=2,
-                  style={'margin-top': '-6px'},
-                  className='ms-4'
-                  ),
-    ], md=12, xl=3, class_name='d-flex mt-3'),
+            dbc.Col([
+                html.Span('Min DMC Co-occurrence: ', className='me-4'),
+                dcc.Input(id='min-dmc-co',
+                          type="number",
+                          min=1, max=10, step=1,
+                          value=2,
+                          style={'margin-top': '-6px'}
+                          ),
+            ], md=12, xl=3, class_name='d-flex mt-3'),
 
-    dbc.Col([
-        html.Span('Spring: ', className='me-4'),
-        dcc.Input(id='layout-iterations',
-                  type="number",
-                  min=0, max=50, step=2,
-                  value=4,
-                  style={'margin-top': '-6px'}
-                  ),
-        html.Span('iterations ', className='ms-2'),
-    ], md=12, xl=3, class_name='d-flex mt-3'),
+            dbc.Col([
+                html.Span('DMC Window: ', className='me-4'),
+                dcc.Input(id='dmc-window',
+                          type="number",
+                          min=1, max=11, step=2,
+                          value=3,
+                          style={'margin-top': '-6px'}
+                          )
+            ], md=12, xl=3, class_name='d-flex mt-3'),
 
-], class_name='my-4', justify='center')
+        ], class_name='my-4', justify='center'),
+
+        html.H4("Visualization", className='my-4'),
+
+        dbc.Row([
+
+            dbc.Col([
+                html.Span('Spring: ', className='me-4'),
+                dcc.Input(id='layout-iterations',
+                          type="number",
+                          min=0, max=50, step=2,
+                          value=4,
+                          style={'margin-top': '-6px'}
+                          )
+            ], md=12, xl=3, class_name='d-flex mt-3'),
+
+            dbc.Col([
+                html.Span('Node Size: ', className='me-4'),
+                dcc.Input(id='node-size',
+                          type="number",
+                          min=2, max=18, step=1,
+                          value=2,
+                          style={'margin-top': '-6px'},
+                          className='ms-4'
+                          ),
+            ], md=12, xl=3, class_name='d-flex mt-3'),
+
+        ])
+    ], className='my-4'
+)
 
 graph_view_wrapper_div = html.Div(
     [
@@ -685,14 +743,14 @@ graph_view_wrapper_div = html.Div(
                 html.P(' ')
             ], id='graph-div'
         ),
-        grap_options_row,
         dcc.Slider(id='graph-slider',
                    min=1, max=2, step=1,
                    value=1,
                    marks=None,
                    tooltip={"placement": "bottom", "always_visible": True},
-                   className='my-4')
-    ], className='border rounded p-4'
+                   className='my-4'),
+        grap_options_row
+    ], className='border rounded p-4 my-4'
 )
 
 metrics_viewer_wrapper_div = html.Div(
@@ -703,11 +761,10 @@ metrics_viewer_wrapper_div = html.Div(
             'Will be updated once the graph is generated.',
             id='metrics-div'
         )
-    ], className='border rounded p-4'
+    ], className='border rounded p-4 my-4'
 )
 
 # -- coding modal view --
-
 
 coding_modal = dbc.Modal(
     [
@@ -755,26 +812,27 @@ app.layout = dbc.Container(
                     'mode-catcher ', html.Em('playground')
                 ], className='text-center m-4'),
                 input_accordion,
-                html.P('')
             ])
         ),
         dbc.Row(
-            dbc.Col([
-                utterances_wrapper_div,
-                html.P('')
-            ])
+            dbc.Col(
+                utterances_wrapper_div
+            )
         ),
         dbc.Row(
-            dbc.Col([
-                graph_view_wrapper_div,
-                html.P('')
-            ])
+            dbc.Col(
+                generate_div
+            )
         ),
         dbc.Row(
-            dbc.Col([
-                metrics_viewer_wrapper_div,
-                html.P('')
-            ])
+            dbc.Col(
+                graph_view_wrapper_div
+            )
+        ),
+        dbc.Row(
+            dbc.Col(
+                metrics_viewer_wrapper_div
+            )
         ),
         stored_data,
         coding_modal
@@ -835,9 +893,9 @@ def reset_mode(nclicks, name):
             stopwords_file = model_path / 'stopwords.pickle'
             theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
-            if stopwords_file.is_file() : stopwords_file.unlink()
+            if stopwords_file.is_file(): stopwords_file.unlink()
 
-            if theoretical_codes_file.is_file() : theoretical_codes_file.unlink()
+            if theoretical_codes_file.is_file(): theoretical_codes_file.unlink()
 
             for key in assigned_codes:
                 assigned_codes[key] = [False] * len(theoretical_code_list)
@@ -860,7 +918,6 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, name, txt, options):
-
     global assigned_codes
     global nlp
     global stopped_words
@@ -975,7 +1032,6 @@ def utterance_table(parse_clicks, name, txt, options):
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes, data):
-
     global STOP_WORDS
 
     if cell is not None:
@@ -1022,22 +1078,44 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Output('graph-slider', 'max'),
     Output('graph-slider', 'value'),
     Output('metrics-div', 'children'),
+    Output('min-co', 'value'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
     Input('include-codes', 'value'),
     Input('dmc-mode', 'value'),
     Input('dmc-window', 'value'),
+    Input('min-co', 'value'),
+    Input('min-dmc-co', 'value'),
     Input('layout-iterations', 'value'),
     Input('node-size', 'value'),
     State('stored-data', 'data'),
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
-def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, multiplier, data, name):
+def knowledge_graph(n_clicks,
+                    line,
+                    code_pref,
+                    dmc,
+                    window,
+                    mco,
+                    mdmco,
+                    layout,
+                    multiplier,
+                    data,
+                    name):
+
     # first, let's pickle the user generated model
     pickle_model(name)
 
     start = 0
+
+    # make sure min co-occurrence is not larger than min dmc co-occurrence
+    mco = mco if mco < mdmco else mdmco
+
+    # display the latest utterance when generating a cumulative layout
+    if not dmc:
+        line = line if line != 1 else len(data)
+
     num_lines = line if line < len(data) else len(data)
 
     if dmc:
@@ -1049,13 +1127,15 @@ def knowledge_graph(n_clicks, line, code_pref, dmc, window, layout, multiplier, 
             num_lines = start + 1
 
     graph, stats = generate_graph(data[0:num_lines],
-                           case_name=name,
-                           with_codes=code_pref,
-                           layout_iterations=layout,
-                           node_size_multiplier=multiplier,
-                           dmc_window_start=start)
+                                  case_name=name,
+                                  with_codes=code_pref,
+                                  layout_iterations=layout,
+                                  min_co=mco,
+                                  min_dmc_co=mdmco,
+                                  node_size_multiplier=multiplier,
+                                  dmc_window_start=start)
 
-    return graph, len(data), line, stats
+    return graph, len(data), line, stats, mco
 
 
 # Press the green button in the gutter to run the script.
