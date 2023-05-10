@@ -241,10 +241,14 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
             if row not in df.index or row not in df.columns:
                 df.loc[row, row] = 0
 
-            if raw_frequency:
-                df.loc[row, row] += token_counts[row]
-            else:
-                df.loc[row, row] += 1
+            # if no start line, count tokens in all rows
+            #    if within a dmc window, count tokens only in that dmc window
+            #    note, this will show out-of-window counts as 0, which is not cool
+            if start_line == 0 or start_line <= line['line'] <= end_line:
+                if raw_frequency:
+                    df.loc[row, row] += token_counts[row]
+                else:
+                    df.loc[row, row] += 1
 
             for j in range(i + 1, len(unique_tokens)):
 
