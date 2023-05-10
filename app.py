@@ -105,7 +105,6 @@ def generate_code_checkboxes(line_num, values=None):
 
 
 def process_utterance(raw_text):
-
     global nlp
 
     doc = nlp(raw_text.strip().lower())
@@ -159,7 +158,6 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
-
     global nlp
 
     models_folder = Path('./models/')
@@ -183,19 +181,18 @@ def pickle_model(mode_name):
 
 
 def process_tokens():
-
     return "I did not implement this yet"
 
 
 def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    end_line=1,
                    case_name="",
+                   raw_frequency=True,
                    with_codes=False,
                    layout_iterations=3,
                    min_co=1,
                    min_dmc_co=2,
                    node_size_multiplier=2):
-
     global nlp
 
     # if showing a cumulative graph, generate nodes for just until that point
@@ -214,11 +211,17 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
         processed_line = nlp(line['utterance'].strip().lower())
 
-        line_tokens = list(set([token.lemma for token in processed_line
-                                if not nlp.vocab[token.lemma].is_punct
-                                and not nlp.vocab[token.lemma].is_stop
-                                and not token.is_punct
-                                and not token.is_stop]))
+        # generate a list of non-stopped tokens
+        line_tokens = [token.lemma for token in processed_line
+                       if not nlp.vocab[token.lemma].is_punct
+                       and not nlp.vocab[token.lemma].is_stop
+                       and not token.is_punct
+                       and not token.is_stop]
+
+        # now generate the raw counts of each token within this line
+        #     which also generates a list of unique tokens as the keys of the counter
+        token_counts = Counter(line_tokens)
+        unique_tokens = list(token_counts.keys())
 
         # # append the theoretical codes to the list of tokens in the line
         # if with_codes:
@@ -229,27 +232,28 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
         # first loop is iterating over each token
         # second loop iterates over the tokens after the current token
-        for i in range(len(line_tokens)):
+        for i in range(len(unique_tokens)):
 
-            row = line_tokens[i]
+            row = unique_tokens[i]
 
             # if the token was not added to the dataframe yet, add it as 1 count
             #    if it already exists, increment it by 1 (count)
             if row not in df.index or row not in df.columns:
                 df.loc[row, row] = 0
+
+            if raw_frequency:
+                df.loc[row, row] += token_counts[row]
             else:
                 df.loc[row, row] += 1
 
-            for j in range(i + 1, len(line_tokens)):
+            for j in range(i + 1, len(unique_tokens)):
 
-                col = line_tokens[j]
+                col = unique_tokens[j]
 
                 # if the token was not added to the dataframe yet, add it as 1 count
                 #    if it already exists, increment it by 1 (count)
                 if col not in df.index or col not in df.columns:
                     df.loc[col, col] = 0
-                # else:
-                #     df.loc[col, col] += 1
 
                 # Gotta check for NaN because otherwise NaN + 1 = NaN.
                 if np.isnan(df.loc[col, row]):
@@ -276,7 +280,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     node_frequencies = [df.loc[token, token] for token in df.index]
 
-    nodes = [(token, {'weight': df.loc[token, token], 'label':nlp.vocab.strings[token]}) for token in df.index]
+    nodes = [(token, {'weight': df.loc[token, token], 'label': nlp.vocab.strings[token]}) for token in df.index]
 
     # create the network
     G = nx.Graph()
@@ -705,7 +709,7 @@ grap_options_row = html.Div(
                 dcc.Input(id='layout-iterations',
                           type="number",
                           min=0, max=50, step=2,
-                          value=3,
+                          value=1,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -913,7 +917,6 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, name, txt, options):
-
     global assigned_codes
     global nlp
     global stopped_words
@@ -1028,7 +1031,6 @@ def utterance_table(parse_clicks, name, txt, options):
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes):
-
     global stored_data
 
     if cell is not None:
@@ -1098,7 +1100,6 @@ def knowledge_graph(n_clicks,
                     layout,
                     multiplier,
                     name):
-
     global stored_data
 
     # first, let's pickle the user generated model
@@ -1108,7 +1109,7 @@ def knowledge_graph(n_clicks,
     mco = mco if mco < mdmco else mdmco
 
     # display the latest utterance when generating a cumulative layout
-    if not dmc:
+    if not dmc and ctx.triggered_id == 'graph-button':
         line = line if line != 1 else len(stored_data)
 
     start = 0
