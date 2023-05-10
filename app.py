@@ -23,6 +23,8 @@ unstopped_words = set()
 
 assigned_codes = dict()
 
+stored_data = None
+
 theoretical_code_list = [
     'emergent',
     'centralized',
@@ -179,6 +181,11 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
+def process_tokens():
+
+    return ""
+
+
 def generate_graph(data_dict_list,
                    case_name="",
                    with_codes=False,
@@ -288,7 +295,7 @@ def generate_graph(data_dict_list,
     # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
     node_counts = [df.loc[token, token] for token in unique_tokens]
 
-    nodes = [(token, {'weight': df.loc[token, token]}) for token in unique_tokens]
+    nodes = [(token, {'weight': df.loc[token, token], 'label':nlp.vocab.strings[token]}) for token in unique_tokens]
 
     # create the network
     G = nx.Graph()
@@ -312,7 +319,7 @@ def generate_graph(data_dict_list,
     node_sizes = [(n * node_size_multiplier) for n in node_counts]
     node_colors = [(G.degree[token] + 1) for token in unique_tokens]
 
-    node_labels = [nlp.vocab.strings[token] for token in unique_tokens]
+    node_labels = list(nx.get_node_attributes(G, 'label').values())
 
     hover_texts = [f'<b>{node_labels[idx]}</b> <br> '
                    f'𝑓: {node_counts[idx]} <br> '
@@ -495,8 +502,6 @@ def generate_graph(data_dict_list,
 
 # ---- INTERFACE ----
 
-stored_data = dcc.Store(id='stored-data', storage_type='memory')
-
 # -- input section --
 
 INPUT_FOLDER = 'samples'
@@ -513,7 +518,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='00_demo.txt'
+    value='01_cj2.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
@@ -719,7 +724,7 @@ grap_options_row = html.Div(
                 dcc.Input(id='layout-iterations',
                           type="number",
                           min=0, max=50, step=2,
-                          value=4,
+                          value=3,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -845,7 +850,6 @@ app.layout = dbc.Container(
                 metrics_viewer_wrapper_div
             )
         ),
-        stored_data,
         coding_modal
     ],
     fluid=True,
@@ -919,7 +923,6 @@ def reset_mode(nclicks, name):
 
 @app.callback(
     Output('utterances-div', 'children'),
-    Output('stored-data', 'data'),
     Output('input-accordion', 'active_item'),
     Output('graph-button', 'disabled'),
     Input('parse-button', 'n_clicks'),
@@ -929,12 +932,12 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, name, txt, options):
+
     global assigned_codes
     global nlp
     global stopped_words
     global unstopped_words
-
-    loaded_stopwords = set()
+    global stored_data
 
     if parse_clicks is not None:
 
@@ -1025,10 +1028,12 @@ def utterance_table(parse_clicks, name, txt, options):
                 transcript_table
             ]
 
-            return editor_section, parsed_data, "1", False
+            stored_data = parsed_data
+
+            return editor_section, "1", False
         else:
             message = [html.P('Processed text will be displayed here as a datatable.', className='lead')]
-            return message, "Nothing is parsed yet!", "0", True
+            return message, "0", True
 
 
 @app.callback(
@@ -1039,11 +1044,11 @@ def utterance_table(parse_clicks, name, txt, options):
     Input('data-table', 'active_cell'),
     Input({'type': 'toggle-token', 'index': ALL, 'stop': ALL}, 'n_clicks'),
     Input({'type': 'code-checkbox', 'index': ALL}, 'value'),
-    State('stored-data', 'data'),
     prevent_initial_call=True
 )
-def coding_editor(cell, toggle_clicks, checked_codes, data):
-    global STOP_WORDS
+def coding_editor(cell, toggle_clicks, checked_codes):
+
+    global stored_data
 
     if cell is not None:
 
@@ -1063,10 +1068,10 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
                     unstopped_words.discard(toggled_token)
 
         i, j = cell['row'], 'utterance'
-        cell_text = str(data[i][j])
+        cell_text = str(stored_data[i][j])
         token_buttons, token_treemap = process_utterance(cell_text)
 
-        line_num = int(data[i]['line'] - 1)
+        line_num = int(stored_data[i]['line'] - 1)
         if len(checked_codes) > 0:
             if type(ctx.triggered_id) is not str:
                 if ctx.triggered_id['type'] == 'code-checkbox':
@@ -1099,7 +1104,6 @@ def coding_editor(cell, toggle_clicks, checked_codes, data):
     Input('min-dmc-co', 'value'),
     Input('layout-iterations', 'value'),
     Input('node-size', 'value'),
-    State('stored-data', 'data'),
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
@@ -1112,8 +1116,9 @@ def knowledge_graph(n_clicks,
                     mdmco,
                     layout,
                     multiplier,
-                    data,
                     name):
+
+    global stored_data
 
     # first, let's pickle the user generated model
     pickle_model(name)
@@ -1125,19 +1130,19 @@ def knowledge_graph(n_clicks,
 
     # display the latest utterance when generating a cumulative layout
     if not dmc:
-        line = line if line != 1 else len(data)
+        line = line if line != 1 else len(stored_data)
 
-    num_lines = line if line < len(data) else len(data)
+    num_lines = line if line < len(stored_data) else len(stored_data)
 
     if dmc:
         r = int((window - 1) / 2)
         start = max(0, line - r)
-        num_lines = min(len(data), line + r)
+        num_lines = min(len(stored_data), line + r)
 
         if window == 1:
             num_lines = start + 1
 
-    graph, stats = generate_graph(data[0:num_lines],
+    graph, stats = generate_graph(stored_data[0:num_lines],
                                   case_name=name,
                                   with_codes=code_pref,
                                   layout_iterations=layout,
@@ -1146,7 +1151,7 @@ def knowledge_graph(n_clicks,
                                   node_size_multiplier=multiplier,
                                   dmc_window_start=start)
 
-    return graph, len(data), line, stats, mco
+    return graph, len(stored_data), line, stats, mco
 
 
 # Press the green button in the gutter to run the script.
