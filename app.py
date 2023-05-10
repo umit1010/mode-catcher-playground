@@ -16,7 +16,7 @@ from plotly.subplots import make_subplots
 
 # ---- PLATFORM ----
 
-nlp = None
+nlp: spacy.lang.en.English = None
 
 stopped_words = set()
 unstopped_words = set()
@@ -105,6 +105,7 @@ def generate_code_checkboxes(line_num, values=None):
 
 
 def process_utterance(raw_text):
+
     global nlp
 
     doc = nlp(raw_text.strip().lower())
@@ -158,7 +159,7 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
-    global STOP_WORDS
+
     global nlp
 
     models_folder = Path('./models/')
@@ -183,13 +184,13 @@ def pickle_model(mode_name):
 
 def process_tokens():
 
-    return ""
+    return "I did not implement this yet"
 
 
-def generate_graph(data_dict_list,
+def generate_graph(start_line=0,  # if > 0, dmc mode is activated
+                   end_line=1,
                    case_name="",
                    with_codes=False,
-                   dmc_window_start=0,  # if > 1, dmc mode is activated
                    layout_iterations=3,
                    min_co=1,
                    min_dmc_co=2,
@@ -197,11 +198,17 @@ def generate_graph(data_dict_list,
 
     global nlp
 
-    num_lines = len(data_dict_list)
+    # if showing a cumulative graph, generate nodes for just until that point
+    #    otherwise, generate nodes for the entire transcript
+    data_dict_list = stored_data[0:end_line] if start_line == 0 else stored_data
+
+    # if showing a cumulative graph, just show the current line number
+    #    otherwise, show the range of the line numbers
+    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
     # generate unique lemmas list and create a co-occurrence matrix dataframe
-    combined_text = " ".join([line['utterance'] for line in data_dict_list])
-    combined_doc = nlp(combined_text.strip().lower())
+    combined_text = " ".join([line['utterance'] for line in data_dict_list]).strip().lower()
+    combined_doc = nlp(combined_text)
 
     all_tokens = [token.lemma for token in combined_doc if
                   not nlp.vocab[token.lemma].is_punct
@@ -280,12 +287,12 @@ def generate_graph(data_dict_list,
                 #    or if we have the same row and col (i.e., count), just add it to the table
                 # if we have a window, then we will only calculate co-occurrences
                 #    between nodes within that window
-                if dmc_window_start < 1 or row == col:
+                if start_line < 1 or row == col:
 
                     df.loc[row, col] += 1
                     df.loc[col, row] += 1
 
-                elif (line['line'] - 1) > dmc_window_start - 1:
+                elif (line['line'] - 1) > start_line - 1:
 
                     df.loc[row, col] += 1
                     df.loc[col, row] += 1
@@ -405,13 +412,13 @@ def generate_graph(data_dict_list,
         )
     )
 
-    type_label = "Cumulative" if dmc_window_start < 1 else "DMC"
+    type_label = "Cumulative" if start_line == 0 else "DMC"
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
-                text=f"{case_name} | {type_label} View @ at {num_lines}",
+                text=f"{case_name} | {type_label} View @ at {current_lines}",
                 x=0.5,
                 xanchor='center'
             ),
@@ -432,7 +439,7 @@ def generate_graph(data_dict_list,
 
     # metrics plots
 
-    graph_metrics = f"No tokens with non-zero degree." if num_lines > 1 else "Nothing to display yet!"
+    graph_metrics = f"No tokens with non-zero degree." if current_lines > 1 else "Nothing to display yet!"
 
     # first create a sorted list of degrees for plotting as a scatter plot and histogram
     connected_nodes = dict(
@@ -688,7 +695,7 @@ grap_options_row = html.Div(
                 dcc.Input(id='min-co',
                           type="number",
                           min=1, max=10, step=1,
-                          value=1,
+                          value=2,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -968,6 +975,7 @@ def utterance_table(parse_clicks, name, txt, options):
 
             # reload the model because it only pulls default stopwords when loading
             nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+            print(type(nlp))
 
             nlp(' '.join(stopped_words))
             nlp(' '.join(unstopped_words))
@@ -1137,19 +1145,20 @@ def knowledge_graph(n_clicks,
     if dmc:
         r = int((window - 1) / 2)
         start = max(0, line - r)
-        num_lines = min(len(stored_data), line + r)
+        end = min(len(stored_data), line + r)
 
         if window == 1:
             num_lines = start + 1
 
-    graph, stats = generate_graph(stored_data[0:num_lines],
+    graph, stats = generate_graph(start_line=start,
+                                  end_line=end,
                                   case_name=name,
                                   with_codes=code_pref,
                                   layout_iterations=layout,
                                   min_co=mco,
                                   min_dmc_co=mdmco,
-                                  node_size_multiplier=multiplier,
-                                  dmc_window_start=start)
+                                  node_size_multiplier=multiplier
+                                  )
 
     return graph, len(stored_data), line, stats, mco
 
