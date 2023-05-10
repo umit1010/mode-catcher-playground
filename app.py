@@ -244,8 +244,6 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
                 col = line_tokens[j]
 
-                if col == row: continue
-
                 # if the token was not added to the dataframe yet, add it as 1 count
                 #    if it already exists, increment it by 1 (count)
                 if col not in df.index or col not in df.columns:
