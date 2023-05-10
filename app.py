@@ -16,7 +16,7 @@ from plotly.subplots import make_subplots
 
 # ---- PLATFORM ----
 
-nlp: spacy.lang.en.English = None
+nlp = None
 
 stopped_words = set()
 unstopped_words = set()
@@ -206,59 +206,26 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     #    otherwise, show the range of the line numbers
     current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
-    # generate unique lemmas list and create a co-occurrence matrix dataframe
-    combined_text = " ".join([line['utterance'] for line in data_dict_list]).strip().lower()
-    combined_doc = nlp(combined_text)
-
-    all_tokens = [token.lemma for token in combined_doc if
-                  not nlp.vocab[token.lemma].is_punct
-                  and not nlp.vocab[token.lemma].is_stop
-                  and not token.is_punct
-                  and not token.is_stop]
-
-    # if we need to display theoretical codes,
-    #       append them once to the end of the doc
-    #       so that they are added to the model's vocabulary
-    code_tokens = list()
-
-    if with_codes:
-        codes_text = " ".join(theoretical_code_list)
-        codes_doc = nlp(codes_text)
-        code_tokens = [c.lemma for c in codes_doc]
-        all_tokens.extend(code_tokens)
-        # combined_text = f'{combined_text} {" ".join(theoretical_code_list)}'
-
-    token_counts = Counter(all_tokens)
-    unique_tokens = list(token_counts.keys())
-
-    df = pd.DataFrame(columns=unique_tokens, index=unique_tokens).fillna(0)
-
-    # raw count of token (including multiple instances in one line)
-    # first, fill each token's counts in the matrix ([same col, same row] = count)
-    # for token in unique_tokens:
-    #     df.loc[token, token] = token_counts[token]
-
-    # make all code counts 0 for now
-    for code in code_tokens:
-        df.loc[code, code] = 0
+    # create an empty dataframe that will be filled in the loop
+    df = pd.DataFrame()
 
     # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
 
-        line_doc = nlp(line['utterance'].strip().lower())
+        processed_line = nlp(line['utterance'].strip().lower())
 
-        line_tokens = list(set([token.lemma for token in line_doc
+        line_tokens = list(set([token.lemma for token in processed_line
                                 if not nlp.vocab[token.lemma].is_punct
                                 and not nlp.vocab[token.lemma].is_stop
                                 and not token.is_punct
                                 and not token.is_stop]))
 
-        # append the theoretical codes to the list of tokens in the line
-        if with_codes:
-            selections = assigned_codes[line['line'] - 1]
-            codes_to_include = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
-            code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
-            line_tokens.extend(code_tokens)
+        # # append the theoretical codes to the list of tokens in the line
+        # if with_codes:
+        #     selections = assigned_codes[line['line'] - 1]
+        #     codes_to_include = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
+        #     code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
+        #     line_tokens.extend(code_tokens)
 
         # first loop is iterating over each token
         # second loop iterates over the tokens after the current token
@@ -266,12 +233,12 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
             row = line_tokens[i]
 
-            # hacky solution to the keyerror --- COME BACK TO FIGURE OUT WHY
+            # if the token was not added to the dataframe yet, add it as 1 count
+            #    if it already exists, increment it by 1 (count)
             if row not in df.index or row not in df.columns:
-                continue
-
-            # count of the token as only 1 per line
-            df.loc[row, row] += 1
+                df.loc[row, row] = 0
+            else:
+                df.loc[row, row] += 1
 
             for j in range(i + 1, len(line_tokens)):
 
@@ -279,60 +246,69 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
                 if col == row: continue
 
-                # hacky solution to the keyerror --- COME BACK TO FIGURE OUT WHY
+                # if the token was not added to the dataframe yet, add it as 1 count
+                #    if it already exists, increment it by 1 (count)
                 if col not in df.index or col not in df.columns:
-                    continue
+                    df.loc[col, col] = 0
+                # else:
+                #     df.loc[col, col] += 1
+
+                # Gotta check for NaN because otherwise NaN + 1 = NaN.
+                if np.isnan(df.loc[col, row]):
+                    df.loc[col, row] = 0
+                    df.loc[row, col] = 0
 
                 # if no window is provided,
-                #    or if we have the same row and col (i.e., count), just add it to the table
-                # if we have a window, then we will only calculate co-occurrences
+                #    just count as usual
+                # if we have a window, then we will only calculate counts and co-occurrences
                 #    between nodes within that window
-                if start_line < 1 or row == col:
+                if start_line == 0:
 
                     df.loc[row, col] += 1
                     df.loc[col, row] += 1
 
-                elif (line['line'] - 1) > start_line - 1:
+                elif start_line <= line['line'] <= end_line:
 
                     df.loc[row, col] += 1
                     df.loc[col, row] += 1
 
-    # lastly, create the graph
+    # ---
+    # CREATE THE GRAPH
+    # ---
 
-    # node_labels = dict([(token, nlp.vocab.strings[token]) for token in unique_tokens])
-    node_counts = [df.loc[token, token] for token in unique_tokens]
+    node_frequencies = [df.loc[token, token] for token in df.index]
 
-    nodes = [(token, {'weight': df.loc[token, token], 'label':nlp.vocab.strings[token]}) for token in unique_tokens]
+    nodes = [(token, {'weight': df.loc[token, token], 'label':nlp.vocab.strings[token]}) for token in df.index]
 
     # create the network
     G = nx.Graph()
     G.add_nodes_from(nodes)
 
-    for i in range(len(unique_tokens)):
-        row = unique_tokens[i]
-        for j in range(i + 1, len(unique_tokens)):
-            col = unique_tokens[j]
+    for i in range(len(df.index)):
+        row = df.index[i]
+        for j in range(i + 1, len(df.index)):
+            col = df.index[j]
             connections = df.loc[row, col]
             if connections >= min_co:  # I add connections even if two tokens co-occur once, but don't show them
                 G.add_edge(row, col, weight=connections)
 
     # calculate the metrics
-    node_degrees = [G.degree[token] for token in unique_tokens]
+    node_degrees = [G.degree[token] for token in df.index]
     node_clustering = nx.clustering(G)
     ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
-    # create representation attributes (size, color, text, etc)
+    # create representation attributes (size, color, text, etc.)
     #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [(n * node_size_multiplier) for n in node_counts]
-    node_colors = [(G.degree[token] + 1) for token in unique_tokens]
+    node_sizes = [(n * node_size_multiplier) for n in node_frequencies]
+    node_colors = [(G.degree[token] + 1) for token in df.index]
 
     node_labels = list(nx.get_node_attributes(G, 'label').values())
 
     hover_texts = [f'<b>{node_labels[idx]}</b> <br> '
-                   f'𝑓: {node_counts[idx]} <br> '
+                   f'𝑓: {node_frequencies[idx]} <br> '
                    f'deg: {node_degrees[idx]} <br>'
                    f'clustering: {node_clustering[token]:.3f} <br>'
-                   for (idx, token) in enumerate(unique_tokens)]
+                   for (idx, token) in enumerate(df.index)]
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
@@ -439,7 +415,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # metrics plots
 
-    graph_metrics = f"No tokens with non-zero degree." if current_lines > 1 else "Nothing to display yet!"
+    graph_metrics = "Nothing to display yet!"
 
     # first create a sorted list of degrees for plotting as a scatter plot and histogram
     connected_nodes = dict(
@@ -975,7 +951,6 @@ def utterance_table(parse_clicks, name, txt, options):
 
             # reload the model because it only pulls default stopwords when loading
             nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
-            print(type(nlp))
 
             nlp(' '.join(stopped_words))
             nlp(' '.join(unstopped_words))
@@ -1131,8 +1106,6 @@ def knowledge_graph(n_clicks,
     # first, let's pickle the user generated model
     pickle_model(name)
 
-    start = 0
-
     # make sure min co-occurrence is not larger than min dmc co-occurrence
     mco = mco if mco < mdmco else mdmco
 
@@ -1140,7 +1113,10 @@ def knowledge_graph(n_clicks,
     if not dmc:
         line = line if line != 1 else len(stored_data)
 
-    num_lines = line if line < len(stored_data) else len(stored_data)
+    start = 0
+    end = line
+
+    end = end if end < len(stored_data) else len(stored_data)
 
     if dmc:
         r = int((window - 1) / 2)
