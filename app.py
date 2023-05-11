@@ -189,6 +189,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    case_name="",
                    raw_frequency=True,
                    with_codes=False,
+                   draw_layout=1,
                    layout_iterations=3,
                    min_co=1,
                    min_dmc_co=2,
@@ -318,9 +319,15 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
-    pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed, scale=4)
-    # pos = nx.random_layout(G,seed=layout_seed)    # comment out to test random
-    # pos = nx.circular_layout(G)                   # comment out to test random
+    print(draw_layout)
+    if draw_layout == 1:
+        pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed, scale=4)
+    elif draw_layout == 2:
+        pos = nx.random_layout(G, seed=layout_seed)    # comment out to test random
+    elif draw_layout == 3:
+        pos = nx.shell_layout(G)                   # comment out to test random
+    elif draw_layout == 4:
+        pos = nx.circular_layout(G)                   # comment out to test random
 
     # create the plotly graph for the network
     edge_x = []
@@ -657,9 +664,9 @@ graph_type_row = dbc.Row([
 
 ])
 
-grap_options_row = html.Div(
+grap_layout_options_div = html.Div(
     [
-        html.H4("Structure", className='my-4'),
+        html.H4("Layout", className='my-4'),
         dbc.Row([
 
             dbc.Col([
@@ -709,6 +716,21 @@ grap_options_row = html.Div(
         dbc.Row([
 
             dbc.Col([
+                html.Span('Layout: ', className='me-4'),
+                dbc.Select(
+                    id="graph-layout",
+                    options=[
+                        {"label": "Spring", "value": 1},
+                        {"label": "Random", "value": 2},
+                        {"label": "Shell", "value": 3},
+                        {"label": "Circle", "value": 4},
+                    ],
+                    value=1,
+                    class_name='w-50'
+                )
+            ], md=12, xl=3, class_name='d-flex mt-3'),
+
+            dbc.Col([
                 html.Span('Spring: ', className='me-4'),
                 dcc.Input(id='layout-iterations',
                           type="number",
@@ -733,7 +755,7 @@ grap_options_row = html.Div(
     ], className='my-4'
 )
 
-graph_view_wrapper_div = html.Div(
+graph_view_options_div = html.Div(
     [
         html.H3('Knowledge Graph', className='mb-4'),
         html.P(' '),
@@ -754,7 +776,7 @@ graph_view_wrapper_div = html.Div(
                    marks=None,
                    tooltip={"placement": "bottom", "always_visible": True},
                    className='my-4'),
-        grap_options_row
+        grap_layout_options_div
     ], className='border rounded p-4 my-4'
 )
 
@@ -831,7 +853,7 @@ app.layout = dbc.Container(
         ),
         dbc.Row(
             dbc.Col(
-                graph_view_wrapper_div
+                graph_view_options_div
             )
         ),
         dbc.Row(
@@ -1089,6 +1111,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Input('dmc-window', 'value'),
     Input('min-co', 'value'),
     Input('min-dmc-co', 'value'),
+    Input('graph-layout', 'value'),
     Input('layout-iterations', 'value'),
     Input('node-size', 'value'),
     State('mode-name', 'value'),
@@ -1099,9 +1122,10 @@ def knowledge_graph(n_clicks,
                     code_pref,
                     dmc,
                     window,
-                    mco,
-                    mdmco,
+                    n_co,
+                    n_dmc_co,
                     layout,
+                    iterations,
                     multiplier,
                     name):
     global stored_data
@@ -1110,7 +1134,7 @@ def knowledge_graph(n_clicks,
     pickle_model(name)
 
     # make sure min co-occurrence is not larger than min dmc co-occurrence
-    mco = mco if mco < mdmco else mdmco
+    n_co = n_co if n_co < n_dmc_co else n_dmc_co
 
     # display the latest utterance when generating a cumulative layout
     if not dmc and ctx.triggered_id == 'graph-button':
@@ -1133,13 +1157,14 @@ def knowledge_graph(n_clicks,
                                   end_line=end,
                                   case_name=name,
                                   with_codes=code_pref,
-                                  layout_iterations=layout,
-                                  min_co=mco,
-                                  min_dmc_co=mdmco,
+                                  draw_layout=layout,
+                                  layout_iterations=iterations,
+                                  min_co=n_co,
+                                  min_dmc_co=n_dmc_co,
                                   node_size_multiplier=multiplier
                                   )
 
-    return graph, len(stored_data), line, stats, mco
+    return graph, len(stored_data), line, stats, n_co
 
 
 # Press the green button in the gutter to run the script.
