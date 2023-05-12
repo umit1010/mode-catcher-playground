@@ -319,15 +319,18 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
-    print(draw_layout)
-    if draw_layout == 1:
+
+    if draw_layout == '1':
         pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed, scale=4)
-    elif draw_layout == 2:
-        pos = nx.random_layout(G, seed=layout_seed)    # comment out to test random
-    elif draw_layout == 3:
-        pos = nx.shell_layout(G)                   # comment out to test random
-    elif draw_layout == 4:
-        pos = nx.circular_layout(G)                   # comment out to test random
+
+    if draw_layout == '2':
+        pos = nx.random_layout(G, seed=layout_seed)
+
+    if draw_layout == '3':
+        pos = nx.shell_layout(G)
+
+    if draw_layout == '4':
+        pos = nx.circular_layout(G)
 
     # create the plotly graph for the network
     edge_x = []
@@ -605,20 +608,18 @@ input_accordion = dbc.Accordion(
 
 # -- utterances section --
 
-utterances_wrapper_div = html.Div(
-    [
-        html.H3('Revise and Code', className='mb-4'),
-        html.Div(
-            [
+utterances_accordion = dbc.Accordion(
+    dbc.AccordionItem(
+        [
+            html.Div([
                 html.P('Processed text will be displayed here as a datatable.', className='lead')
-            ], id='utterances-div'
-        )
-    ], className='border rounded p-4 my-4'
+            ], id='utterances-div')
+        ], title="Revise and Code"
+    ), active_item=0  # collapsed by default
 )
 
 graph_button = dbc.Button('Generate Graph',
                           id='graph-button',
-                          class_name='mt-4',
                           size='lg',
                           n_clicks=0,
                           disabled=True)
@@ -720,18 +721,18 @@ grap_layout_options_div = html.Div(
                 dbc.Select(
                     id="graph-layout",
                     options=[
-                        {"label": "Spring", "value": 1},
-                        {"label": "Random", "value": 2},
-                        {"label": "Shell", "value": 3},
-                        {"label": "Circle", "value": 4},
+                        {"label": "Spring", "value": '1'},
+                        {"label": "Random", "value": '2'},
+                        {"label": "Shell", "value": '3'},
+                        {"label": "Circle", "value": '4'},
                     ],
-                    value=1,
+                    value='1',
                     class_name='w-50'
                 )
             ], md=12, xl=3, class_name='d-flex mt-3'),
 
             dbc.Col([
-                html.Span('Spring: ', className='me-4'),
+                html.Span('Spring Iterations: ', className='me-4'),
                 dcc.Input(id='layout-iterations',
                           type="number",
                           min=0, max=50, step=2,
@@ -824,7 +825,6 @@ coding_modal = dbc.Modal(
                 ])
             ])
         )], id='coding-modal',
-    # fullscreen=True,
     scrollable=True,
     size='xl',
     is_open=False,
@@ -843,7 +843,7 @@ app.layout = dbc.Container(
         ),
         dbc.Row(
             dbc.Col(
-                utterances_wrapper_div
+                utterances_accordion
             )
         ),
         dbc.Row(
@@ -1057,6 +1057,7 @@ def utterance_table(parse_clicks, name, txt, options):
     prevent_initial_call=True
 )
 def coding_editor(cell, toggle_clicks, checked_codes):
+
     global stored_data
 
     if cell is not None:
