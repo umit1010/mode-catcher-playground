@@ -16,7 +16,7 @@ from plotly.subplots import make_subplots
 
 # ---- PLATFORM ----
 
-nlp = None
+nlp = spacy.load('en_core_web_sm')
 
 stopped_words = set()
 unstopped_words = set()
@@ -50,6 +50,8 @@ def parse_raw_text(txt: str,
                    timestamp=False,
                    speaker=False,
                    interviewer=False):
+
+    # parse the text
     input_lines = [line.strip().replace('\n', '')
                    for line in txt.splitlines()
                    if len(line.strip()) > 0 and line.count(':') > 2]
@@ -158,6 +160,7 @@ def process_utterance(raw_text):
 
 
 def pickle_model(mode_name):
+
     global nlp
 
     models_folder = Path('./models/')
@@ -181,7 +184,8 @@ def pickle_model(mode_name):
 
 
 def process_tokens():
-    return "I did not implement this yet"
+
+    return "I did not implement this yet. I don't even remember what was this about."
 
 
 def generate_graph(start_line=0,  # if > 0, dmc mode is activated
@@ -194,6 +198,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    min_co=1,
                    min_dmc_co=2,
                    node_size_multiplier=2):
+
     global nlp
 
     # if showing a cumulative graph, generate nodes for just until that point
@@ -282,6 +287,9 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     # ---
     # CREATE THE GRAPH
     # ---
+
+    # drop 0 count tokens
+
 
     node_frequencies = [df.loc[token, token] for token in df.index]
 
