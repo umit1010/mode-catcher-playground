@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
+from itertools import combinations
 from plotly.subplots import make_subplots
 
 # ---- PLATFORM ----
@@ -236,53 +237,27 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         #     code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
         #     line_tokens.extend(code_tokens)
 
-        # first loop is iterating over each token
-        # second loop iterates over the tokens after the current token
-        for i in range(len(unique_tokens)):
+        # iterate over each unique token combination
+        for t1, t2 in combinations(unique_tokens, 2):
 
-            row = unique_tokens[i]
+            # if either of the tokens aren't in the dataframe,
+            #    add them to the dataframe and set their co-occurrence as 1
+            #    otherwise, increment their co-occurrence by 1
+            if t1 not in df.index or t2 not in df.index:
+                df.loc[t1, t1] = 0
+                df.loc[t2, t2] = 0
+                df.loc[t1, t2] = 1
+                df.loc[t2, t1] = 1
+            else:
+                df.loc[t1, t2] += 1
+                df.loc[t2, t1] += 1
 
-            # if the token was not added to the dataframe yet, add it as 1 count
-            #    if it already exists, increment it by 1 (count)
-            if row not in df.index or row not in df.columns:
-                df.loc[row, row] = 0
-
-            # if no start line, count tokens in all rows
-            #    if within a dmc window, count tokens only in that dmc window
-            #    note, this will show out-of-window counts as 0, which is not cool
-            if start_line == 0 or start_line <= line['line'] <= end_line:
-                if raw_frequency:
-                    df.loc[row, row] += token_counts[row]
-                else:
-                    df.loc[row, row] += 1
-
-            for j in range(i + 1, len(unique_tokens)):
-
-                col = unique_tokens[j]
-
-                # if the token was not added to the dataframe yet, add it as 1 count
-                #    if it already exists, increment it by 1 (count)
-                if col not in df.index or col not in df.columns:
-                    df.loc[col, col] = 0
-
-                # Gotta check for NaN because otherwise NaN + 1 = NaN.
-                if np.isnan(df.loc[col, row]):
-                    df.loc[col, row] = 0
-                    df.loc[row, col] = 0
-
-                # if no window is provided,
-                #    just count as usual
-                # if we have a window, then we will only calculate counts and co-occurrences
-                #    between nodes within that window
-                if start_line == 0:
-
-                    df.loc[row, col] += 1
-                    df.loc[col, row] += 1
-
-                elif start_line <= line['line'] <= end_line:
-
-                    df.loc[row, col] += 1
-                    df.loc[col, row] += 1
+        # add counts of the tokens to the co-occurrence matrix
+        for t in token_counts:
+            if t not in df.index:
+                df.loc[t, t] = token_counts[t]
+            else:
+                df.loc[t, t] += token_counts[t]
 
     # ---
     # CREATE THE GRAPH
@@ -740,16 +715,6 @@ grap_layout_options_div = html.Div(
             ], md=12, xl=3, class_name='d-flex mt-3'),
 
             dbc.Col([
-                html.Span('Spring Iterations: ', className='me-4'),
-                dcc.Input(id='layout-iterations',
-                          type="number",
-                          min=0, max=50, step=2,
-                          value=1,
-                          style={'margin-top': '-6px'}
-                          )
-            ], md=12, xl=3, class_name='d-flex mt-3'),
-
-            dbc.Col([
                 html.Span('Node Size: ', className='me-4'),
                 dcc.Input(id='node-size',
                           type="number",
@@ -760,6 +725,15 @@ grap_layout_options_div = html.Div(
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
 
+            dbc.Col([
+                html.Span('Spring iterations: ', className='me-4'),
+                dcc.Input(id='layout-iterations',
+                          type="number",
+                          min=0, max=50, step=2,
+                          value=2,
+                          style={'margin-top': '-6px'}
+                          )
+            ], md=12, xl=3, class_name='d-flex mt-3'),
         ], class_name='my-4', justify='center')
     ], className='my-4'
 )
