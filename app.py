@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import spacy
+
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
 from itertools import combinations
@@ -194,11 +195,11 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    case_name="",
                    raw_frequency=True,
                    with_codes=False,
-                   draw_layout=1,
-                   layout_iterations=3,
-                   min_co=1,
-                   min_dmc_co=2,
-                   node_size_multiplier=2):
+                   layout=1,
+                   spring_iterations=30,
+                   min_degree=1,
+                   min_dmc_degree=2,
+                   size_multiplier=2):
 
     global nlp
 
@@ -263,8 +264,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     # CREATE THE GRAPH
     # ---
 
-    # drop 0 count tokens
-
+    # drop 0 count tokens ??
 
     node_frequencies = [df.loc[token, token] for token in df.index]
 
@@ -279,7 +279,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         for j in range(i + 1, len(df.index)):
             col = df.index[j]
             connections = df.loc[row, col]
-            if connections >= min_co:  # I add connections even if two tokens co-occur once, but don't show them
+            if connections >= min_degree:
                 G.add_edge(row, col, weight=connections)
 
     # calculate the metrics
@@ -289,7 +289,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # create representation attributes (size, color, text, etc.)
     #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [(n * node_size_multiplier) for n in node_frequencies]
+    node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies]
     node_colors = [(G.degree[token] + 1) for token in df.index]
 
     node_labels = list(nx.get_node_attributes(G, 'label').values())
@@ -303,16 +303,16 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
 
-    if draw_layout == '1':
-        pos = nx.spring_layout(G, iterations=layout_iterations, seed=layout_seed, scale=4)
+    if layout == '1':
+        pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=0.2)
 
-    if draw_layout == '2':
+    if layout == '2':
         pos = nx.random_layout(G, seed=layout_seed)
 
-    if draw_layout == '3':
+    if layout == '3':
         pos = nx.shell_layout(G)
 
-    if draw_layout == '4':
+    if layout == '4':
         pos = nx.circular_layout(G)
 
     # create the plotly graph for the network
@@ -321,7 +321,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] >= min_dmc_co:
+        if edge_attr['weight'] >= min_dmc_degree:
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             edge_x.append(x0)
@@ -340,14 +340,14 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # create a representation of the connections among tokens
     # that co occur more than min_co but less than min_dmc_co
-    if min_co < min_dmc_co:
+    if min_degree < min_dmc_degree:
 
         light_edge_x = []
         light_edge_y = []
 
         for edge in G.edges():
             edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-            if edge_attr['weight'] <= min_co:  # only show link if co-occur > cutoff
+            if edge_attr['weight'] <= min_degree:  # only show link if co-occur > cutoff
                 x0, y0 = pos[edge[0]]
                 x1, y1 = pos[edge[1]]
                 light_edge_x.append(x0)
@@ -359,11 +359,13 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
         light_edge_trace = go.Scatter(
             x=light_edge_x, y=light_edge_y,
-            line=dict(width=0.1, color='#AAA'),
+            line=dict(width=0.6, color='#BBB', dash='dot'),
             hoverinfo='none',
             mode='lines'
         )
     else:
+        # if the min network degree and min dmc degree are the same,
+        #   no need to create a separate plot, so I pass an empty trace.
         light_edge_trace = go.Scatter()
 
     node_x = [pos[i].tolist()[0] for i in pos]
@@ -374,7 +376,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        text=node_labels,
+        # text=node_labels,
         textposition="top center",
         marker=dict(
             showscale=True,
@@ -668,7 +670,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='min-co',
                           type="number",
                           min=1, max=10, step=1,
-                          value=2,
+                          value=1,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -718,8 +720,8 @@ grap_layout_options_div = html.Div(
                 html.Span('Node Size: ', className='me-4'),
                 dcc.Input(id='node-size',
                           type="number",
-                          min=2, max=18, step=1,
-                          value=2,
+                          min=0, max=40, step=5,
+                          value=5,
                           style={'margin-top': '-6px'},
                           className='ms-4'
                           ),
@@ -729,8 +731,8 @@ grap_layout_options_div = html.Div(
                 html.Span('Spring iterations: ', className='me-4'),
                 dcc.Input(id='layout-iterations',
                           type="number",
-                          min=0, max=50, step=2,
-                          value=2,
+                          min=0, max=500, step=10,
+                          value=50,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -745,13 +747,8 @@ graph_view_options_div = html.Div(
         graph_type_row,
         html.P(' '),
         html.Div(
-            [
-                html.P(' '),
-                html.P(
-                    'Knowledge graph will be displayed once you generate it.',
-                    className='lead text-center m-4 p-4'),
-                html.P(' ')
-            ], id='graph-div'
+            'Knowledge graph will be displayed once you generate it.',
+            id='graph-div', className='text-center'
         ),
         dcc.Slider(id='graph-slider',
                    min=1, max=2, step=1,
@@ -1097,6 +1094,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Input('graph-layout', 'value'),
     Input('layout-iterations', 'value'),
     Input('node-size', 'value'),
+    State('graph-button', 'disabled'),
     State('mode-name', 'value'),
     prevent_initial_call=True
 )
@@ -1105,19 +1103,24 @@ def knowledge_graph(n_clicks,
                     code_pref,
                     dmc,
                     window,
-                    n_co,
-                    n_dmc_co,
+                    deg,
+                    dmc_deg,
                     layout,
                     iterations,
                     multiplier,
+                    disabled,
                     name):
+
     global stored_data
+
+    if disabled:
+        return "You need to process some data.", 1, 1, "You need to process some data.", deg
 
     # first, let's pickle the user generated model
     pickle_model(name)
 
     # make sure min co-occurrence is not larger than min dmc co-occurrence
-    n_co = n_co if n_co < n_dmc_co else n_dmc_co
+    deg = deg if deg < dmc_deg else dmc_deg
 
     # display the latest utterance when generating a cumulative layout
     if not dmc and ctx.triggered_id == 'graph-button':
@@ -1140,14 +1143,14 @@ def knowledge_graph(n_clicks,
                                   end_line=end,
                                   case_name=name,
                                   with_codes=code_pref,
-                                  draw_layout=layout,
-                                  layout_iterations=iterations,
-                                  min_co=n_co,
-                                  min_dmc_co=n_dmc_co,
-                                  node_size_multiplier=multiplier
+                                  layout=layout,
+                                  spring_iterations=iterations,
+                                  min_degree=deg,
+                                  min_dmc_degree=dmc_deg,
+                                  size_multiplier=multiplier
                                   )
 
-    return graph, len(stored_data), line, stats, n_co
+    return graph, len(stored_data), line, stats, deg
 
 
 # Press the green button in the gutter to run the script.
