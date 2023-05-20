@@ -245,9 +245,27 @@ def calculate_co_occurrences(start, end):
             if t1 not in df.index or t2 not in df.index:
                 df.loc[t1, t1] = 0
                 df.loc[t2, t2] = 0
-                df.loc[t1, t2] = 1
-                df.loc[t2, t1] = 1
-            else:
+                df.loc[t1, t2] = 0
+                df.loc[t2, t1] = 0
+
+            df.loc[t1, t2] += 1
+            df.loc[t2, t1] += 1
+
+        # boost co-occurrences by 1 if they are within the same sentence
+        for sent in processed_line.sents:
+
+            # generate a list of non-stopped tokens
+            sent_tokens = [token.lemma for token in sent
+                           if not nlp.vocab[token.lemma].is_punct
+                           and not nlp.vocab[token.lemma].is_stop
+                           and not token.is_punct
+                           and not token.is_stop]
+
+            # now generate the raw counts of each token within this line
+            #     which also generates a list of unique tokens as the keys of the counter
+            sent_unique_tokens = set(sent_tokens)
+
+            for t1, t2 in combinations(sent_unique_tokens, 2):
                 df.loc[t1, t2] += 1
                 df.loc[t2, t1] += 1
 
@@ -318,9 +336,11 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies]
     node_colors = [(G.degree[token[0]] + 1) for token in nodes]
 
-    node_labels = list(nx.get_node_attributes(G, 'label').values())
+    # create node label but don't show labels for nodes with only 1 count
+    node_labels = [G.nodes[n]['label'] if G.nodes[n]['weight'] > 3 else '' for n in G.nodes]
+    node_hover_labels = list(nx.get_node_attributes(G, 'label').values())
 
-    hover_texts = [f'<b>{node_labels[idx]}</b> <br> '
+    hover_texts = [f'<b>{node_hover_labels[idx]}</b> <br> '
                    f'𝑓: {node_frequencies[idx]} <br> '
                    f'deg: {node_degrees[idx]} <br>'
                    f'clustering: {node_clustering[token[0]]:.3f} <br>'
@@ -402,7 +422,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        # text=node_labels,
+        text=node_labels,
         textposition="top center",
         marker=dict(
             showscale=True,
@@ -528,7 +548,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='D3 - Sal-N Clinical.txt'
+    value='D1 - B-Interview-2.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
