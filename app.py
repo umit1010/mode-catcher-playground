@@ -20,6 +20,10 @@ from plotly.subplots import make_subplots
 
 nlp = spacy.load('en_core_web_sm')
 
+df_co_occurrences = pd.DataFrame()
+
+tokens_changed: bool = False
+
 stopped_words = set()
 unstopped_words = set()
 
@@ -52,6 +56,8 @@ def parse_raw_text(txt: str,
                    timestamp=False,
                    speaker=False,
                    interviewer=False):
+
+    global tokens_changed
 
     # parse the text
     input_lines = [line.strip().replace('\n', '')
@@ -86,6 +92,8 @@ def parse_raw_text(txt: str,
 
         if i not in assigned_codes.keys():
             assigned_codes[i] = [False] * len(theoretical_code_list)
+
+    tokens_changed = True
 
     return data
 
@@ -185,33 +193,23 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def process_tokens():
-
-    return "I did not implement this yet. I don't even remember what was this about."
-
-
-def generate_graph(start_line=0,  # if > 0, dmc mode is activated
-                   end_line=1,
-                   case_name="",
-                   raw_frequency=True,
-                   with_codes=False,
-                   layout=1,
-                   spring_iterations=30,
-                   min_degree=1,
-                   min_dmc_degree=2,
-                   size_multiplier=2):
+def calculate_co_occurrences(start, end):
 
     global nlp
 
     # if showing a cumulative graph, generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
-    data_dict_list = stored_data[0:end_line] if start_line == 0 else stored_data
+    data_dict_list = stored_data[0:end] if start == 0 else stored_data
 
-    # if showing a cumulative graph, just show the current line number
-    #    otherwise, show the range of the line numbers
-    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
+    # generate a list of unique tokens to create the dataframe
+    txt = ' '.join([line['utterance'] for line in data_dict_list])
+    all_unique_tokens = list(set([token.lemma for token in nlp(txt)]))
 
-    # create an empty dataframe that will be filled in the loop
+    # create an empty dataframe with all values as 0 that will be filled in the loop
+    # -- but it does not work right now. if I switch to pre-defined columns,
+    # -- I get links between all tokens for some reason
+    # -- -- not because I am not filtering out stop words when creating the unique tokens!!!
+    # df = pd.DataFrame(data=0, columns=all_unique_tokens, index=all_unique_tokens, dtype='uint16')
     df = pd.DataFrame()
 
     # next, iterate over each line's unique tokens and add them to the matrix
@@ -229,7 +227,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         # now generate the raw counts of each token within this line
         #     which also generates a list of unique tokens as the keys of the counter
         token_counts = Counter(line_tokens)
-        unique_tokens = list(token_counts.keys())
+        line_unique_tokens = list(token_counts.keys())
 
         # # append the theoretical codes to the list of tokens in the line
         # if with_codes:
@@ -239,7 +237,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         #     line_tokens.extend(code_tokens)
 
         # iterate over each unique token combination
-        for t1, t2 in combinations(unique_tokens, 2):
+        for t1, t2 in combinations(line_unique_tokens, 2):
 
             # if either of the tokens aren't in the dataframe,
             #    add them to the dataframe and set their co-occurrence as 1
@@ -260,45 +258,73 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
             else:
                 df.loc[t, t] += token_counts[t]
 
+    return df.fillna(0)
+
+
+def generate_graph(start_line=0,  # if > 0, dmc mode is activated
+                   end_line=1,
+                   case_name="",
+                   raw_frequency=True,
+                   with_codes=False,
+                   layout=1,
+                   spring_iterations=30,
+                   min_degree=1,
+                   min_dmc_degree=2,
+                   size_multiplier=2):
+
+    global nlp
+    global df_co_occurrences
+    global tokens_changed
+
+    if tokens_changed:
+        df_co_occurrences = calculate_co_occurrences(start=start_line, end=end_line)
+        tokens_changed = False
+
     # ---
     # CREATE THE GRAPH
     # ---
 
-    # drop 0 count tokens ??
+    # if showing a cumulative graph, just show the current line number
+    #    otherwise, show the range of the line numbers
+    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
-    node_frequencies = [df.loc[token, token] for token in df.index]
+    # drop 0 count tokens
+    nodes = [(token, {'weight': df_co_occurrences.loc[token, token], 'label': nlp.vocab.strings[token]})
+             for token in df_co_occurrences.index
+             if df_co_occurrences.loc[token, token] > 0]
 
-    nodes = [(token, {'weight': df.loc[token, token], 'label': nlp.vocab.strings[token]}) for token in df.index]
+    # generate token counts
+    node_frequencies = [df_co_occurrences.loc[token[0], token[0]] for token in nodes]
 
     # create the network
     G = nx.Graph()
     G.add_nodes_from(nodes)
 
-    for i in range(len(df.index)):
-        row = df.index[i]
-        for j in range(i + 1, len(df.index)):
-            col = df.index[j]
-            connections = df.loc[row, col]
+    for i in range(len(df_co_occurrences.index)):
+        row = df_co_occurrences.index[i]
+        for j in range(i + 1, len(df_co_occurrences.index)):
+            col = df_co_occurrences.index[j]
+            connections = df_co_occurrences.loc[row, col]
             if connections >= min_degree:
                 G.add_edge(row, col, weight=connections)
 
     # calculate the metrics
-    node_degrees = [G.degree[token] for token in df.index]
+    node_degrees = [G.degree[token[0]] for token in nodes]
     node_clustering = nx.clustering(G)
     ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
     # create representation attributes (size, color, text, etc.)
     #   I add 1 to node size because the ones with degree 0 disappear
     node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies]
-    node_colors = [(G.degree[token] + 1) for token in df.index]
+    node_colors = [(G.degree[token[0]] + 1) for token in nodes]
 
     node_labels = list(nx.get_node_attributes(G, 'label').values())
 
     hover_texts = [f'<b>{node_labels[idx]}</b> <br> '
                    f'𝑓: {node_frequencies[idx]} <br> '
                    f'deg: {node_degrees[idx]} <br>'
-                   f'clustering: {node_clustering[token]:.3f} <br>'
-                   for (idx, token) in enumerate(df.index)]
+                   f'clustering: {node_clustering[token[0]]:.3f} <br>'
+                   for (idx, token) in enumerate(nodes)]
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
@@ -347,7 +373,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
         for edge in G.edges():
             edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-            if edge_attr['weight'] <= min_degree:  # only show link if co-occur > cutoff
+            if 0 < edge_attr['weight'] <= min_degree:  # only show link if co-occur > cutoff
                 x0, y0 = pos[edge[0]]
                 x1, y1 = pos[edge[1]]
                 light_edge_x.append(x0)
@@ -502,7 +528,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='01_cj2.txt'
+    value='D3 - Sal-N Clinical.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
@@ -922,6 +948,7 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True
 )
 def utterance_table(parse_clicks, name, txt, options):
+
     global assigned_codes
     global nlp
     global stopped_words
@@ -1038,6 +1065,7 @@ def utterance_table(parse_clicks, name, txt, options):
 def coding_editor(cell, toggle_clicks, checked_codes):
 
     global stored_data
+    global tokens_changed
 
     if cell is not None:
 
@@ -1055,6 +1083,8 @@ def coding_editor(cell, toggle_clicks, checked_codes):
                     nlp.vocab[toggled_token].is_stop = True
                     stopped_words.add(toggled_token)
                     unstopped_words.discard(toggled_token)
+
+                tokens_changed = True
 
         i, j = cell['row'], 'utterance'
         cell_text = str(stored_data[i][j])
@@ -1112,9 +1142,13 @@ def knowledge_graph(n_clicks,
                     name):
 
     global stored_data
+    global tokens_changed
 
     if disabled:
         return "You need to process some data.", 1, 1, "You need to process some data.", deg
+
+    if ctx.triggered_id == 'graph-slider':
+        tokens_changed = True
 
     # first, let's pickle the user generated model
     pickle_model(name)
