@@ -197,7 +197,7 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_knowledge_graph(start, end, degree_cutoff=1):
+def generate_knowledge_graph(start, end):
 
     global nlp
     global stored_data
@@ -249,10 +249,6 @@ def generate_knowledge_graph(start, end, degree_cutoff=1):
 
                     new_G[t1][t2]['weight'] += 1
 
-    # remove edges that are below the degree offset value (like less than min degrees)
-    edges_to_drop = [(e1, e2) for (e1, e2) in new_G.edges if new_G[e1][e2]['weight'] < degree_cutoff]
-    new_G.remove_edges_from(edges_to_drop)
-
     return new_G
 
 
@@ -263,8 +259,8 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    with_codes=False,
                    layout=1,
                    spring_iterations=30,
-                   min_degree=1,
-                   min_dmc_degree=2,
+                   min_co_occurrence=1,
+                   min_dmc_co_occurrence=2,
                    size_multiplier=2):
 
     global nlp
@@ -274,39 +270,28 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     # if any edits were made in the utterance table or line number, regenerate the graph
     #    otherwise use the same graph for visualization changes
     if tokens_changed:
-        G = generate_knowledge_graph(start=start_line, end=end_line, degree_cutoff=min_degree)
+        G = generate_knowledge_graph(start=start_line, end=end_line)
         tokens_changed = False
 
-    # ---
-    # CREATE THE GRAPH
-    # ---
+    # CALCULATE NODE METRICS
 
-    # if showing a cumulative graph, just show the current line number
-    #    otherwise, show the range of the line numbers
-    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
+    node_list = [n for n in G.nodes]
 
-    # calculate the metrics
-    node_frequencies = nx.get_node_attributes(G, 'count')
-
-    # create representation attributes (size, color, text, etc.)
     #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies.values()]
+    node_sizes = [(1 + np.log2(G.nodes[n]['count'])) * size_multiplier for n in node_list]
 
-    # create node label but don't show labels for nodes with only 1 count
-    node_displayed_labels = {n: nlp.vocab.strings[n] if G.degree(n) > min_degree - 1 else '' for n in node_frequencies}
-
-    node_degrees = G.degree()
+    node_degrees = {n: G.degree(n) for n in node_list}
     node_clustering = nx.clustering(G)
+    degree_centrality = nx.degree_centrality(G)
+    betweenness_centrality = nx.betweenness_centrality(G)
 
-    hover_texts = [f'<b>{nlp.vocab.strings[node]}</b> <br> '
-                   f'𝑓: {node_frequencies[node]} <br> '
-                   f'deg: {node_degrees[node]} <br>'
-                   f'clustering: {node_clustering[node]:.3f} <br>'
-                   for node in G.nodes]
+    # VISUALIZE
 
-    node_colors = list(dict(G.degree()).values())
+    # first, remove edges that are below the degree offset value (like less than min degrees)
+    edges_to_drop = [(e1, e2) for (e1, e2) in G.edges if G[e1][e2]['weight'] < min_co_occurrence]
+    G.remove_edges_from(edges_to_drop)
 
-    # generate a spring layout for node locations
+    # second, generate the selected layout for node position
     layout_seed = np.random.RandomState(42)
 
     if layout == '1':
@@ -321,16 +306,32 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     if layout == '4':
         pos = nx.circular_layout(G)
 
+    # if showing a cumulative graph, just show the current line number
+    #    otherwise, show the range of the line numbers
+    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
+
+    # create node label but don't show labels for nodes with only 1 count
+    node_texts = [nlp.vocab.strings[n] for n in node_list]
+
+    # hover text for additional information for each node
+    hover_texts = [f'<b>{nlp.vocab.strings[node]}</b> <br> '
+                   f'𝑓: {G.nodes[node]["count"]} <br> '
+                   f'deg: {node_degrees[node]} <br>'
+                   f'clustering: {node_clustering[node]:.3f} <br>'
+                   f'degree centrality: {degree_centrality[node]:.3f} <br>'
+                   f'betweenness centrality: {betweenness_centrality[node]:.3f} <br>'
+                   for node in node_list]
+
     # create the plotly graph for the network
     edge_x = []
     edge_y = []
 
-    if min_degree > min_dmc_degree:
-        min_dmc_degree = min_degree
+    if min_co_occurrence > min_dmc_co_occurrence:
+        min_dmc_co_occurrence = min_co_occurrence
 
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] > min_dmc_degree - 1:
+        if edge_attr['weight'] > min_dmc_co_occurrence - 1:
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             edge_x.append(x0)
@@ -352,7 +353,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1])
-        if edge_attr['weight'] > min_degree - 1:  # only show link if co-occur > cutoff
+        if edge_attr['weight'] > min_co_occurrence - 1:  # only show link if co-occur > cutoff
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             light_edge_x.append(x0)
@@ -377,13 +378,13 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        text=list(node_displayed_labels.values()),
+        text=node_texts,
         textposition="top center",
         marker=dict(
             showscale=True,
             colorscale='Portland',
             reversescale=False,
-            color=node_colors,
+            color=list(node_degrees.values()),
             size=node_sizes,
             line_width=1,
             colorbar=dict(title=dict(text='degree'))
@@ -506,7 +507,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='D1 - B-Interview-3.txt'
+    value='D1 - B-Interview-2.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
@@ -664,7 +665,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='min-tokens',
                           type="number",
                           min=1, max=20, step=1,
-                          value=3,
+                          value=4,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -674,7 +675,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='min-co',
                           type="number",
                           min=1, max=10, step=1,
-                          value=2,
+                          value=3,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -1163,8 +1164,8 @@ def knowledge_graph(n_clicks,
                                   with_codes=code_pref,
                                   layout=layout,
                                   spring_iterations=iterations,
-                                  min_degree=deg,
-                                  min_dmc_degree=dmc_deg,
+                                  min_co_occurrence=deg,
+                                  min_dmc_co_occurrence=dmc_deg,
                                   size_multiplier=multiplier
                                   )
 
