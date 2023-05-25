@@ -20,6 +20,8 @@ from plotly.subplots import make_subplots
 
 nlp = spacy.load('en_core_web_sm')
 
+G = nx.Graph()
+
 df_co_occurrences = pd.DataFrame()
 
 tokens_changed: bool = False
@@ -99,6 +101,7 @@ def parse_raw_text(txt: str,
 
 
 def generate_code_checkboxes(line_num, values=None):
+
     if values is not None:
         assigned_codes[line_num] = values
 
@@ -117,6 +120,7 @@ def generate_code_checkboxes(line_num, values=None):
 
 
 def process_utterance(raw_text):
+
     global nlp
 
     doc = nlp(raw_text.strip().lower())
@@ -193,90 +197,61 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def calculate_co_occurrences(start, end):
+def generate_knowledge_graph(start, end, k=1):
 
     global nlp
+    global stored_data
 
-    # if showing a cumulative graph, generate nodes for just until that point
+    new_G = nx.Graph()
+
+    # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
     data_dict_list = stored_data[0:end] if start == 0 else stored_data
 
-    # generate a list of unique tokens to create the dataframe
-    txt = ' '.join([line['utterance'] for line in data_dict_list])
-    all_unique_tokens = list(set([token.lemma for token in nlp(txt)]))
-
-    # create an empty dataframe with all values as 0 that will be filled in the loop
-    # -- but it does not work right now. if I switch to pre-defined columns,
-    # -- I get links between all tokens for some reason
-    # -- -- not because I am not filtering out stop words when creating the unique tokens!!!
-    # df = pd.DataFrame(data=0, columns=all_unique_tokens, index=all_unique_tokens, dtype='uint16')
-    df = pd.DataFrame()
-
-    # next, iterate over each line's unique tokens and add them to the matrix
     for line in data_dict_list:
 
-        processed_line = nlp(line['utterance'].strip().lower())
+        doc_line = nlp(line['utterance'].strip().lower())
 
-        # generate a list of non-stopped tokens
-        line_tokens = [token.lemma for token in processed_line
-                       if not nlp.vocab[token.lemma].is_punct
-                       and not nlp.vocab[token.lemma].is_stop
-                       and not token.is_punct
-                       and not token.is_stop]
+        tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop]
 
-        # now generate the raw counts of each token within this line
-        #     which also generates a list of unique tokens as the keys of the counter
-        token_counts = Counter(line_tokens)
-        line_unique_tokens = list(token_counts.keys())
+        token_counts = Counter(tokens)
+        unique_tokens = list(token_counts.keys())
 
-        # # append the theoretical codes to the list of tokens in the line
-        # if with_codes:
-        #     selections = assigned_codes[line['line'] - 1]
-        #     codes_to_include = [theoretical_code_list[i] for i in range(len(theoretical_code_list)) if selections[i]]
-        #     code_tokens = [nlp.vocab.strings[c] for c in codes_to_include]
-        #     line_tokens.extend(code_tokens)
+        for t in unique_tokens:
 
-        # iterate over each unique token combination
-        for t1, t2 in combinations(line_unique_tokens, 2):
-
-            # if either of the tokens aren't in the dataframe,
-            #    add them to the dataframe and set their co-occurrence as 1
-            #    otherwise, increment their co-occurrence by 1
-            if t1 not in df.index or t2 not in df.index:
-                df.loc[t1, t1] = 0
-                df.loc[t2, t2] = 0
-                df.loc[t1, t2] = 0
-                df.loc[t2, t1] = 0
-
-            df.loc[t1, t2] += 1
-            df.loc[t2, t1] += 1
-
-        # boost co-occurrences by 1 if they are within the same sentence
-        for sent in processed_line.sents:
-
-            # generate a list of non-stopped tokens
-            sent_tokens = [token.lemma for token in sent
-                           if not nlp.vocab[token.lemma].is_punct
-                           and not nlp.vocab[token.lemma].is_stop
-                           and not token.is_punct
-                           and not token.is_stop]
-
-            # now generate the raw counts of each token within this line
-            #     which also generates a list of unique tokens as the keys of the counter
-            sent_unique_tokens = set(sent_tokens)
-
-            for t1, t2 in combinations(sent_unique_tokens, 2):
-                df.loc[t1, t2] += 1
-                df.loc[t2, t1] += 1
-
-        # add counts of the tokens to the co-occurrence matrix
-        for t in token_counts:
-            if t not in df.index:
-                df.loc[t, t] = token_counts[t]
+            if new_G.has_node(t):
+                new_G.nodes[t]['count'] += token_counts[t]
             else:
-                df.loc[t, t] += token_counts[t]
+                new_G.add_node(t, count=token_counts[t], label=nlp.vocab.strings[t])
 
-    return df.fillna(0)
+        for t1, t2 in combinations(unique_tokens, 2):
+
+            if new_G.has_edge(t1, t2):
+                new_G[t1][t2]['weight'] += 1
+            else:
+                new_G.add_edge(t1, t2, weight=1)
+
+        # boost edges between tokens within the same sentences by 1
+        #   if there are more than 1 sentences in the line
+
+        sentences = [s for s in doc_line.sents]
+
+        if len(sentences) > 1:
+
+            for s in sentences:
+
+                sent_tokens = [t.lemma for t in s if not t.is_punct and not t.is_stop]
+
+                # unique tokens within the sentence
+                s_tokens = set(sent_tokens)
+
+                for t1, t2 in combinations(s_tokens, 2):
+
+                    new_G[t1][t2]['weight'] += 1
+
+    # print(nx.get_node_attributes(new_G, 'count'))
+
+    return new_G
 
 
 def generate_graph(start_line=0,  # if > 0, dmc mode is activated
@@ -291,11 +266,13 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
                    size_multiplier=2):
 
     global nlp
-    global df_co_occurrences
     global tokens_changed
+    global G
 
+    # if any edits were made in the utterance table or line number, regenerate the graph
+    #    otherwise use the same graph for visualization changes
     if tokens_changed:
-        df_co_occurrences = calculate_co_occurrences(start=start_line, end=end_line)
+        G = generate_knowledge_graph(start=start_line, end=end_line)
         tokens_changed = False
 
     # ---
@@ -306,45 +283,26 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     #    otherwise, show the range of the line numbers
     current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
-    # drop 0 count tokens
-    nodes = [(token, {'weight': df_co_occurrences.loc[token, token], 'label': nlp.vocab.strings[token]})
-             for token in df_co_occurrences.index
-             if df_co_occurrences.loc[token, token] > 0]
-
-    # generate token counts
-    node_frequencies = [df_co_occurrences.loc[token[0], token[0]] for token in nodes]
-
-    # create the network
-    G = nx.Graph()
-    G.add_nodes_from(nodes)
-
-    for i in range(len(df_co_occurrences.index)):
-        row = df_co_occurrences.index[i]
-        for j in range(i + 1, len(df_co_occurrences.index)):
-            col = df_co_occurrences.index[j]
-            connections = df_co_occurrences.loc[row, col]
-            if connections >= min_degree:
-                G.add_edge(row, col, weight=connections)
-
     # calculate the metrics
-    node_degrees = [G.degree[token[0]] for token in nodes]
-    node_clustering = nx.clustering(G)
-    ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
+    node_frequencies = nx.get_node_attributes(G, 'count')
 
     # create representation attributes (size, color, text, etc.)
     #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies]
-    node_colors = [(G.degree[token[0]] + 1) for token in nodes]
+    node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies.values()]
 
     # create node label but don't show labels for nodes with only 1 count
-    node_labels = [G.nodes[n]['label'] if G.nodes[n]['weight'] > 3 else '' for n in G.nodes]
-    node_hover_labels = list(nx.get_node_attributes(G, 'label').values())
+    node_labels = nx.get_node_attributes(G, 'label')
 
-    hover_texts = [f'<b>{node_hover_labels[idx]}</b> <br> '
-                   f'𝑓: {node_frequencies[idx]} <br> '
-                   f'deg: {node_degrees[idx]} <br>'
-                   f'clustering: {node_clustering[token[0]]:.3f} <br>'
-                   for (idx, token) in enumerate(nodes)]
+    node_degrees = G.degree()
+    node_clustering = nx.clustering(G)
+
+    hover_texts = [f'<b>{node_labels[node]}</b> <br> '
+                   f'𝑓: {node_frequencies[node]} <br> '
+                   f'deg: {node_degrees[node]} <br>'
+                   f'clustering: {node_clustering[node]:.3f} <br>'
+                   for node in G.nodes]
+
+    node_colors = list(dict(G.degree()).values())
 
     # generate a spring layout for node locations
     layout_seed = np.random.RandomState(42)
@@ -422,7 +380,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        text=node_labels,
+        text=list(node_labels.values()),
         textposition="top center",
         marker=dict(
             showscale=True,
@@ -464,68 +422,71 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     graph_metrics = "Nothing to display yet!"
 
-    # first create a sorted list of degrees for plotting as a scatter plot and histogram
-    connected_nodes = dict(
-        [(node_labels[idx], degree)
-         for (idx, degree) in enumerate(node_degrees)
-         if degree > 0]
-    )
+    # ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
-    # only attempt to plot if there are any tokens with degree higher than 0
-    if len(connected_nodes) > 0:
-
-        ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
-
-        fig_metrics = make_subplots(rows=1, cols=2,
-                                    subplot_titles=(
-                                        f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
-                                        f"n<sub>connected</sub> = {len(connected_nodes)} | "
-                                        f"n<sub>total</sub> = {G.number_of_nodes()}",
-                                        f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
-                                    ),
-                                    )
-        if ave_degree > 0:
-            degree_labels, degree_degrees = zip(
-                *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
-            fig_metrics.add_trace(
-                go.Scatter(
-                    y=degree_degrees,
-                    x=degree_labels
-                ),
-                row=1, col=1
-            )
-
-            graph_metrics = dcc.Graph(figure=fig_metrics)
-
-        # now let's get clustering coefficients for nodes if it's > 0
-
-        clustered_nodes = dict(
-            [(node_labels[idx], node_clustering[key])
-             for (idx, key) in enumerate(node_clustering)
-             if node_clustering[key] > 0]
-        )
-
-        # only display the plot if there are clusters
-        if len(clustered_nodes) > 0:
-            cluster_labels, cluster_coefficients = zip(
-                *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
-
-            fig_metrics.add_trace(
-                go.Scatter(
-                    y=cluster_coefficients,
-                    x=cluster_labels
-                ),
-                row=1, col=2
-            )
-
-        fig_metrics.update_yaxes(range=[0, 60], row=1, col=1)
-        fig_metrics.update_yaxes(range=[0, 1.1], row=1, col=2)
-        fig_metrics.update_layout(showlegend=False,
-                                  title=dict(
-                                      text=f"density = {nx.density(G):.3f}",
-                                      x=0.5, xanchor='center'),
-                                  margin=dict(l=0, r=0, t=40, b=40)
-                                  )
+    #
+    # # first create a sorted list of degrees for plotting as a scatter plot and histogram
+    # connected_nodes = dict(
+    #     [(node_labels[idx], degree)
+    #      for (idx, degree) in enumerate(node_degrees)
+    #      if degree > 0]
+    # )
+    #
+    # # only attempt to plot if there are any tokens with degree higher than 0
+    # if len(connected_nodes) > 0:
+    #
+    #     ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
+    #
+    #     fig_metrics = make_subplots(rows=1, cols=2,
+    #                                 subplot_titles=(
+    #                                     f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
+    #                                     f"n<sub>connected</sub> = {len(connected_nodes)} | "
+    #                                     f"n<sub>total</sub> = {G.number_of_nodes()}",
+    #                                     f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
+    #                                 ),
+    #                                 )
+    #     if ave_degree > 0:
+    #         degree_labels, degree_degrees = zip(
+    #             *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+    #         fig_metrics.add_trace(
+    #             go.Scatter(
+    #                 y=degree_degrees,
+    #                 x=degree_labels
+    #             ),
+    #             row=1, col=1
+    #         )
+    #
+    #         graph_metrics = dcc.Graph(figure=fig_metrics)
+    #
+    #     # now let's get clustering coefficients for nodes if it's > 0
+    #
+    #     clustered_nodes = dict(
+    #         [(node_labels[idx], node_clustering[key])
+    #          for (idx, key) in enumerate(node_clustering)
+    #          if node_clustering[key] > 0]
+    #     )
+    #
+    #     # only display the plot if there are clusters
+    #     if len(clustered_nodes) > 0:
+    #         cluster_labels, cluster_coefficients = zip(
+    #             *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
+    #
+    #         fig_metrics.add_trace(
+    #             go.Scatter(
+    #                 y=cluster_coefficients,
+    #                 x=cluster_labels
+    #             ),
+    #             row=1, col=2
+    #         )
+    #
+    #     fig_metrics.update_yaxes(range=[0, 60], row=1, col=1)
+    #     fig_metrics.update_yaxes(range=[0, 1.1], row=1, col=2)
+    #     fig_metrics.update_layout(showlegend=False,
+    #                               title=dict(
+    #                                   text=f"density = {nx.density(G):.3f}",
+    #                                   x=0.5, xanchor='center'),
+    #                               margin=dict(l=0, r=0, t=40, b=40)
+    #                               )
 
     return graph_network, graph_metrics
 
