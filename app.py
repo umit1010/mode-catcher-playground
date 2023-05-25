@@ -197,7 +197,7 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_knowledge_graph(start, end, k=1):
+def generate_knowledge_graph(start, end, degree_cutoff=1):
 
     global nlp
     global stored_data
@@ -249,7 +249,9 @@ def generate_knowledge_graph(start, end, k=1):
 
                     new_G[t1][t2]['weight'] += 1
 
-    # print(nx.get_node_attributes(new_G, 'count'))
+    # remove edges that are below the degree offset value (like less than min degrees)
+    edges_to_drop = [(e1, e2) for (e1, e2) in new_G.edges if new_G[e1][e2]['weight'] < degree_cutoff]
+    new_G.remove_edges_from(edges_to_drop)
 
     return new_G
 
@@ -272,7 +274,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     # if any edits were made in the utterance table or line number, regenerate the graph
     #    otherwise use the same graph for visualization changes
     if tokens_changed:
-        G = generate_knowledge_graph(start=start_line, end=end_line)
+        G = generate_knowledge_graph(start=start_line, end=end_line, degree_cutoff=min_degree)
         tokens_changed = False
 
     # ---
@@ -291,12 +293,12 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     node_sizes = [(1 + np.log2(n)) * size_multiplier for n in node_frequencies.values()]
 
     # create node label but don't show labels for nodes with only 1 count
-    node_labels = nx.get_node_attributes(G, 'label')
+    node_displayed_labels = {n: nlp.vocab.strings[n] if G.degree(n) > min_degree - 1 else '' for n in node_frequencies}
 
     node_degrees = G.degree()
     node_clustering = nx.clustering(G)
 
-    hover_texts = [f'<b>{node_labels[node]}</b> <br> '
+    hover_texts = [f'<b>{nlp.vocab.strings[node]}</b> <br> '
                    f'𝑓: {node_frequencies[node]} <br> '
                    f'deg: {node_degrees[node]} <br>'
                    f'clustering: {node_clustering[node]:.3f} <br>'
@@ -323,9 +325,12 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     edge_x = []
     edge_y = []
 
+    if min_degree > min_dmc_degree:
+        min_dmc_degree = min_degree
+
     for edge in G.edges():
         edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] >= min_dmc_degree:
+        if edge_attr['weight'] > min_dmc_degree - 1:
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             edge_x.append(x0)
@@ -342,35 +347,27 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='lines'
     )
 
-    # create a representation of the connections among tokens
-    # that co occur more than min_co but less than min_dmc_co
-    if min_degree < min_dmc_degree:
+    light_edge_x = []
+    light_edge_y = []
 
-        light_edge_x = []
-        light_edge_y = []
+    for edge in G.edges():
+        edge_attr = G.get_edge_data(edge[0], edge[1])
+        if edge_attr['weight'] > min_degree - 1:  # only show link if co-occur > cutoff
+            x0, y0 = pos[edge[0]]
+            x1, y1 = pos[edge[1]]
+            light_edge_x.append(x0)
+            light_edge_x.append(x1)
+            light_edge_x.append(None)
+            light_edge_y.append(y0)
+            light_edge_y.append(y1)
+            light_edge_y.append(None)
 
-        for edge in G.edges():
-            edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-            if 0 < edge_attr['weight'] <= min_degree:  # only show link if co-occur > cutoff
-                x0, y0 = pos[edge[0]]
-                x1, y1 = pos[edge[1]]
-                light_edge_x.append(x0)
-                light_edge_x.append(x1)
-                light_edge_x.append(None)
-                light_edge_y.append(y0)
-                light_edge_y.append(y1)
-                light_edge_y.append(None)
-
-        light_edge_trace = go.Scatter(
-            x=light_edge_x, y=light_edge_y,
-            line=dict(width=0.6, color='#BBB', dash='dot'),
-            hoverinfo='none',
-            mode='lines'
-        )
-    else:
-        # if the min network degree and min dmc degree are the same,
-        #   no need to create a separate plot, so I pass an empty trace.
-        light_edge_trace = go.Scatter()
+    light_edge_trace = go.Scatter(
+        x=light_edge_x, y=light_edge_y,
+        line=dict(width=0.6, color='#BBB', dash='dot'),
+        hoverinfo='none',
+        mode='lines'
+    )
 
     node_x = [pos[i].tolist()[0] for i in pos]
     node_y = [pos[i].tolist()[1] for i in pos]
@@ -380,7 +377,7 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
         mode='markers+text',
         hovertext=hover_texts,
         hoverinfo='text',
-        text=list(node_labels.values()),
+        text=list(node_displayed_labels.values()),
         textposition="top center",
         marker=dict(
             showscale=True,
@@ -509,7 +506,7 @@ if input_folder_path.is_dir():
 input_file_dropdown = dbc.Select(
     file_list,
     id='input-file-dropdown',
-    value='D1 - B-Interview-2.txt'
+    value='D1 - B-Interview-3.txt'
 )
 
 mode_name_input = dbc.Input(id='mode-name',
@@ -677,7 +674,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='min-co',
                           type="number",
                           min=1, max=10, step=1,
-                          value=1,
+                          value=2,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -687,7 +684,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='min-dmc-co',
                           type="number",
                           min=1, max=10, step=1,
-                          value=2,
+                          value=3,
                           style={'margin-top': '-6px'}
                           ),
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -1094,7 +1091,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Output('graph-slider', 'max'),
     Output('graph-slider', 'value'),
     Output('metrics-div', 'children'),
-    Output('min-co', 'value'),
+    Output('min-dmc-co', 'value'),
     Input('graph-button', 'n_clicks'),
     Input('graph-slider', 'value'),
     Input('include-codes', 'value'),
@@ -1131,11 +1128,17 @@ def knowledge_graph(n_clicks,
     if ctx.triggered_id == 'graph-slider':
         tokens_changed = True
 
+    if ctx.triggered_id == 'min-co':
+        tokens_changed = True
+
+    if ctx.triggered_id == 'min-dmc-co':
+        tokens_changed = True
+
     # first, let's pickle the user generated model
     pickle_model(name)
 
     # make sure min co-occurrence is not larger than min dmc co-occurrence
-    deg = deg if deg < dmc_deg else dmc_deg
+    dmc_deg = deg + 1 if deg > dmc_deg - 1 else dmc_deg
 
     # display the latest utterance when generating a cumulative layout
     if not dmc and ctx.triggered_id == 'graph-button':
@@ -1165,7 +1168,7 @@ def knowledge_graph(n_clicks,
                                   size_multiplier=multiplier
                                   )
 
-    return graph, len(stored_data), line, stats, deg
+    return graph, len(stored_data), line, stats, dmc_deg
 
 
 # Press the green button in the gutter to run the script.
