@@ -277,7 +277,7 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
     # CALCULATE NODE METRICS
 
     # I add 1 to node size because if n=1 -> log2(1) = 0
-    node_sizes = list(map(lambda x: 1 + np.log2(x) * size_multiplier, nx.get_node_attributes(G, 'count')))
+    node_sizes = list(map(lambda x: 1 + np.log2(x) * size_multiplier, nx.get_node_attributes(G, 'count').values()))
     print(nx.get_node_attributes(G, 'count'))
     print('--')
     print(node_sizes)
