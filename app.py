@@ -22,8 +22,6 @@ nlp = spacy.load('en_core_web_sm')
 
 G = nx.Graph()
 
-df_co_occurrences = pd.DataFrame()
-
 tokens_changed: bool = False
 
 stopped_words = set()
@@ -31,7 +29,7 @@ unstopped_words = set()
 
 assigned_codes = dict()
 
-stored_data = None
+active_data = list()
 
 theoretical_code_list = [
     'emergent',
@@ -197,16 +195,16 @@ def pickle_model(mode_name):
                     protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_knowledge_graph(start, end):
+def generate_knowledge_graph(start, end, sentence_boost=False):
 
     global nlp
-    global stored_data
+    global active_data
 
     new_G = nx.Graph()
 
     # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
-    data_dict_list = stored_data[0:end] if start == 0 else stored_data
+    data_dict_list = active_data[0:end] if start == 0 else active_data
 
     for line in data_dict_list:
 
@@ -222,6 +220,7 @@ def generate_knowledge_graph(start, end):
             if new_G.has_node(t):
                 new_G.nodes[t]['count'] += token_counts[t]
             else:
+
                 new_G.add_node(t, count=token_counts[t], label=nlp.vocab.strings[t])
 
         for t1, t2 in combinations(unique_tokens, 2):
@@ -234,53 +233,56 @@ def generate_knowledge_graph(start, end):
         # boost edges between tokens within the same sentences by 1
         #   if there are more than 1 sentences in the line
 
-        sentences = [s for s in doc_line.sents]
+        if sentence_boost:
 
-        if len(sentences) > 1:
+            sentences = [s for s in doc_line.sents]
 
-            for s in sentences:
+            if len(sentences) > 1:
 
-                sent_tokens = [t.lemma for t in s if not t.is_punct and not t.is_stop]
+                for s in sentences:
 
-                # unique tokens within the sentence
-                s_tokens = set(sent_tokens)
+                    sent_tokens = [t.lemma for t in s if not t.is_punct and not t.is_stop]
 
-                for t1, t2 in combinations(s_tokens, 2):
+                    # unique tokens within the sentence
+                    s_tokens = set(sent_tokens)
 
-                    new_G[t1][t2]['weight'] += 1
+                    for t1, t2 in combinations(s_tokens, 2):
+
+                        new_G[t1][t2]['weight'] += 1
 
     return new_G
 
 
-def generate_graph(start_line=0,  # if > 0, dmc mode is activated
-                   end_line=1,
-                   case_name="",
-                   raw_frequency=True,
-                   with_codes=False,
-                   layout=1,
-                   spring_iterations=30,
-                   min_co_occurrence=1,
-                   min_dmc_co_occurrence=2,
-                   size_multiplier=2):
+def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
+                            end_line=1,
+                            case_name="",
+                            raw_frequency=True,
+                            with_codes=False,
+                            layout=1,
+                            spring_iterations=30,
+                            min_co_occurrence=1,
+                            min_dmc_co_occurrence=2,
+                            size_multiplier=2):
 
     global nlp
-    global tokens_changed
     global G
+    global tokens_changed
 
     # if any edits were made in the utterance table or line number, regenerate the graph
     #    otherwise use the same graph for visualization changes
     if tokens_changed:
-        G = generate_knowledge_graph(start=start_line, end=end_line)
+        G = generate_knowledge_graph(start=start_line, end=end_line, sentence_boost=False)
         tokens_changed = False
 
     # CALCULATE NODE METRICS
 
-    node_list = [n for n in G.nodes]
+    # I add 1 to node size because if n=1 -> log2(1) = 0
+    node_sizes = list(map(lambda x: 1 + np.log2(x) * size_multiplier, nx.get_node_attributes(G, 'count')))
+    print(nx.get_node_attributes(G, 'count'))
+    print('--')
+    print(node_sizes)
 
-    #   I add 1 to node size because the ones with degree 0 disappear
-    node_sizes = [(1 + np.log2(G.nodes[n]['count'])) * size_multiplier for n in node_list]
-
-    node_degrees = {n: G.degree(n) for n in node_list}
+    node_degrees = dict(G.degree)
     node_clustering = nx.clustering(G)
     degree_centrality = nx.degree_centrality(G)
     betweenness_centrality = nx.betweenness_centrality(G)
@@ -293,6 +295,8 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # second, generate the selected layout for node position
     layout_seed = np.random.RandomState(42)
+
+    pos = list()
 
     if layout == '1':
         pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=0.2)
@@ -311,16 +315,16 @@ def generate_graph(start_line=0,  # if > 0, dmc mode is activated
     current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
     # create node label but don't show labels for nodes with only 1 count
-    node_texts = [nlp.vocab.strings[n] for n in node_list]
+    node_texts = list(nx.get_node_attributes(G, 'label').values())
 
     # hover text for additional information for each node
-    hover_texts = [f'<b>{nlp.vocab.strings[node]}</b> <br> '
+    hover_texts = [f'<b>{G.nodes[node]["label"]}</b> <br> '
                    f'𝑓: {G.nodes[node]["count"]} <br> '
                    f'deg: {node_degrees[node]} <br>'
                    f'clustering: {node_clustering[node]:.3f} <br>'
                    f'degree centrality: {degree_centrality[node]:.3f} <br>'
                    f'betweenness centrality: {betweenness_centrality[node]:.3f} <br>'
-                   for node in node_list]
+                   for node in G.nodes]
 
     # create the plotly graph for the network
     edge_x = []
@@ -725,8 +729,8 @@ grap_layout_options_div = html.Div(
                 html.Span('Node Size: ', className='me-4'),
                 dcc.Input(id='node-size',
                           type="number",
-                          min=0, max=40, step=5,
-                          value=5,
+                          min=1, max=40, step=1,
+                          value=2,
                           style={'margin-top': '-6px'},
                           className='ms-4'
                           ),
@@ -903,9 +907,11 @@ def reset_mode(nclicks, name):
             stopwords_file = model_path / 'stopwords.pickle'
             theoretical_codes_file = model_path / 'theoretical_codes.pickle'
 
-            if stopwords_file.is_file(): stopwords_file.unlink()
+            if stopwords_file.is_file():
+                stopwords_file.unlink()
 
-            if theoretical_codes_file.is_file(): theoretical_codes_file.unlink()
+            if theoretical_codes_file.is_file():
+                theoretical_codes_file.unlink()
 
             for key in assigned_codes:
                 assigned_codes[key] = [False] * len(theoretical_code_list)
@@ -932,103 +938,102 @@ def utterance_table(parse_clicks, name, txt, options):
     global nlp
     global stopped_words
     global unstopped_words
-    global stored_data
+    global active_data
 
-    if parse_clicks is not None:
+    if ctx.triggered_id == 'parse-button':
 
-        if parse_clicks > 0:
+        model_path = Path(f'./models/{str(name).strip()}/')
+        default_stopwords_file = Path('./config') / 'default_stopwords.pickle'
 
-            model_path = Path(f'./models/{str(name).strip()}/')
-            default_stopwords_file = Path('./config') / 'default_stopwords.pickle'
+        if model_path.is_dir():
 
-            if not model_path.is_dir():
-                with open(default_stopwords_file, 'rb') as dswf:
-                    stopped_words = pickle.load(dswf)
+            stopwords_file = model_path / 'stopwords.pickle'
+            theoretical_codes_file = model_path / 'theoretical_codes.pickle'
+
+            if stopwords_file.is_file():
+                with open(stopwords_file, 'rb') as swf:
+                    stopped_words, unstopped_words = pickle.load(swf)
             else:
-                stopwords_file = model_path / 'stopwords.pickle'
-                theoretical_codes_file = model_path / 'theoretical_codes.pickle'
+                with open(default_stopwords_file, 'rb') as f:
+                    stopped_words = pickle.load(f)
 
-                if stopwords_file.is_file():
-                    with open(stopwords_file, 'rb') as swf:
-                        stopped_words, unstopped_words = pickle.load(swf)
-                else:
-                    with open(default_stopwords_file, 'rb') as dswf:
-                        stopped_words = pickle.load(dswf)
+            if theoretical_codes_file.is_file():
+                with open(theoretical_codes_file, 'rb') as tcf:
+                    saved_codes = pickle.load(tcf)
 
-                if theoretical_codes_file.is_file():
-                    with open(theoretical_codes_file, 'rb') as tcf:
-                        saved_codes = pickle.load(tcf)
-
-                    assigned_codes = saved_codes
-
-            # reload the model because it only pulls default stopwords when loading
-            nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
-
-            nlp(' '.join(stopped_words))
-            nlp(' '.join(unstopped_words))
-
-            for word in stopped_words:
-                nlp.vocab[word].is_stop = True
-
-            for word in unstopped_words:
-                nlp.vocab[word].is_stop = False
-
-            time = True if 0 in options else False
-            speaker = True if 1 in options else False
-            interviewer = False if 2 in options else True
-
-            parsed_data = parse_raw_text(txt,
-                                         timestamp=time,
-                                         speaker=speaker,
-                                         interviewer=interviewer)
-
-            column_names = [{'name': 'line', 'id': 'line'}]
-
-            if time:
-                column_names.append({'name': 'time', 'id': 'time'})
-
-            if speaker:
-                column_names.append({'name': 'speaker', 'id': 'speaker'})
-
-            column_names.append({'name': 'utterance', 'id': 'utterance'})
-
-            transcript_table = DataTable(
-                parsed_data,
-                columns=column_names,
-                style_header={
-                    'fontWeight': 'bold',
-                    'textAlign': 'left'
-                },
-                style_cell={
-                    'padding': '12px',
-                    'textAlign': 'left',
-                    'fontSize': 16,
-                    'line-height': '2',
-                    'font-family': 'sans-serif'
-                },
-                style_data={
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_data_conditional=[
-                    {
-                        'if': {'row_index': 'odd'},
-                        'backgroundColor': 'rgb(248, 252, 253)'
-                    }
-                ],
-                id='data-table'
-            )
-
-            editor_section = [
-                transcript_table
-            ]
-
-            stored_data = parsed_data
-
-            return editor_section, "1", False
+                assigned_codes = saved_codes
         else:
-            message = [html.P('Processed text will be displayed here as a datatable.', className='lead')]
-            return message, "0", True
+
+            with open(default_stopwords_file, 'rb') as f:
+                stopped_words = pickle.load(f)
+
+        # reload the model because it only pulls default stopwords when loading
+        nlp = spacy.load('en_core_web_sm', exclude=["ner", "senter"])
+
+        # update stop_words of the small model
+        #   I have to do it this way because spacy's to_disk method doesn't save stopwords
+        for word in stopped_words:
+            nlp.vocab[word].is_stop = True
+
+        for word in unstopped_words:
+            nlp.vocab[word].is_stop = False
+
+        time = True if 0 in options else False
+        speaker = True if 1 in options else False
+        interviewer = False if 2 in options else True
+
+        parsed_data = parse_raw_text(txt,
+                                     timestamp=time,
+                                     speaker=speaker,
+                                     interviewer=interviewer)
+
+        column_names = [{'name': 'line', 'id': 'line'}]
+
+        if time:
+            column_names.append({'name': 'time', 'id': 'time'})
+
+        if speaker:
+            column_names.append({'name': 'speaker', 'id': 'speaker'})
+
+        column_names.append({'name': 'utterance', 'id': 'utterance'})
+
+        transcript_table = DataTable(
+            parsed_data,
+            columns=column_names,
+            style_header={
+                'fontWeight': 'bold',
+                'textAlign': 'left'
+            },
+            style_cell={
+                'padding': '12px',
+                'textAlign': 'left',
+                'fontSize': 16,
+                'line-height': '2',
+                'font-family': 'sans-serif'
+            },
+            style_data={
+                'whiteSpace': 'normal',
+                'height': 'auto'
+            },
+            style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(248, 252, 253)'
+                }
+            ],
+            id='data-table'
+        )
+
+        editor_section = [
+            transcript_table
+        ]
+
+        active_data = parsed_data
+
+        return editor_section, "1", False
+    else:
+        message = [html.P('Processed text will be displayed here as a datatable.', className='lead')]
+        return message, "0", True
 
 
 @app.callback(
@@ -1043,7 +1048,7 @@ def utterance_table(parse_clicks, name, txt, options):
 )
 def coding_editor(cell, toggle_clicks, checked_codes):
 
-    global stored_data
+    global active_data
     global tokens_changed
 
     if cell is not None:
@@ -1065,11 +1070,11 @@ def coding_editor(cell, toggle_clicks, checked_codes):
 
                 tokens_changed = True
 
-        i, j = cell['row'], 'utterance'
-        cell_text = str(stored_data[i][j])
+        i = cell['row']
+        cell_text = str(active_data[i]['utterance'])
         token_buttons, token_treemap = process_utterance(cell_text)
 
-        line_num = int(stored_data[i]['line'] - 1)
+        line_num = int(active_data[i]['line'] - 1)
         if len(checked_codes) > 0:
             if type(ctx.triggered_id) is not str:
                 if ctx.triggered_id['type'] == 'code-checkbox':
@@ -1120,7 +1125,7 @@ def knowledge_graph(n_clicks,
                     disabled,
                     name):
 
-    global stored_data
+    global active_data
     global tokens_changed
 
     if disabled:
@@ -1143,33 +1148,33 @@ def knowledge_graph(n_clicks,
 
     # display the latest utterance when generating a cumulative layout
     if not dmc and ctx.triggered_id == 'graph-button':
-        line = line if line != 1 else len(stored_data)
+        line = line if line != 1 else len(active_data)
 
     start = 0
     end = line
 
-    end = end if end < len(stored_data) else len(stored_data)
+    end = end if end < len(active_data) else len(active_data)
 
     if dmc:
         r = int((window - 1) / 2)
         start = max(0, line - r)
-        end = min(len(stored_data), line + r)
+        end = min(len(active_data), line + r)
 
         if window == 1:
-            num_lines = start + 1
+            end = start + 1
 
-    graph, stats = generate_graph(start_line=start,
-                                  end_line=end,
-                                  case_name=name,
-                                  with_codes=code_pref,
-                                  layout=layout,
-                                  spring_iterations=iterations,
-                                  min_co_occurrence=deg,
-                                  min_dmc_co_occurrence=dmc_deg,
-                                  size_multiplier=multiplier
-                                  )
+    graph, stats = display_knowledge_graph(start_line=start,
+                                           end_line=end,
+                                           case_name=name,
+                                           with_codes=code_pref,
+                                           layout=layout,
+                                           spring_iterations=iterations,
+                                           min_co_occurrence=deg,
+                                           min_dmc_co_occurrence=dmc_deg,
+                                           size_multiplier=multiplier
+                                           )
 
-    return graph, len(stored_data), line, stats, dmc_deg
+    return graph, len(active_data), line, stats, dmc_deg
 
 
 # Press the green button in the gutter to run the script.
