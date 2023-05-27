@@ -290,23 +290,6 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # VISUALIZE
 
-    # second, generate the selected layout for node position
-    layout_seed = np.random.RandomState(42)
-
-    pos = list()
-
-    if layout == '1':
-        pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=spring_k)
-
-    if layout == '2':
-        pos = nx.random_layout(G, seed=layout_seed)
-
-    if layout == '3':
-        pos = nx.shell_layout(G)
-
-    if layout == '4':
-        pos = nx.circular_layout(G)
-
     # if showing a cumulative graph, just show the current line number
     #    otherwise, show the range of the line numbers
     plot_header = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
@@ -331,40 +314,45 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
                    f'betweenness centrality: {b_centrality[node]:.3f} <br>'
                    for node in G.nodes]
 
+    # generate the selected layout for node and edge positions
+    layout_seed = np.random.RandomState(42)
+
+    pos = dict()
+
+    if layout == '1':
+        pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=spring_k)
+
+    if layout == '2':
+        pos = nx.random_layout(G, seed=layout_seed)
+
+    if layout == '3':
+        pos = nx.shell_layout(G)
+
+    if layout == '4':
+        pos = nx.circular_layout(G)
+
     # create the plotly graph for the network
     edge_x = []
     edge_y = []
 
+    light_edge_x = []
+    light_edge_y = []
+
     if min_co_occurrence > min_dmc_co_occurrence:
         min_dmc_co_occurrence = min_co_occurrence
 
-    for edge in G.edges():
-        edge_attr = G.get_edge_data(edge[0], edge[1], default={'weight': 1})
-        if edge_attr['weight'] > min_dmc_co_occurrence - 1:
-            x0, y0 = pos[edge[0]]
-            x1, y1 = pos[edge[1]]
+    for n1, n2 in G.edges():
+        x0, y0 = pos[n1]
+        x1, y1 = pos[n2]
+
+        if G[n1][n2]['weight'] > min_dmc_co_occurrence:
             edge_x.append(x0)
             edge_x.append(x1)
             edge_x.append(None)
             edge_y.append(y0)
             edge_y.append(y1)
             edge_y.append(None)
-
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=2, color='#888'),
-        hoverinfo='none',
-        mode='lines'
-    )
-
-    light_edge_x = []
-    light_edge_y = []
-
-    for edge in G.edges():
-        edge_attr = G.get_edge_data(edge[0], edge[1])
-        if edge_attr['weight'] > min_co_occurrence - 1:  # only show link if co-occur > cutoff
-            x0, y0 = pos[edge[0]]
-            x1, y1 = pos[edge[1]]
+        else:
             light_edge_x.append(x0)
             light_edge_x.append(x1)
             light_edge_x.append(None)
@@ -372,15 +360,21 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
             light_edge_y.append(y1)
             light_edge_y.append(None)
 
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=2, color='#888'),
+        mode='lines'
+    )
+
     light_edge_trace = go.Scatter(
         x=light_edge_x, y=light_edge_y,
-        line=dict(width=0.6, color='#BBB', dash='dot'),
+        line=dict(width=1, color='#BBB', dash='dot'),
         hoverinfo='none',
         mode='lines'
     )
 
-    node_x = [pos[i].tolist()[0] for i in pos]
-    node_y = [pos[i].tolist()[1] for i in pos]
+    node_x = [pos[n][0] for n in pos]
+    node_y = [pos[n][1] for n in pos]
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
@@ -400,13 +394,13 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
         )
     )
 
-    type_label = "Cumulative" if start_line == 0 else "DMC"
+    plot_title = "Cumulative" if start_line == 0 else "DMC"
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
-                text=f"{case_name} | {type_label} View @ at {plot_header}",
+                text=f"{case_name} | {plot_title} View @ at {plot_header}",
                 x=0.5,
                 xanchor='center'
             ),
@@ -745,8 +739,8 @@ grap_layout_options_div = html.Div(
                 html.Span('Spring iterations: ', className='me-4'),
                 dcc.Input(id='layout-iterations',
                           type="number",
-                          min=0, max=500, step=10,
-                          value=100,
+                          min=0, max=500, step=1,
+                          value=10,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -755,8 +749,8 @@ grap_layout_options_div = html.Div(
                 html.Span('Spring k: ', className='me-4'),
                 dcc.Input(id='layout-k',
                           type="number",
-                          min=0, max=100, step=0.1,
-                          value=0.5,
+                          min=0, max=100, step=0.05,
+                          value=0.1,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
