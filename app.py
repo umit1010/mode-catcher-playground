@@ -260,6 +260,7 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
                             with_codes=False,
                             layout=1,
                             spring_iterations=30,
+                            spring_k=0.2,
                             min_co_occurrence=1,
                             min_dmc_co_occurrence=2,
                             size_multiplier=2):
@@ -274,24 +275,20 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
         G = generate_knowledge_graph(start=start_line, end=end_line, sentence_boost=False)
         tokens_changed = False
 
+    # first, remove edges that are below the degree offset value (like less than min degrees)
+    edges_to_drop = [(e1, e2) for (e1, e2) in G.edges if G[e1][e2]['weight'] < min_co_occurrence]
+    G.remove_edges_from(edges_to_drop)
+
     # CALCULATE NODE METRICS
 
     # I add 1 to node size because if n=1 -> log2(1) = 0
     node_sizes = list(map(lambda x: 1 + np.log2(x) * size_multiplier, nx.get_node_attributes(G, 'count').values()))
-    print(nx.get_node_attributes(G, 'count'))
-    print('--')
-    print(node_sizes)
-
-    node_degrees = dict(G.degree)
+    node_degrees = dict(G.degree) # because G.degree is a degreeview and doesn't have a values() method
     node_clustering = nx.clustering(G)
-    degree_centrality = nx.degree_centrality(G)
-    betweenness_centrality = nx.betweenness_centrality(G)
+    d_centrality = nx.degree_centrality(G)
+    b_centrality = nx.betweenness_centrality(G)
 
     # VISUALIZE
-
-    # first, remove edges that are below the degree offset value (like less than min degrees)
-    edges_to_drop = [(e1, e2) for (e1, e2) in G.edges if G[e1][e2]['weight'] < min_co_occurrence]
-    G.remove_edges_from(edges_to_drop)
 
     # second, generate the selected layout for node position
     layout_seed = np.random.RandomState(42)
@@ -299,7 +296,7 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
     pos = list()
 
     if layout == '1':
-        pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=0.2)
+        pos = nx.spring_layout(G, iterations=spring_iterations, seed=layout_seed, k=spring_k)
 
     if layout == '2':
         pos = nx.random_layout(G, seed=layout_seed)
@@ -312,18 +309,26 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
 
     # if showing a cumulative graph, just show the current line number
     #    otherwise, show the range of the line numbers
-    current_lines = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
+    plot_header = f'{end_line}' if start_line == 0 else f'[{start_line},{end_line}]'
 
     # create node label but don't show labels for nodes with only 1 count
-    node_texts = list(nx.get_node_attributes(G, 'label').values())
+
+    # find the most central node so that we can show labels of the nodes in its ego graph in the plot
+    #      but hide the labels of the others for easier viewing
+    most_central_node = sorted(G.degree, key=lambda x: x[1], reverse=True)[0][0]
+
+    ego_network = nx.ego_graph(G, n=most_central_node, radius=10)
+
+    # show the node texts for really large nodes or the ones in the central node's plot
+    node_texts = [nlp.vocab.strings[n] if G.nodes[n]['count'] > 5 or n in ego_network.nodes else ' ' for n in G.nodes]
 
     # hover text for additional information for each node
     hover_texts = [f'<b>{G.nodes[node]["label"]}</b> <br> '
                    f'𝑓: {G.nodes[node]["count"]} <br> '
                    f'deg: {node_degrees[node]} <br>'
                    f'clustering: {node_clustering[node]:.3f} <br>'
-                   f'degree centrality: {degree_centrality[node]:.3f} <br>'
-                   f'betweenness centrality: {betweenness_centrality[node]:.3f} <br>'
+                   f'degree centrality: {d_centrality[node]:.3f} <br>'
+                   f'betweenness centrality: {b_centrality[node]:.3f} <br>'
                    for node in G.nodes]
 
     # create the plotly graph for the network
@@ -401,7 +406,7 @@ def display_knowledge_graph(start_line=0,  # if > 0, dmc mode is activated
         data=[light_edge_trace, edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
-                text=f"{case_name} | {type_label} View @ at {current_lines}",
+                text=f"{case_name} | {type_label} View @ at {plot_header}",
                 x=0.5,
                 xanchor='center'
             ),
@@ -730,7 +735,7 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='node-size',
                           type="number",
                           min=1, max=40, step=1,
-                          value=2,
+                          value=5,
                           style={'margin-top': '-6px'},
                           className='ms-4'
                           ),
@@ -741,7 +746,17 @@ grap_layout_options_div = html.Div(
                 dcc.Input(id='layout-iterations',
                           type="number",
                           min=0, max=500, step=10,
-                          value=50,
+                          value=100,
+                          style={'margin-top': '-6px'}
+                          )
+            ], md=12, xl=3, class_name='d-flex mt-3'),
+
+            dbc.Col([
+                html.Span('Spring k: ', className='me-4'),
+                dcc.Input(id='layout-k',
+                          type="number",
+                          min=0, max=100, step=0.1,
+                          value=0.5,
                           style={'margin-top': '-6px'}
                           )
             ], md=12, xl=3, class_name='d-flex mt-3'),
@@ -1107,6 +1122,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Input('min-dmc-co', 'value'),
     Input('graph-layout', 'value'),
     Input('layout-iterations', 'value'),
+    Input('layout-k', 'value'),
     Input('node-size', 'value'),
     State('graph-button', 'disabled'),
     State('mode-name', 'value'),
@@ -1121,6 +1137,7 @@ def knowledge_graph(n_clicks,
                     dmc_deg,
                     layout,
                     iterations,
+                    k,
                     multiplier,
                     disabled,
                     name):
@@ -1169,6 +1186,7 @@ def knowledge_graph(n_clicks,
                                            with_codes=code_pref,
                                            layout=layout,
                                            spring_iterations=iterations,
+                                           spring_k=k,
                                            min_co_occurrence=deg,
                                            min_dmc_co_occurrence=dmc_deg,
                                            size_multiplier=multiplier
