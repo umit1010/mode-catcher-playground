@@ -533,7 +533,7 @@ if input_folder_path.is_dir():
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
-    file_list, id="input-file-dropdown", value="D1 - B-Interview-2.txt"
+    file_list, id="input-file-dropdown", value="00_demo.txt"
 )
 
 mode_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter mode name ...")
