@@ -648,9 +648,10 @@ utterances_accordion = dbc.Accordion(
                 id="utterances-div",
             )
         ],
+        id="revise",
         title="Revise and Code",
     ),
-    active_item=0,  # collapsed by default
+    # active_item="1",  # collapsed by default
 )
 
 graph_button = dbc.Button(
