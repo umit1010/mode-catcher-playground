@@ -436,6 +436,7 @@ def display_knowledge_graph(
             height=600,
             margin=dict(l=0, r=0, t=40, b=40),
             showlegend=False,
+            uirevision="none"
         ),
     )
 
@@ -446,73 +447,76 @@ def display_knowledge_graph(
 
     # metrics plots
 
-    graph_metrics = "This section is temporarily disabled!"
+    # graph_metrics = "This section is temporarily disabled!"
 
-    # ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
+    node_labels = dict([(token, nlp.vocab.strings[token]) for token in G.nodes])
+    node_degrees = [G.degree[token] for token in G.nodes]
+    node_clustering = nx.clustering(G)
+    ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
-    #
-    # # first create a sorted list of degrees for plotting as a scatter plot and histogram
-    # connected_nodes = dict(
-    #     [(node_labels[idx], degree)
-    #      for (idx, degree) in enumerate(node_degrees)
-    #      if degree > 0]
-    # )
-    #
-    # # only attempt to plot if there are any tokens with degree higher than 0
-    # if len(connected_nodes) > 0:
-    #
-    #     ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
-    #
-    #     fig_metrics = make_subplots(rows=1, cols=2,
-    #                                 subplot_titles=(
-    #                                     f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
-    #                                     f"n<sub>connected</sub> = {len(connected_nodes)} | "
-    #                                     f"n<sub>total</sub> = {G.number_of_nodes()}",
-    #                                     f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
-    #                                 ),
-    #                                 )
-    #     if ave_degree > 0:
-    #         degree_labels, degree_degrees = zip(
-    #             *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
-    #         fig_metrics.add_trace(
-    #             go.Scatter(
-    #                 y=degree_degrees,
-    #                 x=degree_labels
-    #             ),
-    #             row=1, col=1
-    #         )
-    #
-    #         graph_metrics = dcc.Graph(figure=fig_metrics)
-    #
-    #     # now let's get clustering coefficients for nodes if it's > 0
-    #
-    #     clustered_nodes = dict(
-    #         [(node_labels[idx], node_clustering[key])
-    #          for (idx, key) in enumerate(node_clustering)
-    #          if node_clustering[key] > 0]
-    #     )
-    #
-    #     # only display the plot if there are clusters
-    #     if len(clustered_nodes) > 0:
-    #         cluster_labels, cluster_coefficients = zip(
-    #             *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
-    #
-    #         fig_metrics.add_trace(
-    #             go.Scatter(
-    #                 y=cluster_coefficients,
-    #                 x=cluster_labels
-    #             ),
-    #             row=1, col=2
-    #         )
-    #
-    #     fig_metrics.update_yaxes(range=[0, 60], row=1, col=1)
-    #     fig_metrics.update_yaxes(range=[0, 1.1], row=1, col=2)
-    #     fig_metrics.update_layout(showlegend=False,
-    #                               title=dict(
-    #                                   text=f"density = {nx.density(G):.3f}",
-    #                                   x=0.5, xanchor='center'),
-    #                               margin=dict(l=0, r=0, t=40, b=40)
-    #                               )
+    
+    # first create a sorted list of degrees for plotting as a scatter plot and histogram
+    connected_nodes = dict(
+        [(nlp.vocab.strings[token], G.degree[token])
+         for token in G.nodes
+         if G.degree[token] > 0]
+    )
+    
+    # only attempt to plot if there are any tokens with degree higher than 0
+    if len(connected_nodes) > 0:
+    
+        ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
+    
+        fig_metrics = make_subplots(rows=1, cols=2,
+                                    subplot_titles=(
+                                        f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
+                                        f"n<sub>connected</sub> = {len(connected_nodes)} | "
+                                        f"n<sub>total</sub> = {G.number_of_nodes()}",
+                                        f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
+                                    ),
+                                    )
+        if ave_degree > 0:
+            degree_labels, degree_degrees = zip(
+                *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+            fig_metrics.add_trace(
+                go.Scatter(
+                    y=degree_degrees,
+                    x=degree_labels
+                ),
+                row=1, col=1
+            )
+    
+            graph_metrics = dcc.Graph(figure=fig_metrics)
+    
+        # now let's get clustering coefficients for nodes if it's > 0
+    
+        clustered_nodes = dict(
+            [(nlp.vocab.strings[token], node_clustering[token])
+             for token in G.nodes
+             if node_clustering[token] > 0]
+        )
+    
+        # only display the plot if there are clusters
+        if len(clustered_nodes) > 0:
+            cluster_labels, cluster_coefficients = zip(
+                *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
+    
+            fig_metrics.add_trace(
+                go.Scatter(
+                    y=cluster_coefficients,
+                    x=cluster_labels
+                ),
+                row=1, col=2
+            )
+    
+        fig_metrics.update_yaxes(row=1, col=1)
+        fig_metrics.update_yaxes(row=1, col=2)
+        fig_metrics.update_layout(showlegend=False,
+                                  title=dict(
+                                      text=f"density = {nx.density(G):.3f}",
+                                      x=0.5, xanchor='center'),
+                                  margin=dict(l=0, r=0, t=40, b=40)
+                                  )
 
     return graph_network, graph_metrics
 
@@ -730,7 +734,7 @@ grap_layout_options_div = html.Div(
                             min=1,
                             max=10,
                             step=1,
-                            value=3,
+                            value=1,
                             style={"margin-top": "-6px"},
                         ),
                     ],
@@ -747,7 +751,7 @@ grap_layout_options_div = html.Div(
                             min=1,
                             max=10,
                             step=1,
-                            value=3,
+                            value=2,
                             style={"margin-top": "-6px"},
                         ),
                     ],
@@ -842,7 +846,7 @@ grap_layout_options_div = html.Div(
                             min=0,
                             max=100,
                             step=0.05,
-                            value=0.1,
+                            value=0.5,
                             style={"margin-top": "-6px"},
                         ),
                     ],
