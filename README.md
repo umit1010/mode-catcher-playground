@@ -13,7 +13,7 @@ I use simple statistics-based NLP tools in this project (instead of LLMs) becaus
 
 ## Relevant literature
 
-To get started with the underlying theoretical ideas of the project.
+You can read the following three short papers to get started with the underlying theoretical ideas of the project.
 
 * Sherin et al. (2007) Conceptual Dynamics in Clinical Interviews https://doi.org/10.1063/1.2820937
 * Wilensky (2001) Modeling Nature’s Emergent Patterns with Multi-Agent Languages https://ccl.northwestern.edu/2013/mnep9.pdf
