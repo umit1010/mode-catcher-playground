@@ -26,7 +26,7 @@ unstopped_words = set()
 assigned_codes = dict()
 active_data = list()
 
-theoretical_code_list = [
+theoretical_code_list = [ # where are these values coming from?
     "emergent",
     "centralized",
     "probabilistic",
@@ -64,11 +64,13 @@ def parse_raw_text(txt: str, timestamp=False, interviewer=False):
     re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
 
     if not interviewer:
+        # gets just interviewee lines
         input_lines = [
             line for line in input_lines if line.lower().count("interviewer") == 0
         ]
 
     for i, line in enumerate(input_lines):
+        # cleans
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(":")
         speaker = str(speaker).strip()
@@ -86,7 +88,7 @@ def parse_raw_text(txt: str, timestamp=False, interviewer=False):
         data.append(row)
 
         if i not in assigned_codes.keys():
-            assigned_codes[i] = [False] * len(theoretical_code_list)
+            assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary 
 
     tokens_changed = True
 
@@ -117,7 +119,7 @@ def generate_code_checkboxes(line_num, values=None):
     )
     return container
 
-
+# mapping use of certain "tokens" --> words?
 def process_utterance(raw_text):
 
     global nlp
@@ -168,6 +170,7 @@ def process_utterance(raw_text):
         ]
     )
 
+    # why a treemap?
     fig = px.treemap(
         df,
         path=[px.Constant("tokens"), "token"],
@@ -186,7 +189,7 @@ def process_utterance(raw_text):
 
     return buttons_for_text, token_treemap
 
-
+# why is a pickle model needed?
 def pickle_model(mode_name):
     global nlp
 
@@ -219,9 +222,9 @@ def generate_knowledge_graph(start, end, sentence_boost=False):
     data_dict_list = active_data[0:end] if start == 0 else active_data
 
     for line in data_dict_list:
-        doc_line = nlp(line["utterance"].strip().lower())
+        doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
-        tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop]
+        tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop] # cleans
 
         token_counts = Counter(tokens)
         unique_tokens = list(token_counts.keys())
@@ -239,7 +242,7 @@ def generate_knowledge_graph(start, end, sentence_boost=False):
                 new_G.add_edge(t1, t2, weight=1)
 
         # boost edges between tokens within the same sentences by 1
-        #   if there are more than 1 sentences in the line
+        #   if there are more than 1 sentences in the line --> is this measuring the "amount" of talking?
 
         if sentence_boost:
             sentences = [s for s in doc_line.sents]
@@ -462,7 +465,8 @@ def display_knowledge_graph(
          if G.degree[token] > 0]
     )
     
-    # only attempt to plot if there are any tokens with degree higher than 0
+    # only attempt to plot if there are any tokens with degree higher than 0 
+        # --> why wouldn't there be? if this is run earlier or tries to be run before transcript in
     if len(connected_nodes) > 0:
     
         ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
@@ -527,13 +531,17 @@ def display_knowledge_graph(
 
 INPUT_FOLDER = "samples"
 
+# creates Path object
 input_folder_path = Path(INPUT_FOLDER)
 
 file_list = ["__manual entry__"]
 
+# checks if there is a path directory from creating the path object
 if input_folder_path.is_dir():
+    # gets all txt files
     text_files = [f.name for f in sorted(input_folder_path.glob("*.txt"))]
     if len(text_files) > 0:
+        # adds each txt file to the file_list list
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
@@ -645,7 +653,7 @@ utterances_accordion = dbc.Accordion(
             html.Div(
                 [
                     html.P(
-                        "Processed text will be displayed here as a datatable.",
+                        "Processed text will be displayed here as a datatable.", # would we ever care about unprocessed text?
                         className="lead",
                     )
                 ],
@@ -979,15 +987,20 @@ def load_input_file(file_name: str):
     if file_name == "__manual entry__":
         return "", ""
 
+    # gets path to file and removed .txt from the file's name
     file_path = Path(INPUT_FOLDER) / file_name
     mode_name = file_name.removesuffix(".txt")
 
+    # checks file existence
     if not file_path.is_file():
         return "It doesn't seem like that file exists anymore.", mode_name
 
+    # opens file and reads the file 
+    # puts the text in one string instead of a list of lines
     with open(file_path, "r") as f:
         file_text = "".join([f"{line.strip()}\n" for line in f.readlines()])
 
+    # checks if there is actually text (rather than empty file/string)
     if len(file_text) > 0:
         return file_text, mode_name
 
@@ -1013,15 +1026,18 @@ def activate_parse_button(name: str, text: str):
 )
 def reset_mode(nclicks, name):
     if ctx.triggered_id == "reset-button":
+        # gets path of current model
         model_path = Path(f"./models/{str(name).strip()}/")
 
+        # checks whether the path has directory
         if model_path.is_dir():
+            # gets paths to specific files (stopwords and theoretical codes)
             stopwords_file = model_path / "stopwords.pickle"
             theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
+            # unlink deletes the pickled file (because it has been updated already?)
             if stopwords_file.is_file():
                 stopwords_file.unlink()
-
             if theoretical_codes_file.is_file():
                 theoretical_codes_file.unlink()
 
@@ -1055,6 +1071,7 @@ def utterance_table(parse_clicks, name, txt, options):
         model_path = Path(f"./models/{str(name).strip()}/")
         default_stopwords_file = Path("./config") / "default_stopwords.pickle"
 
+        # loading pickled files
         if model_path.is_dir():
             stopwords_file = model_path / "stopwords.pickle"
             theoretical_codes_file = model_path / "theoretical_codes.pickle"
@@ -1079,7 +1096,7 @@ def utterance_table(parse_clicks, name, txt, options):
         nlp = spacy.load("en_core_web_sm", exclude=["ner", "senter"])
 
         # update stop_words of the small model
-        #   I have to do it this way because spacy's to_disk method doesn't save stopwords
+        #   I have to do it this y because spacy's to_disk method doesn't save stopwords
         for word in stopped_words:
             nlp.vocab[word].is_stop = True
 
