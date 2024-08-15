@@ -47,7 +47,7 @@ app = Dash(
 # ---- NLP ----
 
 
-def parse_raw_text(txt: str, timestamp=False, interviewer=False):
+def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
 
     global tokens_changed
 
@@ -64,7 +64,6 @@ def parse_raw_text(txt: str, timestamp=False, interviewer=False):
     re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
 
     if not interviewer:
-        # gets just interviewee lines
         input_lines = [
             line for line in input_lines if line.lower().count("interviewer") == 0
         ]
@@ -129,7 +128,7 @@ def process_utterance(raw_text):
     all_tokens = [
         token.lemma_
         for token in doc
-        if not nlp.vocab[token.lemma].is_stop and not nlp.vocab[token.lemma].is_punct
+        if not nlp.vocab[token.lemma].is_stop and not token.is_punct
     ]
 
     token_counts = Counter(all_tokens)
@@ -1108,7 +1107,7 @@ def utterance_table(parse_clicks, name, txt, options):
         interviewer = False if 2 in options else True
 
         parsed_data = parse_raw_text(
-            txt, timestamp=time, interviewer=interviewer
+            txt, timestamp=time, is_interviewer=interviewer
         )
 
         column_names = [{"name": "line", "id": "line"}]
