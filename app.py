@@ -63,7 +63,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
     # to parse the text line by line
     re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
 
-    if not interviewer:
+    if not is_interviewer:
         input_lines = [
             line for line in input_lines if line.lower().count("interviewer") == 0
         ]
@@ -278,8 +278,8 @@ def display_knowledge_graph(
     global G
     global tokens_changed
 
-    # if any edits were made in the utterance table or line number, regenerate the graph
-    #    otherwise use the same graph for visualization changes
+    # UA > if any edits were made in the utterance table or line number, regenerate the graph
+    #       otherwise use the same graph for visualization changes
     if tokens_changed:
         G = generate_knowledge_graph(
             start=start_line, end=end_line, sentence_boost=False
