@@ -127,7 +127,7 @@ def process_utterance(raw_text):
     all_tokens = [
         token.lemma_
         for token in doc
-        if not nlp.vocab[token.lemma].is_stop and not nlp.vocab[token.lemma].is_punct
+        if not nlp.vocab[token.lemma].is_stop and not token.is_punct
     ]
 
     token_counts = Counter(all_tokens)
