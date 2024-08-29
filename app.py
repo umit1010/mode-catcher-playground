@@ -13,6 +13,8 @@ from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable
 from itertools import combinations
 from plotly.subplots import make_subplots
+import dash_ag_grid as dag
+
 
 # ---- PLATFORM ----
 
@@ -26,7 +28,7 @@ unstopped_words = set()
 assigned_codes = dict()
 active_data = list()
 
-theoretical_code_list = [ # where are these values coming from?
+theoretical_code_list = [ 
     "emergent",
     "centralized",
     "probabilistic",
@@ -1110,33 +1112,54 @@ def utterance_table(parse_clicks, name, txt, options):
             txt, timestamp=time, is_interviewer=interviewer
         )
 
-        column_names = [{"name": "line", "id": "line"}]
+        # column_names = [{"name": "line", "id": "line"}]
 
+        # if time:
+        #     column_names.append({"name": "time", "id": "time"})
+
+        # if speaker:
+        #     column_names.append({"name": "speaker", "id": "speaker"})
+
+        # column_names.append({"name": "utterance", "id": "utterance"})
+
+        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1}]
         if time:
-            column_names.append({"name": "time", "id": "time"})
-
+            column_defs.append({'field': 'time', 'id': 'time'})
         if speaker:
-            column_names.append({"name": "speaker", "id": "speaker"})
+            column_defs.append({'field': 'speaker', 'id': 'speaker'})
+        column_defs.append({'field': 'utterance', 'id': 'utterance', 'flex': 5})
 
-        column_names.append({"name": "utterance", "id": "utterance"})
+        # transcript_table = DataTable(
+        #     parsed_data,
+        #     columns=column_names,
+        #     style_header={"fontWeight": "bold", "textAlign": "left"},
+        #     style_cell={
+        #         "padding": "12px",
+        #         "textAlign": "left",
+        #         "fontSize": 16,
+        #         "line-height": "2",
+        #         "font-family": "sans-serif",
+        #     },
+        #     style_data={"whiteSpace": "normal", "height": "auto"},
+        #     style_data_conditional=[
+        #         {"if": {"row_index": "odd"}, "backgroundColor": "rgb(248, 252, 253)"}
+        #     ],
+        #     id="data-table",
+        # )
 
-        transcript_table = DataTable(
-            parsed_data,
-            columns=column_names,
-            style_header={"fontWeight": "bold", "textAlign": "left"},
-            style_cell={
-                "padding": "12px",
-                "textAlign": "left",
-                "fontSize": 16,
-                "line-height": "2",
-                "font-family": "sans-serif",
-            },
-            style_data={"whiteSpace": "normal", "height": "auto"},
-            style_data_conditional=[
-                {"if": {"row_index": "odd"}, "backgroundColor": "rgb(248, 252, 253)"}
-            ],
-            id="data-table",
-        )
+        transcript_table = dag.AgGrid(
+                    id = 'data-table',
+                    rowData = parsed_data,
+                    columnDefs = column_defs,
+                    defaultColDef={
+                        'resizable': True,
+                        'cellStyle': {'wordBreak': 'normal'},
+                        'cellRenderer': 'markdown',
+                        'wrapText': True,
+                        'autoHeight': True,
+                        'filter': True},
+                    dangerously_allow_code=True,
+                    style={'height': 600})
 
         editor_section = [transcript_table]
 
@@ -1158,7 +1181,7 @@ def utterance_table(parse_clicks, name, txt, options):
     Output("utterance-stats", "children"),
     Output("code-checkboxes-container", "children"),
     Output("coding-modal", "is_open"),
-    Input("data-table", "active_cell"),
+    Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     Input({"type": "code-checkbox", "index": ALL}, "value"),
     prevent_initial_call=True,
@@ -1183,8 +1206,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
                     unstopped_words.discard(toggled_token)
 
                 tokens_changed = True
-
-        i = cell["row"]
+        i = cell["rowIndex"]
         cell_text = str(active_data[i]["utterance"])
         token_buttons, token_treemap = process_utterance(cell_text)
 
