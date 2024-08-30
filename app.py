@@ -79,11 +79,12 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
         row = {"line": i + 1}
 
         if timestamp:
-            row["time"] = time
+            row["time"] = time[1:-1]
 
         if speaker:
             row["speaker"] = speaker
 
+        # here would I go through and make each token bold using markdown?
         row["utterance"] = utterance.strip()
 
         data.append(row)
@@ -190,7 +191,6 @@ def process_utterance(raw_text):
 
     return buttons_for_text, token_treemap
 
-# why is a pickle model needed?
 def pickle_model(mode_name):
     global nlp
 
@@ -607,7 +607,7 @@ input_accordion = dbc.Accordion(
                 dbc.Row(
                     dbc.Col(
                         [
-                            inclusion_options,
+                            #inclusion_options,
                             parse_button,
                         ],
                         class_name="mt-4",
@@ -964,6 +964,10 @@ app.layout = dbc.Container(
                         className="text-center m-4",
                     ),
                     input_accordion,
+                    dbc.Row([dbc.Col(inclusion_options, width='auto'),
+                        dbc.Col(dbc.Button('Re-Parse', id='re-parse', n_clicks=0), 
+                                    width=2, align='start')],
+                            ),
                 ]
             )
         ),
@@ -1112,40 +1116,12 @@ def utterance_table(parse_clicks, name, txt, options):
             txt, timestamp=time, is_interviewer=interviewer
         )
 
-        # column_names = [{"name": "line", "id": "line"}]
-
-        # if time:
-        #     column_names.append({"name": "time", "id": "time"})
-
-        # if speaker:
-        #     column_names.append({"name": "speaker", "id": "speaker"})
-
-        # column_names.append({"name": "utterance", "id": "utterance"})
-
         column_defs = [{'field': 'line', 'id': 'line', 'flex': 1}]
         if time:
             column_defs.append({'field': 'time', 'id': 'time'})
         if speaker:
             column_defs.append({'field': 'speaker', 'id': 'speaker'})
         column_defs.append({'field': 'utterance', 'id': 'utterance', 'flex': 5})
-
-        # transcript_table = DataTable(
-        #     parsed_data,
-        #     columns=column_names,
-        #     style_header={"fontWeight": "bold", "textAlign": "left"},
-        #     style_cell={
-        #         "padding": "12px",
-        #         "textAlign": "left",
-        #         "fontSize": 16,
-        #         "line-height": "2",
-        #         "font-family": "sans-serif",
-        #     },
-        #     style_data={"whiteSpace": "normal", "height": "auto"},
-        #     style_data_conditional=[
-        #         {"if": {"row_index": "odd"}, "backgroundColor": "rgb(248, 252, 253)"}
-        #     ],
-        #     id="data-table",
-        # )
 
         transcript_table = dag.AgGrid(
                     id = 'data-table',
@@ -1175,6 +1151,13 @@ def utterance_table(parse_clicks, name, txt, options):
         ]
         return message, "0", True
 
+@app.callback(
+    Output("parse-button", "n_clicks"),
+    Input("re-parse", "n_clicks"),
+    prevent_initial_call=True
+)
+def change_tables(n):
+    return 1
 
 @app.callback(
     Output("token-buttons", "children"),
