@@ -650,7 +650,7 @@ input_accordion = dbc.Accordion(
 
 utterances_accordion = dbc.Accordion(
     dbc.AccordionItem(
-        [
+        [inclusion_options,
             html.Div(
                 [
                     html.P(
@@ -963,11 +963,7 @@ app.layout = dbc.Container(
                         ["mode-catcher ", html.Em("playground")],
                         className="text-center m-4",
                     ),
-                    input_accordion,
-                    dbc.Row([dbc.Col(inclusion_options, width='auto'),
-                        dbc.Col(dbc.Button('Re-Parse', id='re-parse', n_clicks=0), 
-                                    width=2, align='start')],
-                            ),
+                    input_accordion                        
                 ]
             )
         ),
@@ -1054,25 +1050,26 @@ def reset_mode(nclicks, name):
         else:
             return "No action taken because existing model couldn't be found."
 
+transcript_table = None
 
 @app.callback(
     Output("utterances-div", "children"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Input("parse-button", "n_clicks"),
+    Input("inclusion-options", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
-    State("inclusion-options", "value"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, name, txt, options):
+def utterance_table(parse_clicks, options, name, txt):
     global assigned_codes
     global nlp
     global stopped_words
     global unstopped_words
     global active_data
 
-    if ctx.triggered_id == "parse-button":
+    if ctx.triggered_id == "parse-button" or ctx.triggered_id == 'inclusion-options':
         model_path = Path(f"./models/{str(name).strip()}/")
         default_stopwords_file = Path("./config") / "default_stopwords.pickle"
 
@@ -1116,12 +1113,10 @@ def utterance_table(parse_clicks, name, txt, options):
             txt, timestamp=time, is_interviewer=interviewer
         )
 
-        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1}]
-        if time:
-            column_defs.append({'field': 'time', 'id': 'time'})
-        if speaker:
-            column_defs.append({'field': 'speaker', 'id': 'speaker'})
-        column_defs.append({'field': 'utterance', 'id': 'utterance', 'flex': 5})
+        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1},
+                       {'field': 'time', 'id': 'time', 'hide': not time},
+                       {'field': 'speaker', 'id': 'speaker', 'hide': not speaker},
+                       {'field': 'utterance', 'id': 'utterance', 'flex': 5}]
 
         transcript_table = dag.AgGrid(
                     id = 'data-table',
@@ -1142,6 +1137,14 @@ def utterance_table(parse_clicks, name, txt, options):
         active_data = parsed_data
 
         return editor_section, "1", False
+    # this will never get triggered because of the first if statement
+    # it is here as a placeholder for now
+    elif ctx.triggered_id == 'inclusion-options':
+        new_state = [{'colId': 'line'},
+                    {'colId': 'time', 'hide': 0 not in options},
+                    {'colId': 'speaker', 'hide': 1 not in options},
+                    {'colId': 'utterance'}]
+        transcript_table.columnState = new_state
     else:
         message = [
             html.P(
@@ -1150,14 +1153,6 @@ def utterance_table(parse_clicks, name, txt, options):
             )
         ]
         return message, "0", True
-
-@app.callback(
-    Output("parse-button", "n_clicks"),
-    Input("re-parse", "n_clicks"),
-    prevent_initial_call=True
-)
-def change_tables(n):
-    return 1
 
 @app.callback(
     Output("token-buttons", "children"),
