@@ -1050,14 +1050,12 @@ def reset_mode(nclicks, name):
         else:
             return "No action taken because existing model couldn't be found."
 
-transcript_table = None
-
 @app.callback(
     Output("utterances-div", "children"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Input("parse-button", "n_clicks"),
-    Input("inclusion-options", "value"),
+    State("inclusion-options", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
     prevent_initial_call=True,
@@ -1069,7 +1067,7 @@ def utterance_table(parse_clicks, options, name, txt):
     global unstopped_words
     global active_data
 
-    if ctx.triggered_id == "parse-button" or ctx.triggered_id == 'inclusion-options':
+    if ctx.triggered_id == "parse-button":
         model_path = Path(f"./models/{str(name).strip()}/")
         default_stopwords_file = Path("./config") / "default_stopwords.pickle"
 
@@ -1105,17 +1103,23 @@ def utterance_table(parse_clicks, options, name, txt):
         for word in unstopped_words:
             nlp.vocab[word].is_stop = False
 
-        time = True if 0 in options else False
-        speaker = True if 1 in options else False
-        interviewer = False if 2 in options else True
+        time = True
+        speaker = True
+        interviewer = True
 
         parsed_data = parse_raw_text(
             txt, timestamp=time, is_interviewer=interviewer
         )
 
         column_defs = [{'field': 'line', 'id': 'line', 'flex': 1},
-                       {'field': 'time', 'id': 'time', 'hide': not time},
-                       {'field': 'speaker', 'id': 'speaker', 'hide': not speaker},
+                       {'field': 'time', 'id': 'time', 'hide': 0 not in options},
+                       {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options,
+                        'filter': 'agSpeakerColumnFilter', 
+                        'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
+                        'isExternalFilterPresent': {'function': 2 in options},
+                        'doesExternalFilterPass': 
+                            {'function': "params.data.speaker != 'Interviewer'"}
+                        },
                        {'field': 'utterance', 'id': 'utterance', 'flex': 5}]
 
         transcript_table = dag.AgGrid(
@@ -1137,14 +1141,6 @@ def utterance_table(parse_clicks, options, name, txt):
         active_data = parsed_data
 
         return editor_section, "1", False
-    # this will never get triggered because of the first if statement
-    # it is here as a placeholder for now
-    elif ctx.triggered_id == 'inclusion-options':
-        new_state = [{'colId': 'line'},
-                    {'colId': 'time', 'hide': 0 not in options},
-                    {'colId': 'speaker', 'hide': 1 not in options},
-                    {'colId': 'utterance'}]
-        transcript_table.columnState = new_state
     else:
         message = [
             html.P(
@@ -1153,6 +1149,27 @@ def utterance_table(parse_clicks, options, name, txt):
             )
         ]
         return message, "0", True
+
+# needs to filter out interviewers as third otion
+@app.callback(
+    Output('data-table', 'columnState'),
+    Output('data-table', 'dashGridOptions'),
+    Input("inclusion-options", "value")
+)
+def helper(options):
+    new_state = [{'colId': 'line'},
+                    {'colId': 'time', 'hide': 0 not in options},
+                    {'colId': 'speaker', 'hide': 1 not in options},
+                    {'colId': 'utterance'}]
+    new_filter = {'isExternalFilterPresent': {'function': 'false'}}
+    if 2 in options:
+        new_filter = {
+            'isExternalFilterPresent': {'function': 'true'},
+            'doesExternalFilterPass': 
+                {'function': "params.data.speaker != 'Interviewer'"}
+        }
+    return new_state, new_filter
+
 
 @app.callback(
     Output("token-buttons", "children"),
