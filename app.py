@@ -73,7 +73,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
     for i, line in enumerate(input_lines):
         # cleans
         _, time, speaker_speech = re_time_splitter.split(line)
-        speaker, utterance = speaker_speech.strip().split(":")
+        speaker, utterance = speaker_speech.strip().split(":", maxsplit=1)
         speaker = str(speaker).strip()
 
         row = {"line": i + 1}
