@@ -1201,7 +1201,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
                     unstopped_words.discard(toggled_token)
 
                 tokens_changed = True
-        i = cell["rowIndex"]
+        i = int(cell["rowId"])
         cell_text = str(active_data[i]["utterance"])
         token_buttons, token_treemap = process_utterance(cell_text)
 
