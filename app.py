@@ -212,7 +212,7 @@ def pickle_model(mode_name):
         pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_knowledge_graph(start, end, sentence_boost=False):
+def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=False):
     global nlp
     global active_data
 
@@ -223,42 +223,43 @@ def generate_knowledge_graph(start, end, sentence_boost=False):
     data_dict_list = active_data[0:end] if start == 0 else active_data
 
     for line in data_dict_list:
-        doc_line = nlp(line["utterance"].strip().lower()) # cleans
+        if with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"):
+            doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
-        tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop] # cleans
+            tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop] # cleans
 
-        token_counts = Counter(tokens)
-        unique_tokens = list(token_counts.keys())
+            token_counts = Counter(tokens)
+            unique_tokens = list(token_counts.keys())
 
-        for t in unique_tokens:
-            if new_G.has_node(t):
-                new_G.nodes[t]["count"] += token_counts[t]
-            else:
-                new_G.add_node(t, count=token_counts[t], label=nlp.vocab.strings[t])
+            for t in unique_tokens:
+                if new_G.has_node(t):
+                    new_G.nodes[t]["count"] += token_counts[t]
+                else:
+                    new_G.add_node(t, count=token_counts[t], label=nlp.vocab.strings[t])
 
-        for t1, t2 in combinations(unique_tokens, 2):
-            if new_G.has_edge(t1, t2):
-                new_G[t1][t2]["weight"] += 1
-            else:
-                new_G.add_edge(t1, t2, weight=1)
+            for t1, t2 in combinations(unique_tokens, 2):
+                if new_G.has_edge(t1, t2):
+                    new_G[t1][t2]["weight"] += 1
+                else:
+                    new_G.add_edge(t1, t2, weight=1)
 
-        # boost edges between tokens within the same sentences by 1
-        #   if there are more than 1 sentences in the line --> is this measuring the "amount" of talking?
+            # boost edges between tokens within the same sentences by 1
+            #   if there are more than 1 sentences in the line --> is this measuring the "amount" of talking?
 
-        if sentence_boost:
-            sentences = [s for s in doc_line.sents]
+            if sentence_boost:
+                sentences = [s for s in doc_line.sents]
 
-            if len(sentences) > 1:
-                for s in sentences:
-                    sent_tokens = [
-                        t.lemma for t in s if not t.is_punct and not t.is_stop
-                    ]
+                if len(sentences) > 1:
+                    for s in sentences:
+                        sent_tokens = [
+                            t.lemma for t in s if not t.is_punct and not t.is_stop
+                        ]
 
-                    # unique tokens within the sentence
-                    s_tokens = set(sent_tokens)
+                        # unique tokens within the sentence
+                        s_tokens = set(sent_tokens)
 
-                    for t1, t2 in combinations(s_tokens, 2):
-                        new_G[t1][t2]["weight"] += 1
+                        for t1, t2 in combinations(s_tokens, 2):
+                            new_G[t1][t2]["weight"] += 1
 
     return new_G
 
@@ -275,6 +276,7 @@ def display_knowledge_graph(
     min_co_occurrence=1,
     min_dmc_co_occurrence=2,
     size_multiplier=2,
+    show_interviewer=False
 ):
     global nlp
     global G
@@ -284,7 +286,7 @@ def display_knowledge_graph(
     #       otherwise use the same graph for visualization changes
     if tokens_changed:
         G = generate_knowledge_graph(
-            start=start_line, end=end_line, sentence_boost=False
+            start=start_line, end=end_line, sentence_boost=False, with_interviewer=show_interviewer,
         )
         tokens_changed = False
 
@@ -305,7 +307,8 @@ def display_knowledge_graph(
     )
     node_degrees = dict(
         G.degree
-    )  # because G.degree is a degreeview and doesn't have a values() method
+    )  
+    # because G.degree is a degreeview and doesn't have a values() method
     node_clustering = nx.clustering(G)
     d_centrality = nx.degree_centrality(G)
     b_centrality = nx.betweenness_centrality(G)
@@ -1240,8 +1243,10 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Input("layout-iterations", "value"),
     Input("layout-k", "value"),
     Input("node-size", "value"),
+    Input("inclusion-options", "value"), # this has been added
     State("graph-button", "disabled"),
     State("mode-name", "value"),
+    
     prevent_initial_call=True,
 )
 def knowledge_graph(
@@ -1256,8 +1261,10 @@ def knowledge_graph(
     iterations,
     k,
     multiplier,
+    options,
     disabled,
     name,
+    
 ):
     global active_data
     global tokens_changed
@@ -1280,6 +1287,9 @@ def knowledge_graph(
     if ctx.triggered_id == "min-dmc-co":
         tokens_changed = True
 
+    if ctx.triggered_id == "inclusion-options":
+        tokens_changed = True
+
     # first, let's pickle the user generated model
     pickle_model(name)
 
@@ -1287,6 +1297,8 @@ def knowledge_graph(
     dmc_deg = deg + 1 if deg > dmc_deg - 1 else dmc_deg
 
     # display the latest utterance when generating a cumulative layout
+    # if 2 in options: skip every other line
+    # add a state checker to the above callback
     if not dmc and ctx.triggered_id == "graph-button":
         line = line if line != 1 else len(active_data)
 
@@ -1314,6 +1326,7 @@ def knowledge_graph(
         min_co_occurrence=deg,
         min_dmc_co_occurrence=dmc_deg,
         size_multiplier=multiplier,
+        show_interviewer = 2 not in options,
     )
 
     return graph, len(active_data), line, stats, dmc_deg
