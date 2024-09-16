@@ -27,6 +27,7 @@ stopped_words = set()
 unstopped_words = set()
 assigned_codes = dict()
 active_data = list()
+has_generated = False
 
 theoretical_code_list = [ 
     "emergent",
@@ -1268,6 +1269,7 @@ def knowledge_graph(
 ):
     global active_data
     global tokens_changed
+    global has_generated
 
     if disabled:
         return (
@@ -1277,6 +1279,9 @@ def knowledge_graph(
             "You need to process some data.",
             deg,
         )
+
+    if ctx.triggered_id == "graph-button":
+        has_generated = True
 
     if ctx.triggered_id == "graph-slider":
         tokens_changed = True
@@ -1289,6 +1294,15 @@ def knowledge_graph(
 
     if ctx.triggered_id == "inclusion-options":
         tokens_changed = True
+    
+    if not has_generated:
+        return (
+            "You need to process some data.",
+            1,
+            1,
+            "You need to process some data.",
+            deg,
+        )
 
     # first, let's pickle the user generated model
     pickle_model(name)
