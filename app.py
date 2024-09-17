@@ -79,6 +79,8 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
 
         row = {"line": i + 1}
 
+        row['include?'] = True
+
         if timestamp:
             row["time"] = time[1:-1]
 
@@ -224,7 +226,8 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
     data_dict_list = active_data[0:end] if start == 0 else active_data
 
     for line in data_dict_list:
-        if with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"):
+        if ((with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"))
+            and line['include?']):
             doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
             tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop] # cleans
@@ -1115,7 +1118,8 @@ def utterance_table(parse_clicks, options, name, txt):
             txt, timestamp=time, is_interviewer=interviewer
         )
 
-        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1},
+        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1, 'editable': True},
+                       {'field': 'include?', 'id': 'include?', 'flex': 1, "boolean_value": True, "editable": True},
                        {'field': 'time', 'id': 'time', 'hide': 0 not in options},
                        {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options,
                         'filter': 'agSpeakerColumnFilter', 
@@ -1162,6 +1166,7 @@ def utterance_table(parse_clicks, options, name, txt):
 )
 def helper(options):
     new_state = [{'colId': 'line'},
+                    {'colId': 'include?'},
                     {'colId': 'time', 'hide': 0 not in options},
                     {'colId': 'speaker', 'hide': 1 not in options},
                     {'colId': 'utterance'}]
@@ -1345,6 +1350,17 @@ def knowledge_graph(
 
     return graph, len(active_data), line, stats, dmc_deg
 
+@app.callback(
+    Input("data-table", "cellValueChanged"),
+)
+def update_included_lines(changed):
+    global tokens_changed
+
+    if changed:
+        i = int(changed[0]["rowId"])
+        cell_incl = changed[0]['data']['include?']
+        active_data[i]['include?'] = cell_incl
+        tokens_changed = True
 
 # Press the green button in the gutter to run the script.
 if __name__ == "__main__":
