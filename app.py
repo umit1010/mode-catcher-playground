@@ -230,7 +230,7 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
             and line['include?']):
             doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
-            tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop] # cleans
+            tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop and not nlp.vocab[t.lemma].is_stop] # cleans
 
             token_counts = Counter(tokens)
             unique_tokens = list(token_counts.keys())
