@@ -1227,7 +1227,6 @@ def coding_editor(cell, toggle_clicks, checked_codes):
             codes = generate_code_checkboxes(line_num)
 
         return token_buttons, token_treemap, codes, True
-
     else:
         return "Something", "went", "wrong", False
 
@@ -1250,6 +1249,8 @@ def coding_editor(cell, toggle_clicks, checked_codes):
     Input("layout-k", "value"),
     Input("node-size", "value"),
     Input("inclusion-options", "value"), # this has been added
+    Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
+    Input("data-table", "cellValueChanged"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
     
@@ -1268,6 +1269,8 @@ def knowledge_graph(
     k,
     multiplier,
     options,
+    changed_stop,
+    changed_include,
     disabled,
     name,
     
