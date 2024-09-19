@@ -1100,7 +1100,7 @@ def utterance_table(parse_clicks, options, name, txt):
                 stopped_words = pickle.load(f)
 
         # reload the model because it only pulls default stopwords when loading
-        nlp = spacy.load("en_core_web_sm", exclude=["ner", "senter"])
+        nlp = spacy.load("en_core_web_sm", exclude=["ner"])
 
         # update stop_words of the small model
         #   I have to do it this y because spacy's to_disk method doesn't save stopwords
