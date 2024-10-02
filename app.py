@@ -760,7 +760,7 @@ grap_layout_options_div = html.Div(
                 ),
                 dbc.Col(
                     [
-                        html.Span("Min DMC Co-occurrence: ", className="me-4"),
+                        html.Span("Min Co-occurrence for Strong Link: ", className="me-4"),
                         dcc.Input(
                             id="min-dmc-co",
                             type="number",
