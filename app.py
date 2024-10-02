@@ -880,12 +880,12 @@ grap_layout_options_div = html.Div(
 
 graph_view_options_div = html.Div(
     [
-        html.H3("Knowledge Graph", className="mb-4"),
+        html.H3("Token Graph", className="mb-4"),
         html.P(" "),
         graph_type_row,
         html.P(" "),
         html.Div(
-            "Knowledge graph will be displayed once you generate it.",
+            "The token graph will be displayed once you generate it.",
             id="graph-div",
             className="text-center",
         ),
