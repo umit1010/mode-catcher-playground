@@ -49,12 +49,13 @@ app = Dash(
 
 # ---- NLP ----
 
-
-def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
+def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True):
 
     global tokens_changed
 
     data = list()
+
+    by_sentences = in_sentences
 
     # parse the text
     input_lines = [
@@ -70,7 +71,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
         input_lines = [
             line for line in input_lines if line.lower().count("interviewer") == 0
         ]
-
+    j = 0
     for i, line in enumerate(input_lines):
         # cleans
         _, time, speaker_speech = re_time_splitter.split(line)
@@ -87,14 +88,18 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False):
         if speaker:
             row["speaker"] = speaker
 
+        if by_sentences:
+            doc = nlp(utterance.strip())
+            for s in doc.sents:
+                new_row = row.copy()
+                new_row['utterance'] = str(s)
+                data.append(new_row)                 
+        else:
         # here would I go through and make each token bold using markdown?
-        row["utterance"] = utterance.strip()
-
-        data.append(row)
-
+            row["utterance"] = utterance.strip()
+            data.append(row)
         if i not in assigned_codes.keys():
             assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary 
-
     tokens_changed = True
 
     return data
@@ -564,6 +569,8 @@ raw_text_input = dbc.Textarea(
 
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
+sentences_check = dbc.Checkbox(label="Parse by Sentences", id="by-sent", value=False)
+
 reset_button = dbc.Button(
     "Reset Mode",
     id="reset-button",
@@ -616,9 +623,11 @@ input_accordion = dbc.Accordion(
                         [
                             #inclusion_options,
                             parse_button,
+                            sentences_check
                         ],
                         class_name="mt-4",
                     ),
+                    
                 ),
                 dbc.Row(
                     [
@@ -1065,9 +1074,10 @@ def reset_mode(nclicks, name):
     State("inclusion-options", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
+    State("by-sent", "value"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, options, name, txt):
+def utterance_table(parse_clicks, options, name, txt, sent):
     global assigned_codes
     global nlp
     global stopped_words
@@ -1114,8 +1124,9 @@ def utterance_table(parse_clicks, options, name, txt):
         speaker = True
         interviewer = True
 
+        # here in possible changes
         parsed_data = parse_raw_text(
-            txt, timestamp=time, is_interviewer=interviewer
+            txt, timestamp=time, is_interviewer=interviewer, in_sentences = sent
         )
 
         column_defs = [{'field': 'line', 'id': 'line', 'flex': 1, 'editable': True},
