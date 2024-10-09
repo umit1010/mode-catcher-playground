@@ -80,7 +80,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
 
         row = {"line": i + 1}
 
-        row['include?'] = True
+        row['in?'] = True
 
         if timestamp:
             row["time"] = time[1:-1]
@@ -232,7 +232,7 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
 
     for line in data_dict_list:
         if ((with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"))
-            and line['include?']):
+            and line['in?']):
             doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
             tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop and not nlp.vocab[t.lemma].is_stop] # cleans
@@ -569,7 +569,7 @@ raw_text_input = dbc.Textarea(
 
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
-sentences_check = dbc.Checkbox(label="Parse by Sentences", id="by-sent", value=False)
+sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=False)
 
 reset_button = dbc.Button(
     "Reset Mode",
@@ -586,7 +586,7 @@ inclusion_options = dbc.Checklist(
         {"label": "Display Speaker", "value": 1},
         {"label": "Ignore Interviewer Utterances", "value": 2},
     ],
-    value=[2],
+    value=[0, 1, 2],
     inline=True,
     class_name="mb-4",
     id="inclusion-options",
@@ -621,9 +621,16 @@ input_accordion = dbc.Accordion(
                 dbc.Row(
                     dbc.Col(
                         [
+                            sentencize_checkbox
+                        ],
+                        class_name="mt-4",
+                    )
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        [
                             #inclusion_options,
-                            parse_button,
-                            sentences_check
+                            parse_button
                         ],
                         class_name="mt-4",
                     ),
@@ -1129,10 +1136,10 @@ def utterance_table(parse_clicks, options, name, txt, sent):
             txt, timestamp=time, is_interviewer=interviewer, in_sentences = sent
         )
 
-        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1, 'editable': True},
-                       {'field': 'include?', 'id': 'include?', 'flex': 1, "boolean_value": True, "editable": True},
-                       {'field': 'time', 'id': 'time', 'hide': 0 not in options},
-                       {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options,
+        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1, 'editable': True, 'maxWidth': 80},
+                       {'field': 'in?', 'id': 'in?', 'flex': 1, "boolean_value": True, "editable": True, 'maxWidth': 80 },
+                       {'field': 'time', 'id': 'time', 'hide': 0 not in options, 'maxWidth': 100},
+                       {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140,
                         'filter': 'agSpeakerColumnFilter', 
                         'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
                         'isExternalFilterPresent': {'function': 2 in options},
@@ -1148,11 +1155,13 @@ def utterance_table(parse_clicks, options, name, txt, sent):
                     defaultColDef={
                         'resizable': True,
                         'cellStyle': {'wordBreak': 'normal'},
-                        'cellRenderer': 'markdown',
+                        # 'cellRenderer': 'markdown',
                         'wrapText': True,
                         'autoHeight': True,
-                        'filter': True},
+                        'filter': True
+                        },
                     dangerously_allow_code=True,
+                    columnSize="responsiveSizeToFit",
                     style={'height': 600})
 
         editor_section = [transcript_table]
@@ -1177,7 +1186,7 @@ def utterance_table(parse_clicks, options, name, txt, sent):
 )
 def helper(options):
     new_state = [{'colId': 'line'},
-                    {'colId': 'include?'},
+                    {'colId': 'in?'},
                     {'colId': 'time', 'hide': 0 not in options},
                     {'colId': 'speaker', 'hide': 1 not in options},
                     {'colId': 'utterance'}]
@@ -1372,8 +1381,8 @@ def update_included_lines(changed):
 
     if changed:
         i = int(changed[0]["rowId"])
-        cell_incl = changed[0]['data']['include?']
-        active_data[i]['include?'] = cell_incl
+        cell_incl = changed[0]['data']['in?']
+        active_data[i]['in?'] = cell_incl
         tokens_changed = True
 
 # Press the green button in the gutter to run the script.
