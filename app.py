@@ -569,7 +569,7 @@ raw_text_input = dbc.Textarea(
 
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
-sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=False)
+sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
 
 reset_button = dbc.Button(
     "Reset Mode",
@@ -933,7 +933,7 @@ metrics_viewer_wrapper_div = html.Div(
 
 coding_modal = dbc.Modal(
     [
-        dbc.ModalHeader(dbc.ModalTitle("Modify"), close_button=True),
+        dbc.ModalHeader(dbc.ModalTitle("Revise Tokens"), close_button=True),
         dbc.ModalBody(
             dbc.Row(
                 [
@@ -954,7 +954,7 @@ coding_modal = dbc.Modal(
                             dbc.Row(
                                 dbc.Col(
                                     [
-                                        html.H4("Theoretical Codes"),
+                                        html.H4("Deductive Codes"),
                                         html.P(
                                             "not yet functional",
                                             className="small text-italic",
