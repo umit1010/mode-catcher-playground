@@ -1,6 +1,8 @@
+from fileinput import hook_encoded
 import pickle
 from pydoc import classname
 import re
+import os
 from collections import Counter
 from pathlib import Path
 import dash_bootstrap_components as dbc
@@ -16,6 +18,12 @@ from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 
+
+# --- HEROKU SIMPLE AUTH ---
+
+import os
+
+heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
 # ---- PLATFORM ----
 
@@ -999,7 +1007,8 @@ app.layout = dbc.Container(
     [
         dbc.Row(
             dbc.Col(
-                [
+                [   
+                    html.H1(["Heroku pwd -> ", heroku_access_pwd]),
                     html.H1(
                         ["mode-catcher ", html.Em("playground")],
                         className="text-center m-4",
