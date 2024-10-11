@@ -13,17 +13,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
-from dash.dash_table import DataTable
+from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
+import dash_auth
 from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 
-
-# --- HEROKU SIMPLE AUTH ---
-
-import os
-
-heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
 # ---- PLATFORM ----
 
@@ -1422,6 +1417,19 @@ def update_included_lines(changed):
         active_data[i]['in?'] = cell_incl
         tokens_changed = True
 
-# Press the green button in the gutter to run the script.
+
+# --- HEROKU SIMPLE AUTH ---
+
+heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
+
+credentials_list = {}
+
+if heroku_access_pwd:
+    credentials_list["ccl"]: heroku_access_pwd
+    auth = dash_auth.BasicAuth(app, credentials_list)
+
+
+# --- RUN THE APP ---
+
 if __name__ == "__main__":
     app.run(debug=True)
