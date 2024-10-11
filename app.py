@@ -1,4 +1,5 @@
 import pickle
+from pydoc import classname
 import re
 from collections import Counter
 from pathlib import Path
@@ -116,7 +117,7 @@ def generate_code_checkboxes(line_num, values=None):
                 [
                     dbc.Checkbox(
                         label=code[1],
-                        value=assigned_codes[line_num][code[0]],
+                        # value=assigned_codes[line_num][code[0]],
                         id={"type": "code-checkbox", "index": code[1]},
                     )
                 ],
@@ -209,15 +210,17 @@ def pickle_model(mode_name):
     mode_folder.mkdir(exist_ok=True)
 
     stopwords_file = mode_folder / "stopwords.pickle"
-    theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
+    # umit temporarily disabled the following line(s)
+    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
 
     with open(stopwords_file, "wb") as swf:
         pickle.dump(
             (stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL
         )
 
-    with open(theoretical_codes_file, "wb") as tcf:
-        pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
+    # umit temporarily disabled the following line(s)
+    # with open(theoretical_codes_file, "wb") as tcf:
+    #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=False):
@@ -584,7 +587,7 @@ inclusion_options = dbc.Checklist(
     options=[
         {"label": "Display Timestamp", "value": 0},
         {"label": "Display Speaker", "value": 1},
-        {"label": "Ignore Interviewer Utterances", "value": 2},
+        {"label": "Ignore Interviewer Speech", "value": 2},
     ],
     value=[0, 1, 2],
     inline=True,
@@ -698,13 +701,26 @@ generate_div = html.Div([graph_button], className="border rounded p-4 my-4")
 
 theoretical_codes_list = [
     "emergent",
+    "collective behavior"
     "centralized",
+    "pre-determined",
+    "god-like control",
     "probabilistic",
+    "stochastic",
+    "uncertainty",
+    "randomness",
     "deterministic",
+    "predictable",
+    "monocausal",
+    "multicausal",
+    "non-linear",
+    "criticality",
     "feedback",
     "fitting",
     "levels",
+    "mid-level",
     "slippage",
+    "dynamic equilibrium"
 ]
 
 code_checkboxes_container = dbc.Container(
@@ -954,11 +970,10 @@ coding_modal = dbc.Modal(
                             dbc.Row(
                                 dbc.Col(
                                     [
-                                        html.H4("Deductive Codes"),
-                                        html.P(
-                                            "not yet functional",
-                                            className="small text-italic",
-                                        ),
+                                        html.H4([
+                                            dbc.Badge("not implemented", text_color="danger", color="white", className="border  small text-italic"), 
+                                            html.Span("Deductive Codes"), 
+                                            ]),
                                         code_checkboxes_container,
                                     ]
                                 ),
@@ -1057,16 +1072,19 @@ def reset_mode(nclicks, name):
         if model_path.is_dir():
             # gets paths to specific files (stopwords and theoretical codes)
             stopwords_file = model_path / "stopwords.pickle"
-            theoretical_codes_file = model_path / "theoretical_codes.pickle"
+            # umit temporarily disabled the following line(s)
+            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
             # unlink deletes the pickled file (because it has been updated already?)
             if stopwords_file.is_file():
                 stopwords_file.unlink()
-            if theoretical_codes_file.is_file():
-                theoretical_codes_file.unlink()
+            
+            # umit temporarily disabled the following line(s)
+            # if theoretical_codes_file.is_file():
+            #     theoretical_codes_file.unlink()
 
-            for key in assigned_codes:
-                assigned_codes[key] = [False] * len(theoretical_code_list)
+            # for key in assigned_codes:
+            #     assigned_codes[key] = [False] * len(theoretical_code_list)
 
             return "Existing mode files were cleared. Page refresh is recommended."
 
@@ -1098,7 +1116,9 @@ def utterance_table(parse_clicks, options, name, txt, sent):
         # loading pickled files
         if model_path.is_dir():
             stopwords_file = model_path / "stopwords.pickle"
-            theoretical_codes_file = model_path / "theoretical_codes.pickle"
+            
+            # umit temporarily disabled the following line(s)
+            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
             if stopwords_file.is_file():
                 with open(stopwords_file, "rb") as swf:
@@ -1107,11 +1127,12 @@ def utterance_table(parse_clicks, options, name, txt, sent):
                 with open(default_stopwords_file, "rb") as f:
                     stopped_words = pickle.load(f)
 
-            if theoretical_codes_file.is_file():
-                with open(theoretical_codes_file, "rb") as tcf:
-                    saved_codes = pickle.load(tcf)
+            # umit temporarily disabled the following line(s)
+            # if theoretical_codes_file.is_file():
+            #     with open(theoretical_codes_file, "rb") as tcf:
+            #         saved_codes = pickle.load(tcf)
 
-                assigned_codes = saved_codes
+                # assigned_codes = saved_codes
         else:
             with open(default_stopwords_file, "rb") as f:
                 stopped_words = pickle.load(f)
@@ -1235,16 +1256,20 @@ def coding_editor(cell, toggle_clicks, checked_codes):
         token_buttons, token_treemap = process_utterance(cell_text)
 
         line_num = int(active_data[i]["line"] - 1)
-        if len(checked_codes) > 0:
-            if type(ctx.triggered_id) is not str:
-                if ctx.triggered_id["type"] == "code-checkbox":
-                    codes = generate_code_checkboxes(line_num, checked_codes)
-                else:
-                    codes = generate_code_checkboxes(line_num)
-            else:
-                codes = generate_code_checkboxes(line_num)
-        else:
-            codes = generate_code_checkboxes(line_num)
+
+        # umit temporarily disabled this code
+        # if len(checked_codes) > 0:
+        #     if type(ctx.triggered_id) is not str:
+        #         if ctx.triggered_id["type"] == "code-checkbox":
+        #             codes = generate_code_checkboxes(line_num, checked_codes)
+        #         else:
+        #             codes = generate_code_checkboxes(line_num)
+        #     else:
+        #         codes = generate_code_checkboxes(line_num)
+        # else:
+        #     codes = generate_code_checkboxes(line_num)
+
+        codes = generate_code_checkboxes(line_num)
 
         return token_buttons, token_treemap, codes, True
     else:
