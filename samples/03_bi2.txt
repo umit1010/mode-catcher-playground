@@ -1,0 +1,221 @@
+[00:00:00] Interviewer:  Okay, so every, every one of these meetings, you know, like, we have one more or two more left, depending on our progress. 
+[00:00:00] Participant B:  Okay. 
+[00:00:00] Interviewer:  I start with asking, like, how well do you remember what we did in the last meeting? Like, can you, like, recall? Just to make sure that we are synchronized well. 
+[00:00:00] Participant B: Okay. Well, we established a plan. We decided we're going to work with dogs and dog parks and multi unit buildings. 
+[00:00:00] Interviewer:  Mm hmm. 
+[00:00:00] Participant B:  We establish the buildings we established the dogs. We established the parks. And we put the the dogs in motion that fairly random timing. Yeah, and they would leave, leave a particular building. 
+[00:00:00] Interviewer:  Mm hmm. 
+[00:00:00] Participant B:  And then come back to that same building. 
+[00:00:00] Interviewer: Yeah. So, exactly. And in, in the meantime, I tried to. I will share my screen to you right now. In the meantime, I tried to somewhat, you know, like, do the things that we couldn't do the last meeting. 
+[00:00:00] Participant B: Sure. 
+[00:00:00] Interviewer: As much as I could code. I, first of all, fixed the code a little bit, meaning that I tried to make it more readable. 
+[00:00:00] Participant B: Sure. 
+[00:00:00] Interviewer: It's the same code. I didn't change anything but, you know, like, stuff I long called, I said in the setup, we make buildings, we make dogs, and we make parks. So it's like a nice little summary. In the go, we asked dogs, if they are waiting at home. So I kept the code here, so when, when the dogs are waiting at home, as usual, they are just waiting there and, and they're counting a time to leave. Once their time is up. They, they choose a park, random park. They go to the park. They hang out, they come back home and the timer resets. And every time we make that timer slightly random. So, but we can then start editing it. So, I will run the model and see, like, the. So I also made the houses stationary. And I like distributed them like this somewhat uniformly. 
+[00:00:00] Participant B:  Sure. 
+[00:00:00] Interviewer:  If we think it should be slightly different or totally different, we can work on that today. 
+[00:00:00] Participant B: No, I think that's good. 
+[00:00:00] Interviewer:  Okay. Yeah, I just wanted to, like, make sure that every time we click set up, the houses are at the same place. The dogs are in the houses. And they will go to a park, they will hang out. And they will go back home and they stay longer at the house and they spend much less time at the park. 
+[00:00:00] Participant B:  Sure. 
+[00:00:00] Interviewer:  And we have a plot that's - so what do you think so far? 
+[00:00:00] Participant B:  I think this is good. 
+[00:00:00] Interviewer: Mm hmm. So, It's getting closer to the model that you had in your mind? 
+[00:00:04] Participant B: Yes. 
+[00:00:05] Interviewer: Okay, so what, what's shall we add next? 
+[00:00:08] Participant B:  Well, one thing that I was thinking is there should be a time period where almost no dogs leave the house because typically you're at night, people don't take their dogs out. 
+[00:00:21] Interviewer: So, there should be some sort of global time? 
+[00:00:23] Participant B: Yes. 
+[00:00:24] Interviewer: Okay, so then let's implement that. Let's say long publes. And then, and I guess we can do the global time. Yeah, like in that sense that like should it be like have to 12 hours system or 24 hours? 
+[00:00:55] Participant B: Um, what would be the difference for us? 
+[00:00:59] Interviewer: I don't know. Not necessarily a big difference, I guess. You know. Okay, so let's do it like the 12 hour system so every 12 hours it resets numbers right? So what we will do is, we will use a multiplier to make sure that the counter. So, every time the go procedure runs, like, everything that in the go is done once by each agent, it's global time will increase by one too, you know. We already have the ticks I can. Let's make sure that we have a normal, so ask dogs. So this should only happen? The dogs going in and out should only happen in some specific times, right? 
+[00:01:46] Participant B:  Um, well, it'll be random times throughout the day, but at night, very few dogs will be, you know? There are some people that that work daytime. So, they're their home at night and would take their dogs out. I mean, there are, sorry, there are some people that work night shift. So, either just before they go in or just as they come home, they would take their dogs out, but there would be very few dogs out after 11pm and before 6am. 
+[00:02:13] Interviewer: 11pm and 6am. Okay. So, it's like, we start the day at midnight, right? 
+[00:02:24] Participant B: Yes. 
+[00:02:25] Interviewer: And I will implement it a bit more like quickly, so, not 100% compliant with what you think. I will fix it in the, in between meetings again. 11pm to 6am. So, it's like a seven hour period, right? Yes. Global time. So it's like how many hours? It's like a seven hour period? 
+[00:02:56] Participant B: Yes. 
+[00:02:57] Interviewer: Okay. So, it's like let's say. Huh. Okay, there we go. I need to do some sort of like modulus operator, operator to calculate that. Because, yeah. Perfect. Oh! I can do it like this. One. It will be like counting up till 12 which is multiplied by a hundred because ticks go really fast. And then it will reset to zero again. So a second time. So add one by one by one. When it's 12 it's zero again. And it will give seven hours time, and then we'll let the dogs out. Let's see if it works. So let's see if it works. So right now, nothing should happen until like 700 ticks. These dogs will be just staying home. Nothing much. We can adjust it if 700 is too much. We can make it like 300 ticks and stuff like that. Currently it's just a very, like, I did a very straightforward implementation. 
+[00:04:35] Participant B: Yeah, sure. 
+[00:04:43] Interviewer: So now it's like, they are getting itchy and they will start going. I think I left a bug because once it resets some dogs will be stuck at the places. So I will fix it, but I wanted to make sure that does it work like the wway - so this is a bug, I will fix right now. So let me see. They should always come back from the park. That should be like this. It's always a walk to the park, come back from the park, but they should not leave. So, now they should be able to come back when the time is up. But very little of them left. I need to, like, calibrate it. And oh. The monitor. So, it's like, and it's not going to show it as in the, like, the 60 minute periods, but it's going to show 12345. It's currently like eight, nine. They going, so the wait time we put is way too much. I need to adjust it. Where is the wait time? I put? Make the dogs, make the dogs, there you go. Wait time should be, like, much simpler. Just like this. And let's do this like this, too. Let's try again. It had a wild wait time, right? 
+[00:06:31] Participant B: Yes. 
+[00:06:32] Interviewer: And I will speed it up just a little bit to see like get to seven quicker. Oh, there are still not going. I think I introduced another bug, but let me let me double check. 
+[00:06:48] Participant B:  Maybe it's raining. Maybe? 
+[00:06:51] Interviewer:  They still want to go when it's raining! They want to spend less time but they will still want to go out when it's raining. Okay, now they are going. And they came back. They are going. They came back and it's happening in time intervals. So until like 7am. Let's say we did it more like 12 to 7am. Midnight to 7am. Technically, they will wait, they will go. They will spend their time and they will come back. And it's a, come back, they will spend to 7am. I guess they move too slow to the parks? What do you think? 
+[00:07:51] Participant B: Um. I don't, I don't think so. Okay, why do you say that? 
+[00:07:57] Interviewer:  Because it's like, you know, like, so follow it. Some of them will be in the parks going back their away until like maybe like two p- 2am or something. 
+[00:08:07] Participant B:  Yeah, it seems like none of them are staying in the park for very long though. 
+[00:08:12] Interviewer: Yeah, we can make it longer too if you want to. So let's make it, like, 16 so that way we see the time better. Would you like to make them stay in the park longer? 
+[00:08:20] Participant B: Well, some of them, yes. Because um, they would stay different amount of, amount of time. 
+[00:08:28] Interviewer: So, currently in the park they spend very little time, but minimum five ticks, which is like five minutes. We can say that, we said maximum 20 minutes. Longer, maybe? How long would you like to make it? 
+[00:08:45] Participant B: Change it to 30 minutes. 
+[00:08:47] Interviewer: Yes. Let's try. Oh, I think I know what I'm- yeah. But no, no, no, it's fine. So let's try again. This initial week is really long. I need to make it somewhat half the. They are waiting. They're itching, they go. It's a bit better, the time they spend in the park? Or would you like it longer? 
+[00:09:27] Participant B:  Um, I think probably longer. 
+[00:09:30] Interviewer: Okay. Let's make it like 60 minutes. 
+[00:09:34] Participant B: Okay, yeah. 
+[00:09:36] Interviewer: And again, like this is going to be a random distribution. Some of them will still wait 10 minutes 
+[00:09:40] Participant B: Sure. 
+[00:09:40] Interviewer: Some of them will be 60 minutes and this is uniformly distributed. If you want like a normal distribution, like, we want the average to be 30 minutes? 
+[00:09:50] Participant B: Yeah, it would be more random. 
+[00:09:52] Interviewer: Okay, would you like to do like the average, okay, let's do that. I need to double check that I use this code correctly. Mean and standard deviation. The average should be like 30 minutes? 
+[00:10:18] Participant B: Yeah, that's good. 
+[00:10:20] Interviewer: Okay, and then let's do the standard deviation to ten minutes. So, it's going to be like most of them will be like being 30 minutes. 
+[00:10:28] Participant B: Okay. 
+[00:10:29] Interviewer: Some of them will be 40, some of them will be 20, and very few of them will be like 50,10, and stuff. It's going to be more randomly distributed. We are waiting for the morning to come for them to jump on the bed or be like. 
+[00:10:54] Participant B: Right, right. Yeah, scratch at the door. 
+[00:10:57] Interviewer: Yeah, it's time. Now they are going. 
+[00:11:03] Participant B: Yeah, that looks better. 
+[00:11:05] Interviewer: Like it? Okay. 
+[00:11:06] Participant B: Yeah, some are staying longer. Some are leaving right away. Some are moving around the park before they leave. Yeah yeah that looks much better. 
+[00:11:20] Interviewer: Yes, very. It's pretty cool. 
+[00:11:22] Participant B: Yeah. I mean, if you want, we could draw out there, there, the amount of time in the park a little bit longer but I think we're good where we're at too. 
+[00:11:34] Interviewer: I think so, too, wanting that, like, what I brought up was, let me get to the next morning. So what I was trying to say is, like, this commute takes a long time compared to do like. It almost takes like about one hour or two hours for the dogs to go there. I mean, would you like to make it slower? Because, see, it's going to be midnight, and they will still be coming back like slow and it's going to take almost two hours to come back home. 
+[00:12:01] Participant B: Wow. 
+[00:12:01] Interviewer: Do you like that their way or? Do you think it's fine? 
+[00:12:04] Participant B: Well that's, that's kind of a long time to come back home because this is, you know, the, what I'm envisioning as a neighborhood, where it's maybe 15 minutes, maybe, to get there, or to come back. 
+[00:12:21] Interviewer: Yeah. Let's make it a bit faster. Let's see how it moves. Oh, I made them move faster inside the house. 
+[00:12:34] Participant B:  Well, they'll do that. Especially when they want to go outside first thing in the morning. 
+[00:12:41] Interviewer: Yes, definitely, like I did. Sorry this is too sped up. So, now they are like moving faster back to home. And I'm thinking, like, by the midnight, we should have most dogs be back. Yeah. So now it's like 1am you have all the dogs back at home. 
+[00:13:03] Participant B: Okay. 
+[00:13:03] Interviewer: Yeah. It's a bit harder to follow, obviously, because it's a lot of fast movement. But we can then count, count all of the things. Like, how much time they spend on average, how much, what they do. And, yeah, like, I did live with my parents for a while post college and they had a dog, who's still, like, in, living with them. He will do that, too. He will get really like antsy, yeah, in the morning. So we have a living neighborhood. 
+[00:13:35] Participant B: Yeah. Absolutely, it looks good. 
+[00:13:38] Interviewer: And we have these like really busy times in the park. What was we, what were we measuring with the blue? Park no.1 versus Park no.2? It's really interesting that they are, more they are going to part one, one park more than the other. Does it make sense? I don't know if this is counting correctly. 
+[00:14:06] Participant B: Well, if that's, if that's somewhat random, that's that's true in life. Okay. 
+[00:14:19] Interviewer: Let me see if I did something wrong. So, I just want to make sure that I didn't implement something. This is park no.2. And this is all. Both of them are Park no.2. I messed the code up. So, that like I know because. Okay, there you go. I copied and pasted something. 
+[00:14:42] Participant B: Okay, sure. 
+[00:14:44] Interviewer: And then caused that silly error because the, each time they choose a different random park. Basically. So it should be more similar. Not like it's wildly different. And I don't want to introduce some sort of, like, bug to confuse us. Night is coming. They are going okay so what do you think? 
+[00:15:32] Participant B: That looks really good. 
+[00:15:33] Interviewer: Do you have any more ideas to add or do you have any ideas to discuss? 
+[00:15:39] Participant B: I have a lot of ideas to add. Okay well dogs don't walk themselves. 
+[00:15:44] Interviewer:  Mm hmm. So let's give them some walkers. 
+[00:15:48] Participant B: Yeah. 
+[00:15:48] Interviewer: Okay. We call them that, we can call them owners, parents, walkers. What do we call them? 
+[00:15:54] Participant B:  I would call them owners. 
+[00:15:57] Interviewer: Okay. So, they are owners. So, every dog has an owner or some owners have multiple dogs? 
+[00:16:07] Participant B:  Every dog has an owner. Some owners have more than one dog. 
+[00:16:11] Interviewer: Okay, let's do it that way. So then I will, I will structure it in a different way. So, we do, we make them, do we make the owners look like the simple person shape? 
+[00:16:23] Participant B: Yes. 
+[00:16:23] Interviewer: Or would you like to try some? We also have, like, a bunch of other different types of shapes. Person business, person farmer, person service, just for fun. If you want it or just looking very basic, see, lumberjack. Lumberjack? Would you like to do that? 
+[00:16:43] Participant B: Sure, why not. 
+[00:16:44] Interviewer: Okay, yeah, I mean, just for fun. 
+[00:16:46] Participant B: The dogs are very simple. So, you know, the human should be comparably simple. I like the Lumberjack. 
+[00:17:00] Interviewer: Should be correct. And then, we will make the owners. Let's write that code, which will be similar to the making dogs. Should we add a slider to the interface? The way we had it for the dogs? 
+[00:17:30] Participant B: Absolutely. 
+[00:17:31] Interviewer: Okay. So, bear with me as I am making this. So, i will say create owners. Oh, I should have okay, so owners move to one of the buildings. They set their building as their home. Their size should be slightly bigger than dogs, right? 
+[00:18:18] Participant B: Yes. 
+[00:18:20] Interviewer: Okay, they are in places they're not at the park. And they also count their time at home to wait. Okay, so how do we attach the dogs to the owners? Do we say each owner has this many dogs or something like that? 
+[00:18:39] Participant B:  Well, each each owner would have a minimum of one dog. 
+[00:18:42] Interviewer:  Mm hmm. 
+[00:18:42] Participant B: And I would think, probably a maximum of three dogs. And most owners would have no more than two dogs. 
+[00:18:50] Interviewer: Okay, so we'll do it that way then. Minimum, one dog, no more than no more than two dogs. Do you have one or two? 
+[00:19:10] Participant B: One, and that's enough. 
+[00:19:16] Interviewer: So I just basically did it so that we create the number of it shows like 50 owners. It will create 50 owners. Have them move to their house with a building. It will just place them in randomly around the building. We will make sure that they are not going to the park initially and then it will make them get a dog. Okay? Get dogs. From one to two- either one, two, or three, but mostly two. And then this make dogs. I will make a copy of it. Let's make it get dogs. It will know the owner. So the dog should know the owner, right? 
+[00:20:10] Participant B: Yes. 
+[00:20:33] Interviewer: Okay, I'm almost there. With dogs. Okay. And then let's do it so that this one won't go and, turtle context because, simple, like. Ooh! That's not how it's supposed to be. Oh I see, I see. I just made some simple mistakes. Okay. So it's very crowded right now. It's a bit crowded. Let me move one of them, one of these owners a bit forward to see how they look with their dog. Oh, no. Are there dogs? Oh, yeah there they are. Oh, I didn't set that their shape should be dog. I'll fix this. One second. Sorry about making you wait. I'm just trying to make sure that it works the way you want it to work. You know, like, so that the owners have the dogs attached to themselves. And I see the dog. Oh, the dog is just so small. I made the dog way too small. So there's a dog. There's the owner. I made it way too small. Okay. Let's see, again. Let's try again. I'm just trying to do for fun. So does it? Does? 
+[00:22:52] Participant B: All the lumberjacks have axes with them. 
+[00:22:55] Interviewer: Yeah. They have a dog on a leash. 
+[00:22:59] Participant B: And it's just the dog's head. 
+[00:23:01] Interviewer: Yeah. We can change the shape to get a dog like shape. As you said we have cow. We also have the wolfs that looks like a dog. 
+[00:23:12] Participant B: Yeah. 
+[00:23:13] Interviewer: If you like that. 
+[00:23:14] Participant B: Yeah, let's do that. 
+[00:23:15] Interviewer: Okay, so they 
+[00:23:17] Participant B: I like the dog head, it's really cute. 
+[00:23:21] Interviewer: Yeah, but it looks weird, right? 
+[00:23:22] Participant B: Yeah. 
+[00:23:23] Interviewer: Okay. It just looks like. Okay. Let's try again. So now these owners have and I will do the same thing just separating the owner. On the people. Yeah, so does this owner look good? 
+[00:23:46] Participant B: Yeah. 
+[00:23:46] Interviewer: With a dog. Okay, most of them will have. I just want to make sure it's represented better, too. Because when you direct the code that make it make a dog. It literally makes it the same location. So they get on top of each other. So, I'm writing this simple two piece code to change the x and y coordinate a bit randomly. So that the dogs are not on top of each other again because while sometimes they will have two dogs, but it's not going to be seen easily. So now we have these owners. And we have to, we have them have the dogs. This ones are not necessary right now and again I will fix these things and then the code we wrote for the dogs will be for the owners basically. 
+[00:24:42] Participant B: Yeah, that makes sense. 
+[00:24:44] Interviewer: Then they will be going to the park or not? So they are chillin let's see how it goes. After the spin up over. Seven. Okay. Oh, I did drop. Click the wrong button. Sorry about that. Did they not take their dogs with them? I feel like this is a very interesting model. Yeah, yeah, they are taking their dogs with them. OK. 
+[00:25:15] Participant B: I see some without dogs, but I also see some with I saw. 
+[00:25:19] Interviewer:  One with two dogs. Yeah, there should be none with no dogs. Let's see if their dog is a black color or something. Let me see. Person number, check. Let's see. No, yeah, there's no dogs here. Why does this not have a dog. 
+[00:25:39] Participant B:  Is it set to between zero and then three or? 
+[00:25:44] Interviewer:  Let's double check. I might have made a mistake. Yes, this one here guarantees that there will be all but okay. So let me do it this way then. Because I did the normal distribution, which sometimes gives negative numbers. You know. Oh. I think this one doesn't give negative numbers, it still gives and then the next integer. Okay, great. Let's, let's try again. I, you know what? Just keep it simple. So now there shouldn't be no owners with no dogs. The time. Faster. Let's get to the morning . Okay, so, so now we have everyone, good. It is fast. Let me slow it down. So yeah, this person has two dogs, for example. 
+[00:26:45] Participant B: Yeah. 
+[00:26:46] Interviewer: This person, but I don't know. I don't see anyone with no dogs. Do you see any? 
+[00:26:50] Participant B: No. I'm looking and do not see. 
+[00:26:54] Interviewer: Is the visualization fine or should we change the visualization of it? Should we make people bigger, smaller dogs different colors people different? 
+[00:27:02] Participant B: I kind of like the. 
+[00:27:04] Interviewer: Kinda like to distribute? 
+[00:27:06] Participant B: That. Yeah, I saw one one or two where it looks like the dog is on top of the lumberjacks head. As they were moving around. But that's kind of interesting. Dogs could do that. Maybe. They're like this, this guy in blue, with the blue dog going, let me see upper right hand corner. 
+[00:27:24] Interviewer: Upper right hand corner. 
+[00:27:26] Participant B: Come down just a little bit straight. Straight down. 
+[00:27:29] Interviewer: This one? Yeah. 
+[00:27:30] Participant B: Yeah yeah. 
+[00:27:30] Interviewer: We we we- let's assume that, that's a mistake of mine, but, oh let me. I can actually fix it. 
+[00:27:39] Participant B: The dogs will pull the owner to get to the park very anxious to get there. 
+[00:27:43] Interviewer: Yeah, if he assumed that it is like looking from top down. Okay, nice view. You can see like that. But if you want to make it a bit more like. So, now, it shouldn't be the case. Okay. Let's slow it down so there shouldn't be any. Oh, no! 
+[00:28:05] Participant B: There's one on top of his head there. 
+[00:28:06] Interviewer: I just see that is weird. Let me see. Ycor, ycor. Oh, okay. Let's try again. This time I'm hopeful is gonna work. Oh, no, no. It actually made it worse. I am using the wrong operator, I think. We made all of them on top of their owners. Nope. This just makes no sense to me. Okay. 
+[00:28:48] Participant B: Yeah, there we go. Although. 
+[00:28:50] Interviewer: They are going up, the dogs. 
+[00:28:52] Participant B: Yeah. Yeah, it's like helium balloons. 
+[00:28:57] Interviewer: I might. That might be just a simple bug that I am introducing here. Oh, no. Yeah, I will fix that. Let me, let me just write so it doesn't hamper our work. Really shouldn't be the case. Speeding up the time a little bit. And we came here. Yeah, they are very randomly distributed. The way they - It looks cooler. 
+[00:29:32] Participant B:  Yeah, I like that, yeah. Yeah, I like the fact that the dogs are like varying distances away from the owners too. Some are very close and some are a little further away, which is normal. 
+[00:29:47] Interviewer: Yeah. But then being on the up top is like a problem which I will, I will fix in between our meetings. Yeah. What do you think? 
+[00:29:56] Participant B: Oh, this is great. It's getting better and better. Yeah. 
+[00:30:00] Interviewer: Would you like to do, like, one more meeting? 
+[00:30:03] Participant B: Yeah. Sure. 
+[00:30:03] Interviewer: More polish the. Yeah, usually like we do like two meetings minimum and then we discuss the model, but I think we can do more work with this. Make it even better. So what do you think in general? 
+[00:30:15] Participant B: Oh, this is great. This is a lot of fun. That's, yeah. You're really making it come to life. 
+[00:30:21] Interviewer: Yeah. What does this modeling process make you think about, like, you know, like this, what's something that was, like, really, like, everything you experienced, day in, day out? Right? Like you go to the dog park and the dog park is a place. It's a common resource. Well modeling it, what does make you think? 
+[00:30:38] Participant B: Well, you know, my, my intention was to try to figure out what the best times are to go to the dog park where it would be a little bit more empty. 
+[00:30:49] Interviewer: Mm hmm. 
+[00:30:49] Participant B: So your dog doesn't have too many like crazy dogs to interact with mm hmm or crazy humans. 
+[00:30:57] Interviewer:  Yeah. So currently, we did it so completely random. Yeah, maybe we can in the next meeting implement something more like, you can tell me, like, I think, at this time, more people are there. At this time, less people are there. 
+[00:31:11] Participant B: We can. 
+[00:31:11] Interviewer: Implement it and see like if it reflects in the model. Sure, we can make it so that, for example, the likelihood of people taking their dogs to the park at 8am is higher than 7am. 
+[00:31:22] Participant B: Yeah, absolutely. 
+[00:31:23] Interviewer: Mm hmm. Let's put that to the note, too, alright, I like that. Do you have anything else you'd like to add before finishing this? 
+[00:31:43] Participant B: Um, yeah, I don't know if we can actually do this or not. Oh, that looks good. Yeah, looks good right now. Um, you know, dogs, typically pee and poo. 
+[00:31:55] Interviewer: Mm hmm. 
+[00:31:58] Participant B: Whether they're on their way to the park or wrong there at the park. Can we add some sort of function like that? 
+[00:32:03] Interviewer: Yeah, we can. We can definitely do that. They do it once right on their way, or do they do it more? 
+[00:32:12] Participant B: Well. They pee multiple times. Sometimes, it's just to mark their territory to say, "hey, I was here". 
+[00:32:19] Interviewer: Mm hmm. 
+[00:32:20] Participant B: But typically, they will poo maybe twice a day. Okay. 
+[00:32:26] Interviewer: Let's, uh, let's define them. Let's start working on that. I don't know if I can finish right now but I guess we can make the poo as a circle. 
+[00:32:39] Participant B: Well, I thought that I had seen, like, you know, there's a standard symbol for for poop. That's kind of a little almost like a triangle with curves on it. 
+[00:32:48] Interviewer: Oh, we might have that. You're right. 
+[00:32:51] Participant B: I thought I saw that scroll by at one point. 
+[00:32:55] Interviewer: We might have that. Yeah. So we have petals. It's not called poop obviously. 
+[00:33:19] Participant B: Yeah, I don't know what they would identify that as. 
+[00:33:27] Interviewer: A garbage can. I'm going, I'm going to, it maybe, maybe we can use a cloud in place? But let me check. Make sure there's other stuff we're not missing. 
+[00:33:52] Participant B: But you're familiar with the poop emoji, right? 
+[00:33:55] Interviewer: Yeah yeah. Yeah, it just, I wish we could use emojis in these shapes. So I will use the cloud is poop, right? Unless I'm missing something here. I don't think so. Or I can take the top part of the tree as poop. 
+[00:34:12] Participant B: Sure. 
+[00:34:13] Interviewer: Whichever. Let's do that. 
+[00:34:17] Participant B: Yeah, I'll leave that ultimately up to you to decide. You know that they're, they're both kind of, that type of shape. So. 
+[00:34:26] Interviewer: Is our poop shape? And for the pee shape. What would you like to mark? 
+[00:34:32] Participant B: Well, there was, there was one that you scroll by that there was a drop. 
+[00:34:37] Interviewer: Oh yeah, let's do the drop. This one. Yes. Which, I will rename as pee. So, currently, I will just implement in a very basic way that they will just randomly drop these. Yeah, without any mechanism that behind, that you want to implement because we are running out of time just to show me, like, how it will look. I will make them look like poop. 
+[00:35:19] Participant B: Only the dog that's doing this, not thelumberjack. 
+[00:35:26] Interviewer: Hopefully, because. 
+[00:35:30] Participant B: Right. Yeah. 
+[00:35:35] Interviewer: Okay. So, then, if they are walking to the park. Playing at the park. Let's say for currently I will just make it as they're walking through the park. Color. Let's see how it looks. They will not make it home, obviously we are assuming they are all, like, educated. Yeah, no. 
+[00:36:17] Participant B: We would hope. 
+[00:36:22] Interviewer: And they are grown up, you know, like if they are babies, part of the process. So today, leave any poops. Yeah, okay. That is weird. I didn't give the poops the wrong. Okay, this should be pees. I'm so sorry. It's kind of giant okay, I'll change the frequency a little bit. So, yeah. 
+[00:36:55] Participant B: OK. 
+[00:36:55] Interviewer: It's now they're just randomly dropping poops. I will write the code so that in between our meetings they will do once in between each visit. 
+[00:37:05] Participant B: Okay. And then the final thing is the owner should pick up the poop. He won't pick up the pee. So that would stay there. 
+[00:37:26] Interviewer: The owner will pick up the poop. But not the pee. Okay. 
+[00:37:29] Participant B: Yeah. And I don't know if this is too, going too far or too much work. But can we put like some stationary objects like trees, fence post or something like that? Yeah, that's, that's where the dogs will pee. Then we can see the concentration of dog pee on those spots. 
+[00:37:49] Interviewer: Great. Trees, benches. Newspaper stands or whatever. What, what do they call? 
+[00:37:54] Participant B: Yeah. Yeah. The vending, little newspaper vending machines. Garbage cans. So the owner can drop once he picks up the poop. He can drop the poop into the garbage can. 
+[00:38:17] Interviewer: Okay. Okay, this gives me some work to do before our next meeting. When shall we meet again? 
+[00:38:21] Participant B: Umm. I'm pretty wide open. 
+[00:38:21] Interviewer:  Wednesday work for you? 
+[00:38:21] Participant B:  Yes, I believe so. 
+[00:38:21] Interviewer:  Mm hmm. Noon again? 
+[00:38:21] Participant B: Sounds good. 
+[00:38:21] Interviewer: Okay. This is great. Yeah I wanted Wednesday, because they have Monday and Tuesday, a bunch of interviews with some other graduate assistants. And let me stop my sharing and I will actually create a link for you and send this final version before the meeting. So you can have a couple days to do that. And give you the link. So, you can tinker with the model. 
+[00:38:21] Participant B:  Okay, I don't know how far you want to go with this. But if, if you want to put the time in. Not every owner is going to pick up every poop. 
+[00:38:21] Interviewer:  Yes, of course, we can put that likely to, you know, like what is the likelihood of owners picking it up or what is the ratio or percentage of unresponsible owners, for example. 
+[00:38:21] Participant B:  Yeah yeah. I would guess it's somewhere around 75% is good. 
+[00:38:21] Interviewer: Okay, by. 75% is responsible owners or irresponsible? 
+[00:38:21] Participant B: Responsible. 
+[00:38:21] Interviewer: Okay, yeah, so, 25% just don't pick it up. 
+[00:38:21] Participant B: Yeah. 
+[00:38:21] Interviewer: And then we can really start adding those sliders and start looking at. Okay. If we have this many dogs and this many owners are responsible, what would it result? What's the optimum numbers? We can get there. 
+[00:38:21] Participant B:  Perfect. Great. 
+[00:38:21] Interviewer:  You'll. I mean, the time just flew by really. yeah, yeah. Great. Great to see you. Take care. 
+[00:38:21] Participant B: You too Interviewer! 
+[00:38:21] Interviewer: Bye bye. 
