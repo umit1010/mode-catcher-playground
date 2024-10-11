@@ -1424,7 +1424,7 @@ heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 credentials_list = {}
 
 if heroku_access_pwd:
-    credentials_list["ccl"]: heroku_access_pwd
+    credentials_list["ccl"] = heroku_access_pwd
     auth = dash_auth.BasicAuth(app, credentials_list)
 
 
