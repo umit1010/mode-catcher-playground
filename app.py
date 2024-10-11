@@ -47,6 +47,9 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
+# needed to be able to publish the script on Heroku
+server = app.server
+
 
 # ---- NLP ----
 
