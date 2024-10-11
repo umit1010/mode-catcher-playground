@@ -1003,7 +1003,6 @@ app.layout = dbc.Container(
         dbc.Row(
             dbc.Col(
                 [   
-                    html.H1(["Heroku pwd -> ", heroku_access_pwd]),
                     html.H1(
                         ["mode-catcher ", html.Em("playground")],
                         className="text-center m-4",
