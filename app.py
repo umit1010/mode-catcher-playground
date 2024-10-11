@@ -735,7 +735,7 @@ code_checkboxes_container = dbc.Container(
 graph_type_row = dbc.Row(
     [
         dbc.Col(
-            dbc.Checkbox(label="Theoretical Codes", id="include-codes", value=False),
+            dbc.Checkbox(label="Deductive Codes", id="include-codes", value=False),
             xs=12,
             md=6,
             xl=2,
