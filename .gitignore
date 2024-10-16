@@ -154,6 +154,5 @@ cython_debug/
 
 # mode-catcher folders
 models/
-samples/all/
+samples/_*.txt
 .DS_Store
-Procfile

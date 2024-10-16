@@ -1,6 +1,8 @@
+from fileinput import hook_encoded
 import pickle
 from pydoc import classname
 import re
+import os
 from collections import Counter
 from pathlib import Path
 import dash_bootstrap_components as dbc
@@ -11,7 +13,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
-from dash.dash_table import DataTable
+from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
+import dash_auth
 from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
@@ -46,6 +49,9 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
+
+# needed to be able to publish the script on Heroku
+server = app.server
 
 
 # ---- NLP ----
@@ -996,7 +1002,7 @@ app.layout = dbc.Container(
     [
         dbc.Row(
             dbc.Col(
-                [
+                [   
                     html.H1(
                         ["mode-catcher ", html.Em("playground")],
                         className="text-center m-4",
@@ -1410,6 +1416,17 @@ def update_included_lines(changed):
         active_data[i]['in?'] = cell_incl
         tokens_changed = True
 
-# Press the green button in the gutter to run the script.
+
+# --- HEROKU SIMPLE AUTH ---
+
+heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
+
+if heroku_access_pwd:
+    credentials_list = {"ccl" : heroku_access_pwd}
+    auth = dash_auth.BasicAuth(app, credentials_list)
+
+
+# --- RUN THE APP ---
+
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
