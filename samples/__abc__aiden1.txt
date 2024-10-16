@@ -1,0 +1,314 @@
+[00:00:00] Interviewer: So this meeting, we will just create a simple version of a model idea that you have, you know, like it can be anything. I don't remember if you talked about an idea or not beforehand.
+
+[00:00:13] Participant Aidan: No, we still haven't discussed it yet.
+
+[00:00:16] Interviewer: Yes. So this meeting, we will just create the first version of it as much as we can make progress. You know, we don't have to finish it. It doesn't have to be super complicated. It also doesn't have to be super simple, like however much progress we can make. And then the next meeting and the following meetings, as much as we want to work on until you say I'm satisfied with the final version of my model, we will continue adding, changing things with your model. So do you have any? Did you think about any model ideas?
+
+[00:00:49] Participant Aidan: I had an idea. I didn't think it all the way through, but I kind of get an idea of what I want to do. It was something regarding mental health.
+
+[00:01:02] Interviewer: Okay.
+
+[00:01:05] Participant Aidan: And how outside factors change the person or the perspective of that person on the world, on the surrounding. So I think with the tools that you have, we can sort of make a model of that I don't see clearly how, but I'm interested to try.
+
+[00:01:31] Interviewer: Yeah, that's perfect. Like you will just give it a try. You will think freely and then we will implement your ideas and then see where it takes us, right? Okay, perfect. Let me share my screen with you.
+
+[00:01:47] Participant Aidan: Let me get some ~thing~ for my throat. It's getting scratchy again.
+
+[00:01:56] Interviewer: Yes, take your time, please. Perfect. So I'm looking at the other screen, so I'm going to be looking up a little bit. I hope it doesn't disorient you too much. So I just have this empty NetLogo model. There's nothing in the model, basically. I just created the bare bones version, put it together, and then it's ready for you to start adding your ideas. So what would you like to start with? What would you like to add to your model?
+
+[00:02:39] Participant Aidan: Well, I would like to add, first of all, a person, the self of a person.
+
+[00:02:53] Interviewer: Mm-hmm.
+
+[00:02:54] Participant Aidan: So it could be anything.
+
+[00:03:01] Interviewer: And then do you want to make that person a simple person shape or something more symbolic? You know, like you can use more symbolic things like triangles, stars, et cetera, or happy faces, sad faces, thoughts. It can be really anything.
+
+[00:03:16] Participant Aidan: Faces. I guess we can use that. Yeah, could we use that person, person, just an outline? 
+
+[00:03:27] Interviewer: Yeah. This one? Yeah. So let's make that person. So I created just one person in the center. Is this person looking good? Is it too small, too large?
+
+[00:03:44] Participant Aidan: We can make it a little bit larger. OK. Like three times the size.
+
+[00:03:52] Interviewer: Like this?
+
+[00:03:53] Participant Aidan: Like this, yeah.
+
+[00:03:55] Interviewer: And every time I click setup, it will recreate this person with a random color. If you want, I can give it a specific color as well.
+
+[00:04:03] Participant Aidan: Any color is okay, really.
+
+[00:04:04] Interviewer: Okay. What's next? 
+
+[00:04:09] Participant Aidan: Then I would like to create outside factors. For example, work. Our icon that would signify work.
+
+[00:04:24] Interviewer: Okay, so one icon? Multiple icons?
+
+[00:04:31] Participant Aidan: One icon, something like office or something. 
+
+[00:04:35] Interviewer: So again, for that, we have a bunch of shapes that can be helpful in your thinking. For example, I think we have computers. We have this building, building institution, building store. We have. And we can start, like we can create something from scratch too. We have the computer workstation that may be useful. What else do we have? We have the factory that may be indicating work. Just a regular house or different styles of houses. Again, I'm thinking you can also like work a monster, you know, like it's totally up to, which one?
+
+[00:05:21] Participant Aidan: Factory could work.
+
+[00:05:23] Interviewer: Okay, perfect. And where does the factory go in the screen? Which part?
+
+[00:05:40] Participant Aidan: Top left, I guess.
+
+[00:05:41] Interviewer: Is it too small?
+
+[00:05:52] Participant Aidan: Yeah, maybe three times the size would do better.
+
+[00:05:58] Interviewer: Looks good? 
+
+[00:05:59] Participant Aidan: Perfect. 
+
+[00:06:00] Interviewer: Uh-huh. And it's going to be again. What's next? 
+
+[00:06:07] Participant Aidan: Now. A house, the person's house.
+
+[00:06:24] Interviewer: Should it be the simple default, like basic house or one of those more complex?
+
+[00:06:29] Participant Aidan: Yeah, just a regular house.
+
+[00:06:31] Interviewer: And, I will just make the size three times default size just to start from there. And, where should the house be?
+
+[00:06:41] Participant Aidan: In front of the person.
+
+[00:06:44] Interviewer: Right here? Okay.
+
+[00:06:46] Participant Aidan: No, like above. Okay. Next to the factory.
+
+[00:06:51] Interviewer: Okay. Something like this? 
+
+[00:06:56] Participant Aidan: Perfect. 
+
+[00:06:59] Interviewer: Okay. What's next?
+
+[00:07:05] Participant Aidan: Let's say, I need an icon to signify like social interactions. Could be like group of people or what could it be?
+
+[00:07:25] Interviewer: Well, we can create multiple people like this person and put them in a place, or we can use just one thing with a shape that represents multiple people. And for that sense, I don't know if we have multiple people in the shape or we can create one ourselves. Let's look at that.
+
+[00:07:50] Participant Aidan: Maybe we could put just a bunch of small people in one.
+
+[00:07:55] Interviewer: Okay. Okay. So let's call them. Socials. How many of these people should I create?
+
+[00:08:15] Participant Aidan: Maybe just three of them in. They could stay small size.
+
+[00:08:25] Interviewer: OK. And then they will be on the top right?
+
+[00:08:30] Participant Aidan: Yeah.
+
+[00:08:31] Interviewer: Top right, OK. So let's see if this will work. This looks good?
+
+[00:08:42] Participant Aidan: Kind of, yeah. I think so. Maybe size two could work, too.
+
+[00:08:49] Interviewer: Just two people?
+
+[00:08:51] Participant Aidan: No, the size of them, maybe.
+
+[00:08:53] Interviewer: Oh, size two! Okay. Something like this?
+
+[00:08:59] Participant Aidan: Yeah, that's okay. Let them dance around.
+
+[00:09:04] Interviewer: Yeah. Okay, what's next?
+
+[00:09:08] Participant Aidan: All right, so I want to use those icons of neutral, positive and negative to represent interactions between the self, the person and work, home and social.
+
+[00:09:48] Interviewer: Let me take a note. So for example, describe me how this person interacts with these three categories of stressors.
+
+[00:10:04] Participant Aidan: Later, I would like to create characteristics for a person. For example, an introvert. House will give that person three positive interactions. Social will take away two. 
+
+[00:10:23] Interviewer: Oh, I see. 
+
+[00:10:24] Participant Aidan: And work will either take away two or stay neutral. It depends on what kind of work. I would like to create different models depending on different people. So maybe something like that.
+
+[00:10:43] Interviewer: That's great. So for example, would you like those interactions to be separately counted or would you like, for example, like a specific interaction or what another variable like happiness or something like that, that increases or decreases? Or would you like to just count this many positive interactions, this many negative interactions?
+
+[00:11:04] Participant Aidan: It could be variable with, Interactions like work because it's not. Absolutely said it's not decided whether it's positive or negative. Mostly depends on the person on the self that we're describing. 
+
+[00:11:29] Interviewer: Okay. So, perfect. So currently I call them positive interactions and negative interactions that will like increase and decrease, but we can also change this to another name if you want. So for example, if the person goes to work, for example, and do you wanna start with modeling one type of person, just the introvert or do you wanna? Okay, yeah, let's start with the introvert.
+
+[00:12:00] Participant Aidan: Introvert, we can have him as a blue person.
+
+[00:12:05] Interviewer: OK. This kind of light blue or darker blue?
+
+[00:12:17] Participant Aidan: This is good. This blue is OK.
+
+[00:12:28] Interviewer: Okay, so we have an introvert person. Every time I could set up, it will create the same blue person as an introvert. And what will this blue person do?
+
+[00:12:39] Participant Aidan: Well, with introvert, to set up the characteristics, I would say, I don't know if we should make like a little health bar, make it more like, Video game UI.
+
+[00:12:57] Interviewer: So we can do it that way. So, I will define, for example, health. The bar may take more time for me to add, but I will add a little label at the bottom that will say that.
+
+[00:13:11] Participant Aidan: Perfect. Maybe the health could be-.
+
+[00:13:21] Interviewer: Yes, something like that. It's kind of hard to read, but you know. We will fix the visualization later on. We'll fix the font size as well. Okay, that should be this. Okay, so sorry, I interrupted you.
+
+[00:13:48] Participant Aidan: So yeah, if health is at, for example, 10, the total mental health is at 10, an introvert would interact with a house and receive positive, like smileys. Maybe, we could also animate smileys going between the house and the person's icon. So those would be positive interactions. So, let's say like plus five per day.
+
+[00:14:44] Interviewer: So, let me, and describe the other ideas with the factory and the social too, so that we have that before I jump into coding. 
+
+[00:14:52] Participant Aidan: Yes. The same thing for work. The interaction can be between plus three to minus three per day. It's like a variable.
+
+[00:15:16] Interviewer: Perfect. And how about the social?
+
+[00:15:19] Participant Aidan: From minus three to minus seven.
+
+[00:15:24] Interviewer: And for the introvert, of course. And are they staying stationary? So you imagine that the smilers would go back and forth.
+
+[00:15:38] Participant Aidan: Yeah, maybe they like fun. And we see the results after a week, how overall happy the person would be.
+
+[00:15:48] Interviewer: Yeah, let's do that. So I will do this. Let me show you the visualization that I imagined from what you described, and then let's see if it is what you meant. So we assume that this will happen on a daily basis. I can make it so that 240 ticks a day, for example, to spread out the interaction so that we don't have to slow down the model. So, and if the person is getting plus three, plus five for each space, there should be something like that. _I will define this. _~_Nicholas Matsakis_~_ _Oh. _So currently I only implemented the happiness that comes from the house to show you how it will work. _So technically every five hours, not every five hours, sorry, like five times a day on equal intervals, the house will generate one happiness and send to this person. _Oh, sorry, let me make it smaller a little bit. Maybe like two, I don't know for now. Okay, so it will just keep sending happiness. What, why did the help me? Oh, okay. Sorry, I didn't update the label. Let's see. _So this will send out, that will increase the person's health. Is this what you imagined?
+
+[00:18:29] Participant Aidan: Yeah, this looks nice.
+
+[00:18:31] Interviewer: Okay, perfect. So let's implement the factories and So this will be factories and factories will give something between plus three and minus three.
+
+[00:18:50] Participant Aidan: Yes. 
+
+[00:18:51] Interviewer: And. 
+
+[00:18:53] Participant Aidan: Could we also mod like a neutral zero as a green smiley and negative as a red smiling?
+
+[00:19:04] Interviewer: Yeah, of course. Okay, so let's do that too. So factories can send, like they send three times an emotion, but that emotion can be positive, neutral, or unhappy.
+
+[00:19:28] Participant Aidan: Yes, it could be zero or anywhere to minus three or plus three.
+
+[00:19:37] Interviewer: Okay, let's do that. Okay. Let me try to write this in this. See if this will work. _Happiness, naturalness, and unhappiness. All right, there we go. Let's see if this works. Oh, that works, okay. Okay, now I have to write it. This will be a slightly long piece of code for a simple thing, but sometimes it's like that, you know, like I have to like, this will be heavy._ Yes. Complicated. 
+
+[00:21:13] Participant Aidan: ~I'm feeling sick too. Damn. I'm going to go to our city. Look at this one. ~
+
+[00:21:13] Interviewer: _Let's see. What's next though? It was sleeping the whole time. There we go. Naturalness. That's just not gonna do. Okay, let me see if the workflow worked the way we hoped it would._ So it's gonna send like, so the house will always send happiness to this introvert person. The work will sometimes send happiness, sometimes send unhappiness, as you see. Sometimes just neutralness. And the final thing is to implement the social. 
+
+[00:22:08] Participant Aidan: Mm-hmm. 
+
+[00:22:18] Interviewer: Yes. And then you said the social will be minus three to minus seven. So. 
+
+[00:22:30] Participant Aidan: It's always a negative.
+
+[00:22:31] Interviewer: Okay. We can do it something like, I will simplify this minus six because minus six will be easier to write the code right now so that we can continue talking about your ideas instead of slowing down. But I will fix it in the meetings.
+
+[00:22:55] Participant Aidan: No, that's better. 
+
+[00:22:55] Interviewer: So it's going to be. _So how many did it send?_ Oh, it sent three of them. It sent four of them. That's too much. Oh, because I got, okay.
+
+[00:23:19] Participant Aidan: Oh, because it's three people.
+
+[00:23:22] Interviewer: These three people instead of one people, I already forgot what I did, okay. _So it's like one, two, or three. One, two, three, or six. Okay, so this should be done. This will then send correctly. We're waiting. Oh, that unhappy already reached there._ So now we have like, and I did start the person from 10 happiness to begin with, 10 health, sorry, mental health. Did you want to keep it at 10 initially, or did you want to make it zero? Did you want to make it the baseline? It's almost like starting mental health.
+
+[00:24:19] Participant Aidan: Um, i think maybe we can lower it, uh, to like five. ~Okay~ so, make it a little bit more neutral. 
+
+[00:24:32] Interviewer: The person starts with plus five mental health and then these uh it starts interacting like giving these happiness and unhappiness or mutual interactions with the uh with the social life, home and work. Work is sending pretty much three times a day. It's sending either positive, neutral or negative. So it gives a range from minus three negative to plus three positive and all of them in between are equal likelihood. House is always sending five times happiness during the day. Yes. And then the social life sends anywhere between minus three to minus seven unhappiness, minus six unhappiness to this person.
+
+[00:25:23] Participant Aidan: And then breaking even and actually gaining health happiness. Let's mess it up. We can't have some too happy.
+
+[00:25:37] Interviewer: So that seems to be like this is generating a positive happiness in general because this person is spending obviously quite a bit of time at home.
+
+[00:25:47] Participant Aidan: I think based on our lives, there is also a medical side to it.
+
+[00:25:59] Interviewer: Yeah. ~Sorry, your microphone was turned off.~
+
+[00:26:01] Participant Aidan: ~ Hello, did I lose you?~
+
+[00:26:01] Interviewer: ~ Yeah.~
+
+[00:26:01] Participant Aidan: ~ I just got a phone call.~
+
+[00:26:01] Interviewer: ~ Oh, I see.~
+
+[00:26:01] Participant Aidan: ~ So I have to turn that off.~
+
+[00:26:01] Interviewer: You were talking about the medical aspect of things.
+
+[00:26:05] Participant Aidan: Maybe we could add medical on the right of the person. And it would generate some negative stuff.
+
+[00:26:20] Interviewer: _And I think there was some shapes that would be helpful in your thinking._ I think there was the ambulance sign, ambulance shape, if you like that one. I think there is also, you can also just do like a building institution or something like that. I don't know if there was a hospital sign. There's no hospital, but one of these house shapes. There's no medical. Or you can just simply use, let's say like exclamation with the triangle and stuff like that as well. What would you like the shape of the medicals to be?
+
+[00:27:15] Participant Aidan: Maybe---.
+
+[00:27:18] Interviewer: There's also a doctor here.
+
+[00:27:20] Participant Aidan: Doctor is good. Doctor is good. Okay.
+
+[00:27:29] Interviewer: And what should be the color of the doctor?
+
+[00:27:33] Participant Aidan: Yeah, just white coat.
+
+[00:27:34] Interviewer: Okay. Let's see. I'm making gray so that the color just seems... Okay. Does this look good?
+
+[00:27:46] Participant Aidan: Yes, this looks good.
+
+[00:27:48] Interviewer: So now, how frequently unhappiness to stack will ascend?
+
+[00:28:03] Participant Aidan: I think just to... How many are they saying? Like three, four times a day? In this case, it will total not more than like minus three per day.
+
+[00:28:25] Interviewer: Okay, perfect. It's like zero, minus one, minus two, minus three, right? 
+
+[00:28:32] Participant Aidan: Yeah. 
+
+[00:28:32] Interviewer: Okay, perfect. _So let me... Okay, there you go. Okay, so this is much better. People, people. So this should work. So once a day, the doctor, the medical will send anywhere from zero to minus three. _There you go. Oh, they really put it down for her. So what do you think?
+
+[00:29:47] Participant Aidan: It looks pretty good.
+
+[00:29:49] Interviewer: Yeah. It's coming together already.
+
+[00:29:54] Participant Aidan: It's coming together. We need probably an external factor like unforeseen events. And that could like something really dramatic. It could either like give you plus 10 or like go minus 10. It's It's something that you just don't know. You cannot predict. 
+
+[00:30:22] Interviewer: Does it happen again once a day or does it happen once a week, once a month?
+
+[00:30:28] Participant Aidan: Maybe once a week would be better. Something dramatic that could really throw you off.
+
+[00:30:44] Interviewer: Okay. Okay, so let's create one. And where does the unforseens go, to the left, to the bottom?
+
+[00:30:59] Participant Aidan: To the left is good.
+
+[00:31:01] Interviewer: Okay. And what should be the shape of the unforseens?
+
+[00:31:13] Participant Aidan: There was like a fire, I think. 
+
+[00:31:16] Interviewer: Yes. There you go. Let's see. Does this look good?
+
+[00:31:34] Participant Aidan: It looks good.
+
+[00:31:37] Interviewer: So that will be.
+
+[00:31:43] Participant Aidan: Actually, maybe an exclamation point would be better.
+
+[00:31:50] Interviewer: Exclamation, okay.
+
+[00:32:04] Participant Aidan: There you go.
+
+[00:32:06] Interviewer: And the color red is still good or do you want it to be a different color?
+
+[00:32:10] Participant Aidan: Red is good.
+
+[00:32:12] Interviewer: Okay. _So, these, on four scenes will happen every seven days._ And then they will either send 10 plus, 10 happiness, 10 unhappiness or nothing, or they will always be either 10 happiness or 10 unhappiness.
+
+[00:32:42] Participant Aidan: Zero would be good too.
+
+[00:32:44] Interviewer: OK. So I have to stop in like three minutes after finishing this. _Yeah, let me write this little bit of code too. So that's gonna be unhappiness. It's going to be... Oh, sorry. It's just going to be... Oh, that's going to be neutral, sorry. Should we call rain? Should we just patch happiness? There we go. And I also want to do that. And that's good. And then edge. I like just copying and pasting to speed things up._ There you go. Okay, let me see if this works. Okay, yes, so this is gonna happen. Perfect, what do you think?
+
+[00:35:15] Participant Aidan: This is nice.
+
+[00:35:16] Interviewer: I sped up. So I will send you a link to Tinker with this version of the model. Let me stop screen recording. Do you have any other thoughts before we stop the recording? Any other comments?
+
+[00:35:32] Participant Aidan: No, I think we're in a good spot for today. We can add to that later. It was really interesting.
+
+[00:35:40] Interviewer: Yeah, it really came together nicely. I was very curious how we were going to put together that idea. I think there's a nice foundation now to build on.
+
+[00:35:51] Participant Aidan: And we can change different people, different selves.
+
+[00:35:54] Interviewer: ~Yes, we can definitely change all of those things. When would you like to meet next?~
+
+[00:35:54] Participant Aidan: ~I think this Friday may work. Okay.~
+
+[00:35:54] Interviewer: ~Yeah, of course.~
+
+[00:35:54] Participant Aidan: ~What time Friday? I think like two, three o'clock, something like that. I think on Friday morning, I was able to I'll confirm with you regarding that. Okay.~
+
+[00:35:54] Interviewer: ~Sounds good. I will put us as three o'clock right now, and then I will send a follow-up too.~
+
+[00:35:54] Participant Aidan: ~Awesome.~
+
+[00:35:54] Interviewer: ~Let me stop the recording.~
+

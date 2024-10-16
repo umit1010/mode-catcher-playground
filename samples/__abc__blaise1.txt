@@ -1,0 +1,564 @@
+[00:00:00] Interviewer: ~ So, last week, the last meeting, actually few days ago, I did show you how we create models in NetLogo. And then this meeting, we will start creating a model, any model that you would like to work on. You know, we don't have to finish it. We don't have to, like, make great progress. We can even just talk about model ideas, you know, like the whole meeting, you know. It's not very, like, strict what we need to do.~
+
+[00:00:00] Participant_B: ~ Sure.~
+
+[00:00:00] Interviewer: Were you able to think about any ideas? Do you have anything?
+
+[00:00:03] Participant_B: Well, I did think about it a little bit and one idea that I had, we have a dog. And we live in the south loop. So, there are a lot of buildings here and there are a lot of people with a lot of dogs. 
+
+[00:00:18] Interviewer: Yeah. 
+
+[00:00:18] Participant_B: So, and there's, even though there is some dedicated dog park space.
+
+[00:00:24] Interviewer: Mm hmm.
+
+[00:00:25] Participant_B: I don't think there's enough. And it's, it's not dedicated enough. So, I thought maybe we could do something along those lines.
+
+[00:00:35] Interviewer: I like that. That's very interesting. ~You know, I'm in South loop by the way too. I'm currently - the office that I'm in right now is in Roosevelt collection.~
+
+[00:00:37] Participant_B: ~ Oh, okay, sure.~
+
+[00:00:37] Interviewer: ~ We are very nearby actually.~
+
+[00:00:37] Participant_B: ~ You're right by Old Navy.~
+
+[00:00:37] Interviewer: ~ Yes, I am. I contacted. Yeah. Okay, yeah, yeah. So, and I really like South Loop.~
+
+[00:00:37] Participant_B: ~ Oh, yeah, yeah.~
+
+[00:00:37] Interviewer: ~ It's~
+
+[00:00:37] Participant_B: ~ I used to live. Just north of the Roosevelt collection on wells.~
+
+[00:00:37] Interviewer: ~ I love that street, we actually looked into some apartments in that building.~
+
+[00:00:37] Participant_B: ~ Yeah.~
+
+[00:00:37] Interviewer: ~ I know we are straying away but we looked at that River City apartments. Yep, and the deal was so good to be true, you know? Like, it was cheap, utilities were cheap, and never the building is cool and fancy. And then when we try to apply the people started acting a bit sketchy.~
+
+[00:00:37] Participant_B: ~ Okay.~
+
+[00:00:37] Interviewer: ~ We got cold feet and we pull, we decided to not go forward with it. And we asked for the refund of our application fees because, whatever. And last week, it got flooded, we just created, you say, we were like &quot;oh my god, we are so lucky&quot;.~
+
+[00:00:37] Participant_B: ~ Yeah. River City flooded really badly last week. And also almost exactly to the day 10 years ago. Really very, very bad and I was living there. At that point, I moved out of there. About three years ago.~
+
+[00:00:37] Interviewer: ~ Oh, I see.~
+
+[00:00:37] Participant_B: ~ But I lived in the old building across the street from River City. Oh,~
+
+[00:00:37] Interviewer: ~That's a beautiful building, you know, like I love the design. I love when you are in the in the hallway it's like such an open beautiful area like such , it's monumental really. It was so beautiful but the management. I think they have a new management. They were acting weird, you know? Just, we didn't feel comfortable because there were also a lot of bad reviews on the internet. So we didn't feel comfortable but you know, we really like this area. It's very pretty. Absolutely, yeah. It's very nice, good to know that you're nearby. You know, like when this thing ends. Hopefully, in a year or so maybe.~
+
+[00:00:37] Participant_B: ~ Hopefully not that long, but we'll.~
+
+[00:00:37] Interviewer: ~ See, maybe. Yeah, sure.~
+
+[00:00:37] Participant_B: ~ Absolutely.~
+
+[00:00:37] Interviewer: ~ I love to do that. ~So, but the dog parks idea. Let's not stray too much.
+
+[00:00:40] Participant_B: Okay, well. The other idea that I had involving dogs was, you know, dogs go to the bathroom outside. Just the way things are. Right? And I didn't know if there was some sort of program that we can run involving the density of dogs and the, the density of dog crap.
+
+[00:01:02] Interviewer: Yeah, we can.
+
+[00:01:03] Participant_B: So, so there's two different ideas involving pets.
+
+[00:01:06] Interviewer: Let's start with, with a basic model and then we can choose what to do. Like, what, we, let's, I guess the best idea will be like, let's start representing the environment that we want to create and then we will decide what to do with it. But the dog parks are very interesting, right? Like, I see dog parks, they are usually small and there are a lot of dogs in one place. And people have to be inside there, you know?
+
+[00:01:27] Participant_B: Right. 
+
+[00:01:27] Interviewer: So can you tell me more about the idea? Like, you want to just represent that? Or do you have any problem that bothers you with the dog parks?
+
+[00:01:36] Participant_B: Well, um, with dog parks in general that we've experienced; there was a really nice one at 16th and Wabash called Fred Anderson. It's a really, really nice Park. But there's, there's; seems like there's always at least one or two asshole dogs there and there's always a couple of asshole people.
+
+[00:02:01] Interviewer: Yes.
+
+[00:02:01] Participant_B: You know people who think that that's time for them, that's not time for their dogs. So they come in with cups of coffee. They come in with, with breakfast food. They come in and smoke. They come in to chit chat with the other dog owners that are their friends. And they completely ignore their dogs.
+
+[00:02:20] Interviewer: Yeah, the dog just does whatever, right?
+
+[00:02:22] Participant_B: Yeah. Our dog has been bitten a couple of times from dogs that these people were not paying attention to. 
+
+[00:02:28] Interviewer: That's terrible. 
+
+[00:02:29] Participant_B: Yeah. 
+
+[00:02:30] Interviewer: And they are always like &quot;oh, my dog is friendly&quot;, you know? Like that. Yeah that's one of the things that you always hear from dog people. &quot;Oh my dog is super friendly&quot;. You know, it's biting things, you know? Like.
+
+[00:02:40] Participant_B: Right, yeah.
+
+[00:02:41] Interviewer: Jumping off the fences. You know, like it's not friendly dog, you know?
+
+[00:02:45] Participant_B: And we've seen people that come into the dog park with no toys for their for their dog. Our dog loves to play chase the tennis ball. Yeah. So we would always bring a tennis ball with us. Mm hmm. And occasionally, like one of the other dogs would get a hold of the tennis ball and you know the two dogs would play keep away or chase, or whatever. When it comes time for the other dog to leave with its owner, that dogs leaving with the ball now. That owner knows that he did not come in there with the ball. So why? Why is he leaving with the ball. So, I usually have to stop them. &quot;It's not your property.&quot; &quot;Oh I thought it was here for everybody.&quot; why would you think that?
+
+[00:03:27] Interviewer: Yeah, that's like, they really do. I mean, it's a cool thing that people love their dogs a lot.
+
+[00:03:32] Participant_B: Yep.
+
+[00:03:33] Interviewer: And treat their dogs like their children. 
+
+[00:03:36] Participant_B: Yeah. 
+
+[00:03:36] Interviewer: Sometimes it gets to the point, like, they are fine with their dogs bullying others. They're - it really gets that low, right? That's very interesting. Let's create a model like a very basic model just to represent what you have in mind. 
+
+[00:03:47] Participant_B: Okay. 
+
+[00:03:48] Interviewer: On a static level even. And then. So, I will share my screen with you.
+
+[00:03:57] Participant_B: OK.
+
+[00:03:57] Interviewer: I will walk you through the process of me, like, again, creating the model. And you will tell me, like, let's add this let's add that, and I will start adding. But let's first put our simple buttons. Okay, we've always put just put the SETUP button, which will restart the model, recreate everything or the beginning of the model. The GO button. And let's go to the code tab and let's write the code that corresponds to SETUP. I will add my bare bones simple ~oh~ commands here. So we have that. Now, what would you like to have in this world?
+
+[00:04:39] Participant_B: Okay, you know, one other aspect of this general idea of dealing with with dogs is that, you know; we are all apartment and condo buildings here. There aren't any single family buildings to speak of. Um, some of the buildings allow pets, some don't.
+
+[00:04:58] Interviewer: Mm hmm.
+
+[00:04:59] Participant_B: The ones that allow pets at some point, you have too many pets in the building. 
+
+[00:05:05] Interviewer: Yeah. 
+
+[00:05:07] Participant_B: So I was wondering if there's something we couldn't do along the lines of that to determine what is the optimum density, which, you know, is also going to vary depending on the dog size. 
+
+[00:05:18] Interviewer: Mm hmm. 
+
+[00:05:19] Participant_B: And temperament.
+
+[00:05:20] Interviewer: Yeah. We can create like a very basic model and start adding sliders like we added last time, right? Like we can add that dog breed types, you know, like the number of this breed dog, number of that breed dog; we can start doing that.
+
+[00:05:33] Participant_B: Sure. Okay. 
+
+[00:05:34] Interviewer: So, So you want to create some buildings? I don't want to put words in your mind. Yeah. So let's design. Let's define buildings. And then how many buildings, shall we create? 
+
+[00:05:54] Participant_B: Um, let's say six.
+
+[00:05:56] Interviewer: Let's create six of them. And see what shape we can use for them; turtle shapes editor. So, I think we have this very basic shape of the house in the library. We also have other buildings: building institution, building store. 
+
+[00:06:14] Participant_B: Okay.
+
+[00:06:15] Interviewer: I think that there must be more buildings.
+
+[00:06:19] Participant_B: Is there anything under A for apartment?
+
+[00:06:22] Interviewer: I, yeah, I was just taking that, no a, for apartment. Let's move and see if we have anything similar to like a building or we can just design a building, right? _Like house. Oh, they are called houses. _House, boom. Bangalow house, colonial, efficiency, branch, two story, they have these things. What else do we have, let's see. These are usually, you know, people create for their own models from scratch and they're added. So it's, that's why it's a bit random. 
+
+[00:06:57] Participant_B: Okay. 
+
+[00:06:58] Interviewer: So we only have like these things. If you want me to draw the buildings, I can take a note and then I can draw it in between our meetings to make it more like buildings. 
+
+[00:07:08] Participant_B: Okay. 
+
+[00:07:08] Interviewer: But we can start choosing one of these options and then we'll edit later on. 
+
+[00:07:14] Participant_B: Okay. 
+
+[00:07:14] Interviewer: So, which one would you prefer?
+
+[00:07:19] Participant_B: Um proably, I think the first house; the very simple one.
+
+[00:07:26] Interviewer: Very simple one. Yeah, let's do that. We already have it. Where would you like to place these buildings? Like randomly? In a specific location?
+
+[00:07:38] Participant_B: Um, yeah. I would think randomly.
+
+[00:07:41] Interviewer: So I will just tell them to move to one of the patches. This basically makes sure that there are no houses overlapping. And their size by default will be, by default, will be one, which means they will look kind of small and less dense. But we can really, like I'm just showing you this to give you the idea of, like, how we can edit this. We can make the world smaller so that the houses are looking a bit bigger. So. 
+
+[00:08:20] Participant_B: You know, I'm thinking maybe we should keep the houses stationary, rather than. You know? 
+
+[00:08:27] Interviewer: Every time I click set up, they shouldn't move?
+
+[00:08:29] Participant_B: Yeah. 
+
+[00:08:29] Interviewer: Okay. Let's do that. _How can we do that? Good question. Okay. _I will create, like, a specific list that corresponds to the location, so every time. _Let me try this. Let me try this. I think this is. So, every time, so we can change this random seed number to find the. Let me actually. _So, this random seed number makes it static every time we click set up. 
+
+[00:09:25] Participant_B: Okay. 
+
+[00:09:26] Interviewer: Actually it plays with the randomness of the thing, you know? The randomness of the model when you change it, it corresponds to a different random number generator, basically. So it stabilizes like every time. The model thinks it's doing something random but it's actually every time getting the same outcome. 
+
+[00:09:45] Participant_B: Okay. 
+
+[00:09:45] Interviewer: So, it's the way randomness is represented. I will implement this. In the meantime, when, if I think, like, something you suggested will take too much time and bore you, I will get you bored, I will take a note and after our meetings, I will fix it. Currently, I define like a really textbook solution to make it. So, our houses are at the same locations every single time.
+
+[00:10:13] Participant_B: Okay.
+
+[00:10:13] Interviewer: So what should we do next?
+
+[00:10:15] Participant_B: Ummm. Probably create some dogs?
+
+[00:10:18] Interviewer: Okay. I'm thinking there's a dog shape, but let's see. No there's not.
+
+[00:10:33] Participant_B: Well, there's a cow.
+
+[00:10:35] Interviewer: Would you like to do the cow? I mean it gets the job done, right?
+
+[00:10:40] Participant_B: Yeah, it's pretty close, right?
+
+[00:10:43] Interviewer: Doesn't seem like we have dogs. Oh, there's one dog here. Yeah.
+
+[00:10:47] Participant_B: Okay.
+
+[00:10:48] Interviewer: Okay, it's the, the shape. How many dogs should we create?
+
+[00:10:52] Participant_B: Well, that will, that will be a sliding number.
+
+[00:10:54] Interviewer: Okay. Let's put the, I'll put this here, this number of dogs. What should the maximum number be?
+
+[00:11:09] Participant_B: Okay, let's.
+
+[00:11:12] Interviewer: We have six houses. 
+
+[00:11:14] Participant_B: Yeah. Ummm, 120.
+
+[00:11:20] Interviewer: Okay, and the default should be, let's say, let's make it 60 just to be in the middle? 
+
+[00:11:26] Participant_B: Okay. 
+
+[00:11:27] Interviewer: We can change it later. _Create dogs._ I will set their shape &quot;dog&quot;. Do we want them to have one color? One color or do you want them to be like every color possible?
+
+[00:11:44] Participant_B: Uh, random colors. 
+
+[00:11:45] Interviewer: Random colors? Okay. And where do they start in the beginning?
+
+[00:11:50] Participant_B: Where do they start?
+
+[00:11:51] Interviewer: Yeah. Are they in random places, too? Or are they in the houses?
+
+[00:11:55] Participant_B: I would start them in the houses.
+
+[00:11:57] Interviewer: Okay. And I'm assuming dogs know their home or something like that? 
+
+[00:12:10] Participant_B: Yeah. 
+
+[00:12:11] Interviewer: Okay, so they. _Just double check if this works. _Okay. They did go to the houses. They're a little bit big do you want to keep them big like this or make them a little smaller oh, we can make them smaller. Okay. I'll make them 0.5 sized right now. But we can always edit that again. Right?
+
+[00:12:33] Participant_B: Yeah. Can we make the buildings larger?
+
+[00:12:37] Interviewer: Yes, we can do that, too. _Now we can we can have the, this. So, yeah. _
+
+[00:12:53] Participant_B: Yeah, perfect. 
+
+[00:12:53] Interviewer: Houses are larger, dogs are smaller. 
+
+[00:12:55] Participant_B: Yeah. 
+
+[00:12:55] Interviewer: And when we look at one of these dogs, we will see that it knows its house is building number five. 
+
+[00:13:01] Participant_B: Okay. 
+
+[00:13:02] Interviewer: So, it does - every time we create them, we tell them to set their shape; every one of them look like a dog. They move to one of the buildings, which means they will move to one of the buildings randomly.
+
+[00:13:12] Participant_B: Okay. 
+
+[00:13:12] Interviewer: Because this is random, it will be, like, normally distributed. It will be like uniformly distributed, somewhat. One house might have eleven, one house might have nine, but on average they will have 10 dogs, if you created 60 of them, right? Uh, the size, I will just make them move over, so that we can see them a bit more like dogs distributed here, right? So we don't see all the dogs in the house like on top of each other. 
+
+[00:13:43] Participant_B: Right. 
+
+[00:13:43] Interviewer: There are multiple goals. Okay. Do you want to add anything else to this model before we start coding what happens in the go?
+
+[00:13:54] Participant_B: I can't think of what we would add at this point, you know? I, um, you know, it struck me that as we move further along, we could exchange the buildings for Park spaces.
+
+[00:14:11] Interviewer: Oh. 
+
+[00:14:13] Participant_B: Right? 
+
+[00:14:14] Interviewer: So, like for the cars and stuff?
+
+[00:14:16] Participant_B: No, no, no, no. For the dog park.
+
+[00:14:20] Interviewer: Oh, yeah. So it's like we can place dog parks, maybe? 
+
+[00:14:23] Participant_B: Yeah. 
+
+[00:14:24] Interviewer: Where, like, would you like to put it? In the middle or somewhere?
+
+[00:14:28] Participant_B: Um, yeah. Okay, yeah. We can, you know, find a larger free area there and put in a couple of dog parks. 
+
+[00:14:36] Interviewer: Okay. Let's represent it with the patches.
+
+[00:14:42] Participant_B: Yeah.
+
+[00:14:43] Interviewer: So let's see where, like, one in this area and one in this area? 
+
+[00:14:47] Participant_B: Sure. 
+
+[00:14:47] Interviewer: Okay. _This one should be something like minus three, minus three. _Okay. What should be the color of the dog park?
+
+[00:15:03] Participant_B: Green.
+
+[00:15:10] Interviewer: I'll give it like a size of three, but. _Oh! It's too much. Okay. Still too much. Okay, I know what I did. I made the patches big. Okay. Resolution is too small. Let's fix that now. And then we will make this. So, our houses are distributed evenly a bit. Oh, I have to make the houses bigger now by one. Oh, now they are too big._ 
+
+[00:16:02] Interviewer: Sorry, I will.
+
+[00:16:03] Participant_B: That's okay.
+
+[00:16:05] Interviewer: I am confusing things a little bit. _And let's make it so that this doesn't wrap. So they don't get to the other side. And let's find a slightly better configuration for us to be able to observe._ 
+
+[00:16:33] Interviewer: Is this better? 
+
+[00:16:35] Participant_B: Yes. 
+
+[00:16:35] Interviewer: Okay, so let me make the park a bit smaller again. _Kinda too big. So this is one Park. _
+
+[00:16:41] Participant_B: Okay. 
+
+[00:16:42] Interviewer: Now should I put one here or to the right side? Left top or right top?
+
+[00:16:47] Participant_B: Right top.
+
+[00:16:48] Interviewer: Right top, okay. _So, and then this will be. Let me double check where is this and what does this say. Eleven of them. Okay. So I'm basically just giving the coordinates. So now we have like two dog parks for the dogs to be able to go. Yeah, they have houses, they do forward._ We have houses, which have dogs. Now they can go to dog park. 
+
+[00:17:23] Participant_B: Great. 
+
+[00:17:24] Interviewer: Anything else would you like to add to the setup?
+
+[00:17:28] Participant_B: I don't think so, at this point. 
+
+[00:17:30] Interviewer: Good. So we can start programming the go now. 
+
+[00:17:32] Interviewer: What will these dogs be doing?
+
+[00:17:36] Participant_B: Um, well, they will randomly from each building go to one or the other park.
+
+[00:17:43] Interviewer: Okay.
+
+[00:17:44] Participant_B: At different times. 
+
+[00:17:46] Interviewer: Okay. And they will spend some time and come back to home or? 
+
+[00:17:50] Participant_B: Yes. 
+
+[00:17:51] Interviewer: Okay.
+
+[00:17:51] Participant_B: Yeah, they will always go back to the home, the building they came from.
+
+[00:17:56] Interviewer: Okay._ The Park. Time to spend._ So I did create a couple of tags. One is the dogs will know which park they are going to at a given time and a given tick. And then once they get to the park, they will know how much time left to spend in the park. So the time will tick down one by one minus one minus one, and when it is zero, they will go back to home. 
+
+[00:18:34] Participant_B: And the amount of time that they spend in the park, is that a fixed amount of time or is that? Can? Can that be ~random~ variable? Okay. 
+
+[00:18:43] Interviewer: We can make it completely random with a maximum and minimum or we can make it normally distributed or anything like that.
+
+[00:18:52] Participant_B: So, okay. And I will say what, I don't know, maybe with a maximum of 20 minutes or something or set some sort of maximum. 
+
+[00:19:02] Interviewer: _Mm hmm. Ok. Which will probably correspond to something like 200 ticks._
+
+[00:19:10] Participant_B: Okay, and maybe a minimum of five minutes.
+
+[00:19:14] Interviewer: Okay._ Great. That's perfect. Now I will ask the dogs._ So should they have like some time to wait in the house too or no?
+
+[00:19:33] Participant_B: Um, well, they're going to be in the house except for the time that they're at the park.
+
+[00:19:38] Interviewer: Okay, so they do wait in the house most of the time?
+
+[00:19:41] Participant_B: Yes. Okay, so.
+
+[00:19:46] Interviewer: _They should also know._
+
+[00:19:51] Participant_B: Yeah. So for this, they will be either at the park or at home. 
+
+[00:19:54] Interviewer: Okay. If they are not at the park, they are they are at home. _So if at the park is false, they are at home. So I will ask dogs that are not at the park to wait a bit, right? To wait a bit, to wait a long time, maybe, and then go to the park? _So, and then, initially, how much should they spend at home? Let's say 20 minutes in the park, that means like some hours in the at home?
+
+[00:20:33] Participant_B: Uh, yeah. So that would be 23 hours and and 40 minutes. Well, unless we do that multiple times a day, which we could do that, you know?
+
+[00:20:46] Interviewer: Let's have it a bit basic. Let's start representing like 24 hours.
+
+[00:20:49] Participant_B: Yeah.
+
+[00:20:49] Interviewer: They should wait like twenty three hours or so, give or take some time.
+
+[00:20:56] Participant_B: Yeah.
+
+[00:20:57] Interviewer: So it's like 2300 ticks. _Let's say plus random 200, minus random 200. So just, I'm multiplying every minute with like something like that, you know, like that because when we run the model, it will run really fast in terms of speed. I don't want to slow it down so I give like some sort of multiplication algorithim. I do some small multiplication algorithim. So, there's that. So if dogs are not at the park. Is this right? Dogs are not at the park. They will first decrease their time to left - time left to spend at home, one by one, which means they are just waiting at home. And then if time left spend at home is zero, they will be like going to the park. And it will choose one of the parks. Target park. So what will happen is, choose one. They will just randomly choose one of the green patches as the random, which means one of the parks basically. And then that's it. And the dogs at the park, these, this code is for dogs at home. Wait till your time comes. That's basically what it says. And this code is for dogs walking to the park._ So, they went to the, they are going to the park, which means they are still on one of the black patches black squares.
+
+[00:23:12] Participant_B: Okay.
+
+[00:23:12] Interviewer: But they're also going to the park not going back to home. And what will happen is. It sounds very simple, but it's like somewhat like a complex behavior to break down to the pieces, right?
+
+[00:23:26] Participant_B: Right, right. So,
+
+[00:23:27] Interviewer: So what will happen here is they they will start walking through the park. They will keep looking at the target park. They will keep moving one step by one step. _And that's done. _And if they get to a patch that's green, that means they arrived at the park so they will now set their time to spend. It was 20 minutes? Okay, so, oh, minimum five minutes, maximum 20 minutes, right?
+
+[00:24:04] Participant_B: Yes.
+
+[00:24:04] Interviewer: Almost done. And I will walk you through the code again. Like, I know I'm writing fast. And so when they are at the park, should they just stand there? 
+
+[00:24:36] Interviewer: Or should they move in the park?
+
+[00:24:44] Participant_B: Well it; ideally, they'd be moving around. They would be playing, running.
+
+[00:24:55] Interviewer: _These will just move between the green patches in the park green squares and their time left to spend should be decreasing one by one. And when they, when they don't have any more time to spend they should go back home. There's that. And, let's run this. I wrote a lot of code at once, just make sure that there is no errors left. The last bit, I didn't code yet; coming back home. So, oops, see it runs really fast because oh I also didn't fix the thing so we didn't see how it went. It will run, they will go to the park really fast. I might adjust that speed. _They are waiting; they are currently waiting at home. They are gonna wait like 24 hours, _which means I, I guess I can make it._
+
+[00:26:07] Participant_B: Well, why don't we change that? Instead of 24 hours with, let's do that like eight hours? So they get to go three times. 
+
+[00:26:13] Interviewer: Mm hmm. Perfect. So, and I did make it a bit random. Not all of them wait exactly eight hours but closer to eight hours._ Let's see. _So eight hours means like eighty ticks. So they will go to the park. They will move around the park a little bit, and they will go back when there, _but I didn't implement the last part._ When their time is off, they're going to come back. _And I can actually make their going to the park a bit slower so that you can observe it better_. They are waiting at home, they're not moving. And then their time has come, they're going to the park and they are gonna move around the park. You know, like dogs. I think it looks like that. Anyways, right?
+
+[00:27:03] Participant_B: Right. 
+
+[00:27:04] Interviewer: We can slow it down there, just like moving around and playing. _What will happen is when their time is done? Now they need to go back to, they need to go back home. That part I didn't implement yet. They are currently just stuck at the park. So, let's see. They at the park their color is green they're doing that. Let's see what happened with the-, I need to. Oh, oh yeah, we run it. We are waiting, dogs are going, they are having fun. So now by that point, they need to be starting to come back home. Let's see. Yeah, the time they have left to spend is actually minus eighteen. So I need to move them out of the park. Let's do that. So, false. Okay. Dogs walking back home, so I'm not at the park. But my distance to my house is greater than zero, I turn towards my house and I go home. So, they were at home, they were chilling, they are now hanging out._ So once their time is over, they need to go back, but there is a little bug I need to catch. Sorry about that.
+
+[00:29:11] Participant_B: No problem. Yeah. 
+
+[00:29:12] Interviewer: _Um, at the park, time left to spend that's what I want. So, at the park, close because they should have been back by now. Okay, they are not at the park. This should be working I will do a little bit of debugging. Um, they are hanging out at home. Oh, we need to show this. Yeah, it should be working. Oh, I didn't. No, I did set their at the park false. Is this still working?_ So again, if I cannot get this to work, I will be like &quot;Bill, I need a couple days in between these meetings for me to fix this bug&quot;. 
+
+[00:30:18] Participant_B: Yeah. 
+
+[00:30:20] Interviewer: OK, so the wrong code is working right now. _So that's good to know, dogs. This should work. And pcolor equals green. This value, less than that and at the park false. So this should work. So I made I made a mistake here that I'm not catching correctly. Oh, okay. Not at the park. Okay. Okay, and this does, my house, okay. Less than. There we go. Now, this should work. _Yeah, they spent their time. They are going back home. So they are coming and going coming and going. 
+
+[00:31:13] Participant_B: Right.
+
+[00:31:14] Interviewer: I made another mistake. They're not staying at home because.
+
+[00:31:17] Participant_B: Yeah, but that was cool that I saw them going from from, what, from home to one park to home to the other Park.
+
+[00:31:24] Interviewer: Yeah, so they, because they go to a park, they choose a random one.
+
+[00:31:27] Participant_B: Right, right.
+
+[00:31:28] Interviewer: Really there's no intelligence there. It's completely random. For example, they don't be like, the owners don't be like &quot;oh that park is really busy, so let me go to the other park&quot;, right? But we can implement that kind of stuff, too, eventually.
+
+[00:31:41] Participant_B: Okay. And it looks like they're all leaving home about the same time. 
+
+[00:31:46] Interviewer: Yes. 
+
+[00:31:48] Participant_B: And all the dogs are leaving. So, some dogs would stay at home. 
+
+[00:31:52] Interviewer: Mm hmm. 
+
+[00:31:54] Participant_B: Because they would go out, maybe four hours later than some of the other dogs.
+
+[00:31:58] Interviewer: Yeah, we can do that too. So, currently we make that not too big of a difference, but we can make, for example, like this, this, pause wait time, much more varying, much more . So, now they see like, now that it's, like, not at the same time.
+
+[00:32:19] Participant_B: Yeah.
+
+[00:32:19] Interviewer: They are home, they come back home. They're waiting. So, now the basic functionality is there: they go, they hang out in the park. 
+
+[00:32:28] Participant_B: Yeah. 
+
+[00:32:29] Interviewer: They come back and then we can now edit this parameter. We can have way more dogs in these houses and we can start to see like the overcrowding and stuff like.
+
+[00:32:41] Participant_B: Yeah, yeah.
+
+[00:32:42] Interviewer: Would you like to add like a simple plot to see how many dogs are on each park each park or something like that? 
+
+[00:32:48] Participant_B: Sure. 
+
+[00:32:48] Interviewer: Yeah. So, _I will add a simple thing. Will be one or two, so these patches will be knowing that they are park. No, number one. Oh, no they are the same. Oh, okay. Sorry. We will count how many dogs are in park, one versus how many dogs are in park two. Set the plot, dogs at one. This will be blue, let's say. We can always change these things again and then this. Something like red and this is park number two, so now I don't know why this is showing here. Let's get rid of it._ 
+
+[00:34:16] Interviewer: So now we should be able to see like &quot;okay this park has this many dogs this park has that many dogs&quot;. We can start like following the patterns. I don't think this is going to be super helpful initially but we will be able to follow the patterns.
+
+[00:34:34] Participant_B: Yeah, so would you be able to, like, identify like a timestamp for the graph?
+
+[00:34:40] Interviewer: Yeah, so the timestamp is actually the ticks. So our computational time, we can actually go look at this. The NetLogo's interface is a bit confusing, in essence, I know. So this x axis is the time the y axis is the number of dogs. So if I want to see this peak; when did this happen, right? It happened around the tick. This is like right at the bottom, this number around the tick 200. That was the very, very beginning of this thing, of everyone like leaving at the same time.
+
+[00:35:17] Participant_B: Yeah. Can we can we assign a value to the peak that would say like maybe 6pm?
+
+[00:35:26] Interviewer: Oh yeah, we can.
+
+[00:35:26] Participant_B: And then everything goes out from there, because that's the time where like everybody comes home from work and takes their dog out. So.
+
+[00:35:35] Interviewer: I will take a note of that. Because I think I need to use an extension of NetLogo, but I don't want to, like, confuse you right now when I'm trying to go to the manual read the manual stuff, either. But we can definitely do that too. 
+
+[00:36:00] Participant_B: Oh, cool. 
+
+[00:36:01] Interviewer: Yeah. And this peak happened. Look, it's very interesting because I guess it happened artificially right now because currently it's very normally distributed. 
+
+[00:36:12] Participant_B: Right. 
+
+[00:36:13] Interviewer: Yeah. Once the first peak happens, we can also speed up the model and see if you see any other peaks or if this is happening more like normally. So initially, something happened there with the our initial &quot;you guys wait this much time&quot;. Or maybe it was just a random number and then we know that. Yeah, there's always an initial peak there.
+
+[00:36:43] Participant_B: Yeah.
+
+[00:36:44] Interviewer: You don't need to really understand what the model is doing. Like, what is the outcome because we are still building it, you know? 
+
+[00:36:49] Participant_B: Yeah. 
+
+[00:36:50] Interviewer: I also don't want to make it because the next meeting is like, now that we have created this very basic version of the model, next meeting is like, we will sit down again, look at the model, and you will say, like, what would you like to add or what would you like to change. 
+
+[00:37:06] Participant_B: Sure, like people? And the owners, because the dogs don't walk themselves to the park.
+
+[00:37:11] Interviewer: That's true, yeah.
+
+[00:37:12] Participant_B: Most of the time.
+
+[00:37:14] Interviewer: Yeah. And that's the other consideration with the modeling, right? Like what do you abstract out? 
+
+[00:37:20] Participant_B: Yeah. 
+
+[00:37:21] Interviewer: What do you keep simplified? What do you add because it matters for the model, yeah. So what do you think so far?
+
+[00:37:26] Participant_B: Oh, this is great. This is fun.
+
+[00:37:28] Interviewer: Yeah. And what do you think about the model? Do you think it's getting closer to what you had in your mind? 
+
+[00:37:33] Participant_B: Yes. 
+
+[00:37:34] Interviewer: Okay. Yeah, this is a very fun model.
+
+[00:37:38] Participant_B: Cool, thank you.
+
+[00:37:39] Interviewer: What kind? What kind of, um, so you said like there is like overcrowding, but you also talked about like aggressive dogs and stuff like that.
+
+[00:37:48] Participant_B: Yeah.
+
+[00:37:49] Interviewer: Do you plan to implement that, that kind of stuff in the future? Cause is this your main concentration or your main concentration is the allocation of the resources kind of?
+
+[00:37:58] Participant_B: I think space at this point, yeah. The bully dogs, I don't know what we could to them or with them.
+
+[00:38:07] Interviewer: Mm hmm.
+
+[00:38:08] Participant_B: At this point, other than maybe identifying them as a particular color. 
+
+[00:38:14] Interviewer: Mm hmm. 
+
+[00:38:15] Participant_B: Say have okay out of, out of the hundred and 20 dogs, maybe 10 of those are bully dogs, those are all red and all the other dogs are any color but red perhaps.
+
+[00:38:27] Interviewer: Yeah, we can do that. So no need to really decide that right now. In the next meeting, we will, like, now tinker with it.
+
+[00:38:36] Participant_B: Okay, cool.
+
+[00:38:36] Interviewer: Yeah, so this is really cool. I really like it. I also like the idea of like so, in between meetings I have something to do too. My Tasks are to make the houses being stationary, a bit more nicel - nicely done. Do you want me to design a apartment building shape instead of these houses or are you fine with this?
+
+[00:38:56] Participant_B: Yeah, that'd be great.
+
+[00:38:57] Interviewer: Okay.
+
+[00:38:58] Participant_B: I mean, if it's not too, too involved for you.
+
+[00:39:01] Interviewer: No it's not. Okay, and when I do this when I do these edits, I will send you a web link for you to be able to tinker with the model. So it will be available for you to set it up, run the model and see what you can add, what you can change, and stuff like that.
+
+[00:39:26] Participant_B: Oh, great. So, yeah.
+
+[00:39:30] Interviewer: I have some homework. That's great. 
+
+[00:39:30] Interviewer: ~When would you like to schedule?~
+
+[00:39:30] Participant_B: ~Our next meeting? Um, what works good for you?~
+
+[00:39:30] Interviewer: ~ Honestly, like this is my calendar. I am pretty free tomorrow, not tomorrow is too early to be free. I'm pretty free early Friday or next week, next week.~
+
+[00:39:30] Participant_B: ~ Okay. Um, I think. Friday would be good.~
+
+[00:39:30] Interviewer: ~ Mm hmm. The same time?~
+
+[00:39:30] Participant_B: ~ Yeah.~
+
+[00:39:30] Interviewer: ~ Okay, perfect. Friday at the same time, I will again send you a reminder and Thursday or even tomorrow, probably, I will send you the updated model with better visualization~
+
+[00:39:30] Participant_B: ~ Cool, yeah.~
+
+[00:39:30] Interviewer: ~ And things put together. Do you have any questions?~
+
+[00:39:30] Participant_B: ~ No, it's this looks like it's a lot of fun.~
+
+[00:39:30] Interviewer: ~ I'm glad you like it and you enjoy it. I think this model is a lot of fun. Yeah.~
+
+[00:39:30] Participant_B: ~ Cool. Great.~
+
+[00:39:30] Interviewer: ~ Because also like, I don't want to take too much of your time but dog parks are, were something new when I moved to the US. You know, like we don't have that in Turkey. Okay, we don't have those like little nice parks where dogs play or dog beaches, for example.~
+
+[00:39:30] Participant_B: ~ Yeah yeah~
+
+[00:39:30] Interviewer: ~ So it's a very cute thing. Okay. Great. Thank you so much.~
+
+[00:39:30] Participant_B: ~ Well, thank you, Umit.~
+
+[00:39:30] Interviewer: ~ Yeah, take care. Bye bye I'm glad that the AC is working.~
+
+[00:39:30] Participant_B: ~ Yeah, me too.~
+
