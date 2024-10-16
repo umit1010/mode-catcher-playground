@@ -156,3 +156,6 @@ cython_debug/
 models/
 samples/_*.txt
 .DS_Store
+
+# devel branch specific stuff that should not appear in the public main branch
+.gitignore.optimize
