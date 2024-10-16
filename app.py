@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
-import dash_auth
+#import dash_auth
 from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
@@ -52,7 +52,6 @@ app = Dash(
 
 # needed to be able to publish the script on Heroku
 server = app.server
-
 
 # ---- NLP ----
 
@@ -136,18 +135,32 @@ def generate_code_checkboxes(line_num, values=None):
     )
     return container
 
+# editable tag applications
+def check_tags(token):
+    return not token.dep == 423
+    # 423 is the "mark" dependency tag, see appendix for use of "like" as a non-significant word
+
 # mapping use of certain "tokens" --> words?
-def process_utterance(raw_text):
+def process_utterance(raw_text, tags = False):
 
     global nlp
 
     doc = nlp(raw_text.strip().lower())
 
-    all_tokens = [
-        token.lemma_
-        for token in doc
-        if not nlp.vocab[token.lemma].is_stop and not token.is_punct
-    ]
+    all_tokens = []
+    if tags:
+        all_tokens = [
+            token.lemma_
+            for token in doc
+            if not nlp.vocab[token.lemma].is_stop and not token.is_punct and
+                check_tags(token)
+        ]
+    else:
+        all_tokens = [
+            token.lemma_
+            for token in doc
+            if not nlp.vocab[token.lemma].is_stop and not token.is_punct
+        ]
 
     token_counts = Counter(all_tokens)
 
@@ -579,6 +592,7 @@ raw_text_input = dbc.Textarea(
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
+apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="apply-tags", value=True)
 
 reset_button = dbc.Button(
     "Reset Mode",
@@ -630,7 +644,8 @@ input_accordion = dbc.Accordion(
                 dbc.Row(
                     dbc.Col(
                         [
-                            sentencize_checkbox
+                            sentencize_checkbox,
+                            apply_tags_checkbox
                         ],
                         class_name="mt-4",
                     )
@@ -1235,9 +1250,10 @@ def helper(options):
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     Input({"type": "code-checkbox", "index": ALL}, "value"),
+    State("apply-tags", "value"),
     prevent_initial_call=True,
 )
-def coding_editor(cell, toggle_clicks, checked_codes):
+def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     global active_data
     global tokens_changed
 
@@ -1259,7 +1275,7 @@ def coding_editor(cell, toggle_clicks, checked_codes):
                 tokens_changed = True
         i = int(cell["rowId"])
         cell_text = str(active_data[i]["utterance"])
-        token_buttons, token_treemap = process_utterance(cell_text)
+        token_buttons, token_treemap = process_utterance(cell_text, tags = apply_tags)
 
         line_num = int(active_data[i]["line"] - 1)
 
