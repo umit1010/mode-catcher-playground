@@ -154,5 +154,7 @@ cython_debug/
 
 # mode-catcher folders
 models/
-samples/_*.txt
 .DS_Store
+
+# devel branch specific stuff that should not appear in the public main branch
+#samples/_*.txt

@@ -580,7 +580,7 @@ if input_folder_path.is_dir():
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
-    file_list, id="input-file-dropdown", value="01_cj2.txt"
+    file_list, id="input-file-dropdown", value="demo__cj2.txt"
 )
 
 mode_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter mode name ...")
@@ -1435,11 +1435,11 @@ def update_included_lines(changed):
 
 # --- HEROKU SIMPLE AUTH ---
 
-heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
+# heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
-if heroku_access_pwd:
-    credentials_list = {"ccl" : heroku_access_pwd}
-    auth = dash_auth.BasicAuth(app, credentials_list)
+# if heroku_access_pwd:
+#     credentials_list = {"ccl" : heroku_access_pwd}
+#     auth = dash_auth.BasicAuth(app, credentials_list)
 
 
 # --- RUN THE APP ---
