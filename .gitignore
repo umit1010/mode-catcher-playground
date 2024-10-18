@@ -158,3 +158,4 @@ models/
 
 # devel branch specific stuff that should not appear in the public main branch
 #samples/_*.txt
+runtime.txt
