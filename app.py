@@ -330,6 +330,10 @@ def display_knowledge_graph(
 
     # CALCULATE NODE METRICS
 
+    # prevents a runtime error if the user manually removed the value to enter a new one
+    if size_multiplier is None:
+        size_multiplier = 1
+
     # I add 1 to node size because if n=1 -> log2(1) = 0
     node_sizes = list(
         map(
@@ -389,6 +393,10 @@ def display_knowledge_graph(
     layout_seed = np.random.RandomState(42)
 
     pos = dict()
+
+    # prevents the division by zero error if the user manually removed the value to enter a new one
+    if spring_iterations is None:
+        spring_iterations = 1
 
     if layout == "1":
         pos = nx.spring_layout(
@@ -1403,6 +1411,10 @@ def knowledge_graph(
 
     # first, let's pickle the user generated model
     pickle_model(name)
+
+    # prevents runtime errors if the user manually removed the values to enter a new one
+    if deg is None: deg = 1
+    if dmc_deg is None: dmc_deg = 2
 
     # make sure min co-occurrence is not larger than min dmc co-occurrence
     dmc_deg = deg + 1 if deg > dmc_deg - 1 else dmc_deg
