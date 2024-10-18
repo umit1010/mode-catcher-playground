@@ -307,7 +307,8 @@ def display_knowledge_graph(
     min_co_occurrence=1,
     min_dmc_co_occurrence=2,
     size_multiplier=2,
-    show_interviewer=False
+    show_interviewer=False,
+    show_all_labels=True
 ):
     global nlp
     global G
@@ -368,7 +369,7 @@ def display_knowledge_graph(
     # show the node texts for really large nodes or the ones in the central node's plot
     node_texts = [
         nlp.vocab.strings[n]
-        if G.nodes[n]["count"] > 5 or n in ego_network.nodes
+        if G.nodes[n]["count"] > 5 or n in ego_network.nodes or show_all_labels
         else " "
         for n in G.nodes
     ]
@@ -780,7 +781,6 @@ graph_type_row = dbc.Row(
         ),
     ]
 )
-
 grap_layout_options_div = html.Div(
     [
         html.H4("Layout", className="my-4"),
@@ -859,6 +859,16 @@ grap_layout_options_div = html.Div(
             justify="center",
         ),
         html.H4("Visualization", className="my-4"),
+        dbc.Row([
+            dbc.Col(
+                [
+                    dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True, class_name="me-4"),
+                ],
+                md=12,
+                xl=3,
+                class_name="d-flex mt-3",
+            ),
+        ]),
         dbc.Row(
             [
                 dbc.Col(
@@ -939,6 +949,7 @@ grap_layout_options_div = html.Div(
     ],
     className="my-4",
 )
+
 
 graph_view_options_div = html.Div(
     [
@@ -1320,6 +1331,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     Input("dmc-window", "value"),
     Input("min-co", "value"),
     Input("min-dmc-co", "value"),
+    Input("all-labels", "value"),
     Input("graph-layout", "value"),
     Input("layout-iterations", "value"),
     Input("layout-k", "value"),
@@ -1340,6 +1352,7 @@ def knowledge_graph(
     window,
     deg,
     dmc_deg,
+    all_labels,
     layout,
     iterations,
     k,
@@ -1425,6 +1438,7 @@ def knowledge_graph(
         min_dmc_co_occurrence=dmc_deg,
         size_multiplier=multiplier,
         show_interviewer = 2 not in options,
+        show_all_labels=all_labels,
     )
 
     return graph, len(active_data), line, stats, dmc_deg
