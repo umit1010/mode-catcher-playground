@@ -354,9 +354,16 @@ def display_knowledge_graph(
 
     # find the most central node so that we can show labels of the nodes in its ego graph in the plot
     #      but hide the labels of the others for easier viewing
-    most_central_node = sorted(G.degree, key=lambda x: x[1], reverse=True)[0][0]
 
-    ego_network = nx.ego_graph(G, n=most_central_node, radius=10)
+    most_central_node = None
+
+    if G.number_of_nodes() > 0:
+        most_central_node = sorted(G.degree, key=lambda x: x[1], reverse=True)[0][0]
+
+    if most_central_node is not None:
+        ego_network = nx.ego_graph(G, n=most_central_node, radius=10)
+    else:
+        ego_network = nx.empty_graph()
 
     # show the node texts for really large nodes or the ones in the central node's plot
     node_texts = [
@@ -556,6 +563,8 @@ def display_knowledge_graph(
                                       x=0.5, xanchor='center'),
                                   margin=dict(l=0, r=0, t=40, b=40)
                                   )
+    else:
+        graph_metrics = html.P("No metrics to display yet because there are no connected tokens.",className="lead",)
 
     return graph_network, graph_metrics
 
@@ -961,7 +970,7 @@ metrics_viewer_wrapper_div = html.Div(
     [
         html.H3("Metrics", className="mb-4"),
         html.P(" "),
-        html.Div("Will be updated once the graph is generated.", id="metrics-div"),
+        html.Div("This view will be updated once the graph is generated.", className="lead", id="metrics-div"),
     ],
     className="border rounded p-4 my-4",
 )
