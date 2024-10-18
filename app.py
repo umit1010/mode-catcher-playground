@@ -308,7 +308,8 @@ def display_knowledge_graph(
     min_dmc_co_occurrence=2,
     size_multiplier=2,
     show_interviewer=False,
-    show_all_labels=True
+    show_all_labels=True,
+    show_weak_links=True
 ):
     global nlp
     global G
@@ -445,13 +446,16 @@ def display_knowledge_graph(
         x=edge_x, y=edge_y, line=dict(width=2, color="#888"), mode="lines"
     )
 
-    light_edge_trace = go.Scatter(
-        x=light_edge_x,
-        y=light_edge_y,
-        line=dict(width=1, color="#BBB", dash="dot"),
-        hoverinfo="none",
-        mode="lines",
-    )
+    if show_weak_links:
+        light_edge_trace = go.Scatter(
+            x=light_edge_x,
+            y=light_edge_y,
+            line=dict(width=1, color="#BBB", dash="dot"),
+            hoverinfo="none",
+            mode="lines",
+        )
+    else:
+        light_edge_trace = go.Scatter()
 
     node_x = [pos[n][0] for n in pos]
     node_y = [pos[n][1] for n in pos]
@@ -791,26 +795,27 @@ graph_type_row = dbc.Row(
 )
 grap_layout_options_div = html.Div(
     [
-        html.H4("Layout", className="my-4"),
+        html.Br(),
+        html.H4("Graph Construction", className="my-4"),
         dbc.Row(
             [
-                dbc.Col(
-                    [
-                        html.Span("Min Tokens per Line: ", className="me-4"),
-                        dcc.Input(
-                            id="min-tokens",
-                            type="number",
-                            min=1,
-                            max=20,
-                            step=1,
-                            value=4,
-                            style={"margin-top": "-6px"},
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
+                # dbc.Col(
+                #     [
+                #         html.Span("Min Tokens per Line: ", className="me-4"),
+                #         dcc.Input(
+                #             id="min-tokens",
+                #             type="number",
+                #             min=1,
+                #             max=20,
+                #             step=1,
+                #             value=4,
+                #             style={"margin-top": "-6px"},
+                #         ),
+                #     ],
+                #     md=12,
+                #     xl=3,
+                #     class_name="d-flex mt-3",
+                # ),
                 dbc.Col(
                     [
                         html.Span("Min Co-occurrence: ", className="me-4"),
@@ -864,13 +869,39 @@ grap_layout_options_div = html.Div(
                 ),
             ],
             class_name="my-4",
-            justify="center",
         ),
+        html.Br(),
         html.H4("Visualization", className="my-4"),
         dbc.Row([
             dbc.Col(
+                    [
+                        html.Span("Node Size: ", className="me-4"),
+                        dcc.Input(
+                            id="node-size",
+                            type="number",
+                            min=1,
+                            max=40,
+                            step=1,
+                            value=5,
+                            style={"margin-top": "-6px"},
+                            className="ms-4",
+                        ),
+                    ],
+                    md=12,
+                    xl=3,
+                    class_name="d-flex mt-3",
+            ),
+            dbc.Col(
                 [
                     dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True, class_name="me-4"),
+                ],
+                md=12,
+                xl=3,
+                class_name="d-flex mt-3",
+            ),
+            dbc.Col(
+                [
+                    dbc.Checkbox(label="Display weak links?", id="weak-links", value=True, class_name="me-4"),
                 ],
                 md=12,
                 xl=3,
@@ -892,24 +923,6 @@ grap_layout_options_div = html.Div(
                             ],
                             value="1",
                             class_name="w-50",
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
-                dbc.Col(
-                    [
-                        html.Span("Node Size: ", className="me-4"),
-                        dcc.Input(
-                            id="node-size",
-                            type="number",
-                            min=1,
-                            max=40,
-                            step=1,
-                            value=5,
-                            style={"margin-top": "-6px"},
-                            className="ms-4",
                         ),
                     ],
                     md=12,
@@ -952,7 +965,6 @@ grap_layout_options_div = html.Div(
                 ),
             ],
             class_name="my-4",
-            justify="center",
         ),
     ],
     className="my-4",
@@ -1340,6 +1352,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     Input("min-co", "value"),
     Input("min-dmc-co", "value"),
     Input("all-labels", "value"),
+    Input("weak-links", "value"),
     Input("graph-layout", "value"),
     Input("layout-iterations", "value"),
     Input("layout-k", "value"),
@@ -1361,6 +1374,7 @@ def knowledge_graph(
     deg,
     dmc_deg,
     all_labels,
+    weak_links,
     layout,
     iterations,
     k,
@@ -1451,6 +1465,7 @@ def knowledge_graph(
         size_multiplier=multiplier,
         show_interviewer = 2 not in options,
         show_all_labels=all_labels,
+        show_weak_links = weak_links,
     )
 
     return graph, len(active_data), line, stats, dmc_deg
