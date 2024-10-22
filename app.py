@@ -159,12 +159,27 @@ def generate_code_checkboxes(line_num, values=None):
     return container
 
 # editable tag applications
-def check_tags(token):
-    return not token.dep == 423
-    # 423 is the "mark" dependency tag, see appendix for use of "like" as a non-significant word
+def has_excluded_nlp_tag(token):
+
+    # Parts of speech tags that should be automatically excluded
+    # UH (3252815442139690129) == Interjection
+    # IN (1292078113972184607) == Preposition
+
+    # Dependency tags that should be automatically excluded
+    # intj (421) == interjection
+    # prep (443) == preposition
+    # mark (423) == marker
+
+    # TODO -> Use combinations of tag and dep to isolate tokens that are not meaningful
+    #   for example an interjection such as "no" may be userful in some interviews, but not in all
+    # TODO -> Design the final list of tag + dep combinations that should be excluded
+    #      if the list of things to exclude is too large, we can instead focus on what to include
+
+    return token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423
+
 
 # mapping use of certain "tokens" --> words?
-def process_utterance(raw_text, tags = False, row=0):
+def process_utterance(raw_text, use_nlp_tags = False, row=0):
 
     global nlp
     global excluded_tokens
@@ -172,6 +187,18 @@ def process_utterance(raw_text, tags = False, row=0):
     doc = nlp(raw_text.strip().lower())
 
     excluded_in_row = excluded_tokens.get(row, [])
+
+    if use_nlp_tags:
+        excluded_through_nlp_tags = [ token.lemma_ for token in doc if has_excluded_nlp_tag(token) ]
+        excluded_in_row.extend(excluded_through_nlp_tags)
+
+    all_tokens = [
+        token.lemma_
+        for token in doc
+        if not nlp.vocab[token.lemma].is_stop
+           and not token.is_punct
+           and token not in excluded_in_row
+    ]
 
     buttons_for_text = html.Div(
         [
@@ -191,21 +218,6 @@ def process_utterance(raw_text, tags = False, row=0):
             for token in doc
         ]
     )
-
-    all_tokens = []
-    if tags:
-        all_tokens = [
-            token.lemma_
-            for token in doc
-            if not nlp.vocab[token.lemma].is_stop and not token.is_punct and
-                check_tags(token)
-        ]
-    else:
-        all_tokens = [
-            token.lemma_
-            for token in doc
-            if not nlp.vocab[token.lemma].is_stop and not token.is_punct
-        ]
 
     token_counts = Counter(all_tokens)
 
@@ -661,7 +673,7 @@ raw_text_input = dbc.Textarea(
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
-apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="apply-tags", value=False)
+apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True)
 model_selection_dropdown = dbc.Select(
     id="model-selection-dropdown",
     options=[
@@ -1389,10 +1401,10 @@ def helper(options):
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     Input({"type": "code-checkbox", "index": ALL}, "value"),
-    State("apply-tags", "value"),
+    State("use-nlp-tags", "value"),
     prevent_initial_call=True,
 )
-def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
+def revise_tokens_view(cell, toggle_clicks, checked_codes, use_nlp_tags):
     global active_data
     global tokens_changed
     global excluded_tokens
@@ -1444,7 +1456,7 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
 
                 tokens_changed = True
         cell_text = str(active_data[row]["utterance"])
-        token_buttons, token_treemap = process_utterance(cell_text, tags = apply_tags, row=row)
+        token_buttons, token_treemap = process_utterance(cell_text, use_nlp_tags= use_nlp_tags, row=row)
 
         line_num = int(active_data[row]["line"] - 1)
 
