@@ -16,13 +16,16 @@ from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
 #import dash_auth
 from itertools import combinations
+
+from markdown_it.rules_core import inline
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 
 
 # ---- PLATFORM ----
 
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later
+# nlp = spacy.load("en_core_web_sm", exclude=["ner"])
 
 G = nx.Graph()
 
@@ -657,6 +660,15 @@ parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
 apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="apply-tags", value=False)
+model_selection_dropdown = dbc.Select(
+    id="model-selection-dropdown",
+    options=[
+        {"label": "Small", "value": "en_core_web_sm"},
+        {"label": "Medium", "value": "en_core_web_md"},
+        {"label": "Large", "value": "en_core_web_lg"},
+    ],
+    value="en_core_web_sm"
+)
 
 reset_button = dbc.Button(
     "Reset Mode",
@@ -705,19 +717,24 @@ input_accordion = dbc.Accordion(
                         ]
                     )
                 ),
-                dbc.Row(
+                dbc.Row([
+                    dbc.Col(sentencize_checkbox, width=3),
+                    dbc.Col(apply_tags_checkbox, width=4),
+                    dbc.Col(width=2),
                     dbc.Col(
-                        [
-                            sentencize_checkbox,
-                            apply_tags_checkbox
-                        ],
-                        class_name="mt-4",
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Model"),
+                            model_selection_dropdown
+                        ]
+                        ),
+                        width=3,
+                        align="end",
                     )
+                ], class_name="mt-4", justify="between"
                 ),
                 dbc.Row(
                     dbc.Col(
                         [
-                            #inclusion_options,
                             parse_button
                         ],
                         class_name="mt-4",
@@ -1199,9 +1216,10 @@ def reset_mode(nclicks, name):
     State("mode-name", "value"),
     State("raw-text", "value"),
     State("by-sent", "value"),
+    State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, options, name, txt, sentencize):
+def utterance_table(parse_clicks, options, name, txt, sentencize, model):
     global assigned_codes
     global nlp
     global stopped_words
@@ -1255,8 +1273,8 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
             with open(default_stopwords_file, "rb") as f:
                 stopped_words = pickle.load(f)
 
-        # reload the model because it only pulls default stopwords when loading
-        nlp = spacy.load("en_core_web_sm", exclude=["ner"])
+        # reload the model because it only pulls default stopwords if loaded from the beginning
+        nlp = spacy.load(model, exclude=["ner"])
 
         # update stop_words of the small model
         #   I have to do it this y because spacy's to_disk method doesn't save stopwords
