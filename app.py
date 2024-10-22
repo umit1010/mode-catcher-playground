@@ -14,13 +14,17 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
-#import dash_auth
+import dash_auth
 from itertools import combinations
 
 from markdown_it.rules_core import inline
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 from datetime import datetime, time
+
+# --- HEROKU SIMPLE AUTH PASSWORD ---
+
+heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
 # ---- PLATFORM ----
 
@@ -74,6 +78,8 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
         for line in txt.splitlines()
         if len(line.strip()) > 0 and line.count(":") > 2
     ]
+
+    print(input_lines)
 
     # to parse the text line by line
     re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
@@ -679,7 +685,7 @@ model_selection_dropdown = dbc.Select(
     options=[
         {"label": "Small", "value": "en_core_web_sm"},
         {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_lg", "disabled": True},
+        {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
     ],
     value="en_core_web_sm"
 )
@@ -1329,7 +1335,7 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model):
         column_defs = [
             {'field': 'line', 'id': 'line', 'headerName':'Sent' if sentencize else 'Line', 'editable': False, 'maxWidth': 90},
             {'field': 'time', 'id': 'time', 'hide': 0 not in options, 'maxWidth': 120},
-            {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140,
+            {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140, 'wrapText': False,
                 'filter': 'agSpeakerColumnFilter',
                 'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
                 'isExternalFilterPresent': {'function': 2 in options},
@@ -1625,15 +1631,13 @@ def update_included_lines(changed):
         active_data[i]['in?'] = cell_incl
         tokens_changed = True
 
+# --- HEROKU SIMPLE AUTH CHECK ---
 
-# --- HEROKU SIMPLE AUTH ---
+heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
-# heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
-
-# if heroku_access_pwd:
-#     credentials_list = {"ccl" : heroku_access_pwd}
-#     auth = dash_auth.BasicAuth(app, credentials_list)
-
+if heroku_access_pwd:
+    credentials_list = {"ccl" : heroku_access_pwd}
+    auth = dash_auth.BasicAuth(app, credentials_list)
 
 # --- RUN THE APP ---
 
