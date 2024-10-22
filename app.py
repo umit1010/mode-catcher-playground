@@ -30,6 +30,7 @@ tokens_changed: bool = False
 stopped_words = set()
 unstopped_words = set()
 assigned_codes = dict()
+excluded_tokens = dict() # TODO: Change this to a hidden table column
 active_data = list()
 has_generated = False
 
@@ -57,13 +58,12 @@ server = app.server
 
 # ---- NLP ----
 
-def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True):
+def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = []):
 
     global tokens_changed
+    global excluded_tokens
 
     data = list()
-
-    by_sentences = in_sentences
 
     # parse the text
     input_lines = [
@@ -79,35 +79,52 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
         input_lines = [
             line for line in input_lines if line.lower().count("interviewer") == 0
         ]
-    j = 0
-    for i, line in enumerate(input_lines):
-        # cleans
+
+    i = 0 # to count the number of sentences if the transcript is auto sentencized
+    for line in input_lines:
+
         _, time, speaker_speech = re_time_splitter.split(line)
         speaker, utterance = speaker_speech.strip().split(":", maxsplit=1)
         speaker = str(speaker).strip()
 
-        row = {"line": i + 1}
-
-        row['in?'] = True
+        # initialize the dictionary
+        row = {
+            'line': 0,
+            'time': '',
+            'speaker': '',
+            'utterance': '',
+            'in?': True
+        }
 
         if timestamp:
-            row["time"] = time[1:-1]
+            row['time'] = time
 
         if speaker:
-            row["speaker"] = speaker
+            row['speaker'] = speaker
 
-        if by_sentences:
-            doc = nlp(utterance.strip())
+        row['utterance'] = ''
+
+        doc = nlp(utterance.strip())
+
+        if in_sentences:
             for s in doc.sents:
-                new_row = row.copy()
-                new_row['utterance'] = str(s)
-                data.append(new_row)                 
+                i += 1
+                sent_row = row.copy()
+                sent_row['line'] = i
+                sent_row['utterance'] += s.text
+                sent_row['in?'] = False if i in excluded_rows else True
+                data.append(sent_row)
         else:
         # here would I go through and make each token bold using markdown?
+            i += 1
+            row['line'] = i
             row["utterance"] = utterance.strip()
+            row['in?'] = False if i in excluded_rows else True
             data.append(row)
-        if i not in assigned_codes.keys():
-            assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary 
+
+        # if i not in assigned_codes.keys():
+        #     assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary
+
     tokens_changed = True
 
     return data
@@ -124,8 +141,9 @@ def generate_code_checkboxes(line_num, values=None):
                 [
                     dbc.Checkbox(
                         label=code[1],
+                        disabled=True,
                         # value=assigned_codes[line_num][code[0]],
-                        id={"type": "code-checkbox", "index": code[1]},
+                        id={"type": "code-checkbox", "index": code[1]}
                     )
                 ],
                 className="w-50",
@@ -143,11 +161,33 @@ def check_tags(token):
     # 423 is the "mark" dependency tag, see appendix for use of "like" as a non-significant word
 
 # mapping use of certain "tokens" --> words?
-def process_utterance(raw_text, tags = False):
+def process_utterance(raw_text, tags = False, row=0):
 
     global nlp
+    global excluded_tokens
 
     doc = nlp(raw_text.strip().lower())
+
+    excluded_in_row = excluded_tokens[row]
+
+    buttons_for_text = html.Div(
+        [
+            html.Span(
+                dbc.Button(
+                    token.text,
+                    id={"type": "toggle-token", "index": token.lemma_,
+                        "stop": True if nlp.vocab[token.lemma].is_stop else False},
+                    n_clicks=0,
+                    color="light" if nlp.vocab[token.lemma].is_stop else "danger" if token.lemma_ in excluded_in_row else "warning",
+                    class_name="m-1",
+                    size="sm",
+                )
+            )
+            if not nlp.vocab[token.lemma].is_punct
+            else html.Span(token.text, className="mx-1")
+            for token in doc
+        ]
+    )
 
     all_tokens = []
     if tags:
@@ -173,35 +213,6 @@ def process_utterance(raw_text, tags = False):
 
     df = pd.DataFrame.from_dict(data_dict)
 
-    buttons_for_text = html.Div(
-        [
-            html.Span(
-                dbc.Button(
-                    token.text,
-                    id={"type": "toggle-token", "index": token.lemma_, "stop": True},
-                    n_clicks=0,
-                    color="light",
-                    class_name="m-1",
-                    size="sm",
-                )
-            )
-            if nlp.vocab[token.lemma].is_stop
-            else html.Span(token.text, className="mx-1")
-            if nlp.vocab[token.lemma].is_punct
-            else html.Span(
-                dbc.Button(
-                    token.text,
-                    id={"type": "toggle-token", "index": token.lemma_, "stop": False},
-                    n_clicks=0,
-                    color="warning",
-                    class_name="m-1",
-                    size="sm",
-                )
-            )
-            for token in doc
-        ]
-    )
-
     # why a treemap?
     fig = px.treemap(
         df,
@@ -221,8 +232,9 @@ def process_utterance(raw_text, tags = False):
 
     return buttons_for_text, token_treemap
 
-def pickle_model(mode_name):
+def pickle_model(mode_name, active_rows):
     global nlp
+    global excluded_tokens
 
     models_folder = Path("./models/")
     models_folder.mkdir(exist_ok=True)
@@ -230,16 +242,32 @@ def pickle_model(mode_name):
     mode_folder = models_folder / mode_name
     mode_folder.mkdir(exist_ok=True)
 
+    # pickle the stop words changed by the user
     stopwords_file = mode_folder / "stopwords.pickle"
-    # umit temporarily disabled the following line(s)
-    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
 
     with open(stopwords_file, "wb") as swf:
         pickle.dump(
             (stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL
         )
 
+    # pickle the tokens that are excluded in individual lines by the user
+
+    excluded_tokens_file = mode_folder / "excluded_tokens.pickle"
+    with open(excluded_tokens_file, "wb") as etf:
+        pickle.dump(
+            excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL
+        )
+
+    # pickle the rows that are completely excluded by the user
+    excluded_rows = [l['line'] for l in active_rows if not l['in?']]
+    excluded_rows_file = mode_folder / "excluded_rows.pickle"
+    with open(excluded_rows_file, "wb") as erf:
+        pickle.dump(
+            excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL
+        )
+
     # umit temporarily disabled the following line(s)
+    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
     # with open(theoretical_codes_file, "wb") as tcf:
     #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -247,6 +275,7 @@ def pickle_model(mode_name):
 def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=False):
     global nlp
     global active_data
+    global excluded_tokens
 
     new_G = nx.Graph()
 
@@ -259,7 +288,18 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
             and line['in?']):
             doc_line = nlp(line["utterance"].strip().lower()) # cleans
 
-            tokens = [t.lemma for t in doc_line if not t.is_punct and not t.is_stop and not nlp.vocab[t.lemma].is_stop] # cleans
+            row = line["line"] - 1
+
+            # exclude the following tokens from the graph:
+            #   - punctuations
+            #   - stop words
+            #   - tokens whose lemmas are stop words
+            #   - tokens which are manually excluded at specific lines
+            tokens = [t.lemma for t in doc_line if not t.is_punct
+                                                    and not t.is_stop
+                                                    and not nlp.vocab[t.lemma].is_stop
+                                                    and not t.lemma_ in excluded_tokens[row]
+                      ]
 
             token_counts = Counter(tokens)
             unique_tokens = list(token_counts.keys())
@@ -320,6 +360,8 @@ def display_knowledge_graph(
     # UA > if any edits were made in the utterance table or line number, regenerate the graph
     #       otherwise use the same graph for visualization changes
     if tokens_changed:
+
+        # now let's generate the knowledge graph
         G = generate_knowledge_graph(
             start=start_line, end=end_line, sentence_boost=False, with_interviewer=show_interviewer,
         )
@@ -604,7 +646,7 @@ if input_folder_path.is_dir():
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
-    file_list, id="input-file-dropdown", value="demo__cj2.txt"
+    file_list, id="input-file-dropdown", value="_demo_cory1_abc.txt"
 )
 
 mode_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter mode name ...")
@@ -616,7 +658,7 @@ raw_text_input = dbc.Textarea(
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
-apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="apply-tags", value=True)
+apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="apply-tags", value=False)
 
 reset_button = dbc.Button(
     "Reset Mode",
@@ -986,11 +1028,9 @@ graph_view_options_div = html.Div(
         ),
         dcc.Slider(
             id="graph-slider",
-            min=1,
-            max=2,
-            step=1,
-            value=1,
-            marks=None,
+            step=None,
+            marks={0: 'N/A'},
+            value=0,
             tooltip={"placement": "bottom", "always_visible": True},
             className="my-4",
         ),
@@ -1042,10 +1082,8 @@ coding_modal = dbc.Modal(
                             dbc.Row(
                                 dbc.Col(
                                     [
-                                        html.H4([
-                                            dbc.Badge("not implemented", text_color="danger", color="white", className="border  small text-italic"), 
-                                            html.Span("Deductive Codes"), 
-                                            ]),
+                                        dbc.Badge("not implemented", text_color="danger", color="white", className="border small text-italic"),
+                                        html.H4("Deductive Codes"),
                                         code_checkboxes_container,
                                     ]
                                 ),
@@ -1175,12 +1213,15 @@ def reset_mode(nclicks, name):
     State("by-sent", "value"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, options, name, txt, sent):
+def utterance_table(parse_clicks, options, name, txt, sentencize):
     global assigned_codes
     global nlp
     global stopped_words
     global unstopped_words
+    global excluded_tokens
     global active_data
+
+    excluded_rows = []
 
     if ctx.triggered_id == "parse-button":
         model_path = Path(f"./models/{str(name).strip()}/")
@@ -1188,19 +1229,35 @@ def utterance_table(parse_clicks, options, name, txt, sent):
 
         # loading pickled files
         if model_path.is_dir():
+
+            # load the user-made changes to the stopwords
             stopwords_file = model_path / "stopwords.pickle"
-            
-            # umit temporarily disabled the following line(s)
-            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
             if stopwords_file.is_file():
                 with open(stopwords_file, "rb") as swf:
                     stopped_words, unstopped_words = pickle.load(swf)
             else:
-                with open(default_stopwords_file, "rb") as f:
-                    stopped_words = pickle.load(f)
+                with open(default_stopwords_file, "rb") as swf:
+                    stopped_words = pickle.load(swf)
+
+            # load the tokens that were excluded on specific lines by the user
+            excluded_tokens_file = model_path / "excluded_tokens.pickle"
+
+            if excluded_tokens_file.is_file():
+                with open(excluded_tokens_file, "rb") as etf:
+                    excluded_tokens = pickle.load(etf)
+
+            # load the lines that were completely excluded by the user
+
+            excluded_rows_file = model_path / "excluded_rows.pickle"
+
+            if excluded_rows_file.is_file():
+                with open(excluded_rows_file, "rb") as erf:
+                    excluded_rows = pickle.load(erf)
+
 
             # umit temporarily disabled the following line(s)
+            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
             # if theoretical_codes_file.is_file():
             #     with open(theoretical_codes_file, "rb") as tcf:
             #         saved_codes = pickle.load(tcf)
@@ -1221,26 +1278,32 @@ def utterance_table(parse_clicks, options, name, txt, sent):
         for word in unstopped_words:
             nlp.vocab[word].is_stop = False
 
+        # tokens that are excluded from a specific line, but not the entire analysis
+
         time = True
         speaker = True
         interviewer = True
 
         # here in possible changes
         parsed_data = parse_raw_text(
-            txt, timestamp=time, is_interviewer=interviewer, in_sentences = sent
+            txt, timestamp=time,
+            is_interviewer=interviewer,
+            in_sentences = sentencize,
+            excluded_rows = excluded_rows
         )
 
-        column_defs = [{'field': 'line', 'id': 'line', 'flex': 1, 'editable': True, 'maxWidth': 80},
-                       {'field': 'in?', 'id': 'in?', 'flex': 1, "boolean_value": True, "editable": True, 'maxWidth': 80 },
-                       {'field': 'time', 'id': 'time', 'hide': 0 not in options, 'maxWidth': 100},
-                       {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140,
-                        'filter': 'agSpeakerColumnFilter', 
-                        'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
-                        'isExternalFilterPresent': {'function': 2 in options},
-                        'doesExternalFilterPass': 
-                            {'function': "params.data.speaker != 'Interviewer'"}
-                        },
-                       {'field': 'utterance', 'id': 'utterance', 'flex': 5}]
+        column_defs = [
+            {'field': 'line', 'id': 'line', 'headerName':'Sent' if sentencize else 'Line', 'editable': False, 'maxWidth': 90},
+            {'field': 'time', 'id': 'time', 'hide': 0 not in options, 'maxWidth': 120},
+            {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140,
+                'filter': 'agSpeakerColumnFilter',
+                'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
+                'isExternalFilterPresent': {'function': 2 in options},
+                'doesExternalFilterPass': {'function': "params.data.speaker != 'Interviewer'"}
+            },
+            {'field': 'utterance', 'id': 'utterance'},
+            {'field': 'in?', 'id': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
+        ]
 
         transcript_table = dag.AgGrid(
                     id = 'data-table',
@@ -1272,18 +1335,20 @@ def utterance_table(parse_clicks, options, name, txt, sent):
         ]
         return message, "0", True
 
-# needs to filter out interviewers as third otion
+# needs to filter out interviewers as third option
 @app.callback(
     Output('data-table', 'columnState'),
     Output('data-table', 'dashGridOptions'),
     Input("inclusion-options", "value")
 )
 def helper(options):
-    new_state = [{'colId': 'line'},
-                    {'colId': 'in?'},
-                    {'colId': 'time', 'hide': 0 not in options},
-                    {'colId': 'speaker', 'hide': 1 not in options},
-                    {'colId': 'utterance'}]
+    new_state = [
+        {'colId': 'line'},
+        {'colId': 'time', 'hide': 0 not in options},
+        {'colId': 'speaker', 'hide': 1 not in options},
+        {'colId': 'utterance'},
+        {'colId': 'in?'},
+    ]
     new_filter = {'isExternalFilterPresent': {'function': 'false'}}
     if 2 in options:
         new_filter = {
@@ -1305,13 +1370,18 @@ def helper(options):
     State("apply-tags", "value"),
     prevent_initial_call=True,
 )
-def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
+def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
     global active_data
     global tokens_changed
+    global excluded_tokens
     global change_log
 
     if cell is not None:
+
+        row = int(cell["rowId"])
+
         if len(toggle_clicks) > 0:
+
             if 1 in toggle_clicks:
                 toggled_token = ctx.triggered_id["index"]
                 was_stop = ctx.triggered_id["stop"]
@@ -1323,18 +1393,35 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
                     unstopped_words.add(toggled_token)
                     change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
                 else:
-                    nlp.vocab[toggled_token].is_stop = True
-                    stopped_words.add(toggled_token)
-                    unstopped_words.discard(toggled_token)
+                    # if a token was not a stop word, first check if it is in the excluded tokens list
+
+                    if row not in excluded_tokens.keys():
+                        excluded_tokens[row] = []
+
+                    if toggled_token in excluded_tokens[row]:
+                        # if it was an excluded token, turn it into a stop word
+                        # and remove it from the exluded tokens list
+
+                        nlp.vocab[toggled_token].is_stop = True
+                        stopped_words.add(toggled_token)
+                        unstopped_words.discard(toggled_token)
+                        excluded_tokens[row].remove(toggled_token)
+
+                    else:
+                        # if it was not in excluded token list, turn it into an excluded token
+
+                        if len(excluded_tokens[row]) == 0:
+                            excluded_tokens[row] = [toggled_token]
+                        else:
+                            excluded_tokens[row].append(toggled_token)
                     change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'))
 
 
                 tokens_changed = True
-        i = int(cell["rowId"])
-        cell_text = str(active_data[i]["utterance"])
-        token_buttons, token_treemap = process_utterance(cell_text, tags = apply_tags)
+        cell_text = str(active_data[row]["utterance"])
+        token_buttons, token_treemap = process_utterance(cell_text, tags = apply_tags, row=row)
 
-        line_num = int(active_data[i]["line"] - 1)
+        line_num = int(active_data[row]["line"] - 1)
 
         # umit temporarily disabled this code
         # if len(checked_codes) > 0:
@@ -1357,7 +1444,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
 
 @app.callback(
     Output("graph-div", "children"),
-    Output("graph-slider", "max"),
+    Output("graph-slider", "marks"),
     Output("graph-slider", "value"),
     Output("metrics-div", "children"),
     Output("min-dmc-co", "value"),
@@ -1377,10 +1464,10 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     Input("node-size", "value"),
     Input("inclusion-options", "value"), # this has been added
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
-    Input("data-table", "cellValueChanged"),
+    # Input("data-table", "cellValueChanged"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
-    
+    State('data-table', 'virtualRowData'),
     prevent_initial_call=True,
 )
 def knowledge_graph(
@@ -1399,28 +1486,27 @@ def knowledge_graph(
     multiplier,
     options,
     changed_stop,
-    changed_include,
+    # changed_include,
     disabled,
     name,
-    
+    active_row_data,
+    prevent_initial_call=True,
 ):
     global active_data
     global tokens_changed
     global has_generated
     global change_log
 
+    empty_return = ["You need to process some data.", {0: 'N/A'}, 0, "You need to process some data.", deg, "This view will be updated when the user toggles tokens."]
+
     if disabled:
-        return (
-            "You need to process some data.",
-            1,
-            1,
-            "You need to process some data.",
-            deg,
-            "This view will be updated when the user toggles tokens."
-        )
+        return empty_return
 
     if ctx.triggered_id == "graph-button":
         has_generated = True
+
+        # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
+        pickle_model(name, active_row_data)
 
     if ctx.triggered_id == "graph-slider":
         tokens_changed = True
@@ -1435,18 +1521,7 @@ def knowledge_graph(
         tokens_changed = True
     
     if not has_generated:
-        return (
-            "You need to process some data.",
-            1,
-            1,
-            "You need to process some data.",
-            deg,
-            "This view will be updated when the user toggles tokens."
-
-        )
-
-    # first, let's pickle the user generated model
-    pickle_model(name)
+        return empty_return
 
     # prevents runtime errors if the user manually removed the values to enter a new one
     if deg is None: deg = 1
@@ -1455,11 +1530,20 @@ def knowledge_graph(
     # make sure min co-occurrence is not larger than min dmc co-occurrence
     dmc_deg = deg + 1 if deg > dmc_deg - 1 else dmc_deg
 
+    # make the slider's tickers match the data at hand (has to be a dict)
+    #   dictionary format is {line_num: 'label'}
+    #   I left the labels empty so that the tooltip is the active label
+    #   Otherwise, all numbers get jumbled up
+    # I use sorted to make sure that the user sorting the table does not mess up the graph
+    # I also make sure not to include the lines that were turned off by the user
+    list_of_marks = sorted([l['line'] for l in active_row_data if l['in?']])
+    slider_marks = {r: '' for r in list_of_marks}
+
     # display the latest utterance when generating a cumulative layout
     # if 2 in options: skip every other line
     # add a state checker to the above callback
     if not dmc and ctx.triggered_id == "graph-button":
-        line = line if line != 1 else len(active_data)
+        line = line if line != 0 else list(slider_marks.keys())[-1]
 
     start = 0
     end = line
@@ -1490,7 +1574,7 @@ def knowledge_graph(
         show_weak_links = weak_links,
     )
 
-    return graph, len(active_data), line, stats, dmc_deg, change_log
+    return graph, slider_marks, line, stats, dmc_deg, change_log
 
 @app.callback(
     Input("data-table", "cellValueChanged"),
