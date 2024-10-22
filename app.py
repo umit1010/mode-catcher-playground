@@ -667,7 +667,7 @@ model_selection_dropdown = dbc.Select(
     options=[
         {"label": "Small", "value": "en_core_web_sm"},
         {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_lg"},
+        {"label": "Large", "value": "en_core_web_lg", "disabled": True},
     ],
     value="en_core_web_sm"
 )
