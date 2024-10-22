@@ -171,7 +171,7 @@ def process_utterance(raw_text, tags = False, row=0):
 
     doc = nlp(raw_text.strip().lower())
 
-    excluded_in_row = excluded_tokens[row]
+    excluded_in_row = excluded_tokens.get(row, [])
 
     buttons_for_text = html.Div(
         [
@@ -301,7 +301,7 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
             tokens = [t.lemma for t in doc_line if not t.is_punct
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma].is_stop
-                                                    and not t.lemma_ in excluded_tokens[row]
+                                                    and not t.lemma_ in excluded_tokens.get(row, [])
                       ]
 
             token_counts = Counter(tokens)
@@ -1264,6 +1264,8 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model):
             if excluded_tokens_file.is_file():
                 with open(excluded_tokens_file, "rb") as etf:
                     excluded_tokens = pickle.load(etf)
+            else:
+                excluded_tokens = dict()
 
             # load the lines that were completely excluded by the user
 
@@ -1272,6 +1274,8 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model):
             if excluded_rows_file.is_file():
                 with open(excluded_rows_file, "rb") as erf:
                     excluded_rows = pickle.load(erf)
+            else:
+                excluded_rows = []
 
 
             # umit temporarily disabled the following line(s)
