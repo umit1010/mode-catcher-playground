@@ -263,8 +263,6 @@ def pickle_model(mode_name, active_rows):
         pickle.dump(
             excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL
         )
-        print("dumped")
-        print(excluded_rows)
 
     # umit temporarily disabled the following line(s)
     # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
