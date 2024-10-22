@@ -1067,9 +1067,9 @@ metrics_viewer_wrapper_div = html.Div(
 
 change_log_viewer_wrapper_div = html.Div(
     [
-        html.H3("Token Toggle Log", className="mb-4"),
+        html.H3("User Actions", className="mb-4"),
         html.P(" "),
-        html.Div("This view will be updated when the user toggles tokens.", className="lead", id="changes-div"),
+        html.Div(html.P("This view will be updated when the user toggles tokens.", className="lead"), id="changes-div"),
     ],
     className="border rounded p-4 my-4",
 )
@@ -1425,6 +1425,8 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
                         unstopped_words.discard(toggled_token)
                         excluded_tokens[row].remove(toggled_token)
 
+                        change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
+
                     else:
                         # if it was not in excluded token list, turn it into an excluded token
 
@@ -1432,7 +1434,8 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
                             excluded_tokens[row] = [toggled_token]
                         else:
                             excluded_tokens[row].append(toggled_token)
-                    change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'))
+
+                        change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
 
                 tokens_changed = True
