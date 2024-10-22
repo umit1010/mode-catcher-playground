@@ -56,7 +56,7 @@ server = app.server
 
 # ---- NLP ----
 
-def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True):
+def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = []):
 
     global tokens_changed
     global excluded_tokens
@@ -110,12 +110,14 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row = row.copy()
                 sent_row['line'] = i
                 sent_row['utterance'] += s.text
+                sent_row['in?'] = False if i in excluded_rows else True
                 data.append(sent_row)
         else:
         # here would I go through and make each token bold using markdown?
             i += 1
             row['line'] = i
             row["utterance"] = utterance.strip()
+            row['in?'] = False if i in excluded_rows else True
             data.append(row)
 
         # if i not in assigned_codes.keys():
@@ -228,7 +230,7 @@ def process_utterance(raw_text, tags = False, row=0):
 
     return buttons_for_text, token_treemap
 
-def pickle_model(mode_name):
+def pickle_model(mode_name, active_rows):
     global nlp
     global excluded_tokens
 
@@ -238,24 +240,34 @@ def pickle_model(mode_name):
     mode_folder = models_folder / mode_name
     mode_folder.mkdir(exist_ok=True)
 
+    # pickle the stop words changed by the user
     stopwords_file = mode_folder / "stopwords.pickle"
-    # umit temporarily disabled the following line(s)
-    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
 
     with open(stopwords_file, "wb") as swf:
         pickle.dump(
             (stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL
         )
 
+    # pickle the tokens that are excluded in individual lines by the user
+
     excluded_tokens_file = mode_folder / "excluded_tokens.pickle"
     with open(excluded_tokens_file, "wb") as etf:
         pickle.dump(
             excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL
         )
+
+    # pickle the rows that are completely excluded by the user
+    excluded_rows = [l['line'] for l in active_rows if not l['in?']]
+    excluded_rows_file = mode_folder / "excluded_rows.pickle"
+    with open(excluded_rows_file, "wb") as erf:
+        pickle.dump(
+            excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL
+        )
         print("dumped")
-        print(excluded_tokens)
+        print(excluded_rows)
 
     # umit temporarily disabled the following line(s)
+    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
     # with open(theoretical_codes_file, "wb") as tcf:
     #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -1199,16 +1211,17 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
     global excluded_tokens
     global active_data
 
+    excluded_rows = []
+
     if ctx.triggered_id == "parse-button":
         model_path = Path(f"./models/{str(name).strip()}/")
         default_stopwords_file = Path("./config") / "default_stopwords.pickle"
 
         # loading pickled files
         if model_path.is_dir():
+
+            # load the user-made changes to the stopwords
             stopwords_file = model_path / "stopwords.pickle"
-            
-            # umit temporarily disabled the following line(s)
-            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
             if stopwords_file.is_file():
                 with open(stopwords_file, "rb") as swf:
@@ -1217,16 +1230,24 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
                 with open(default_stopwords_file, "rb") as swf:
                     stopped_words = pickle.load(swf)
 
+            # load the tokens that were excluded on specific lines by the user
             excluded_tokens_file = model_path / "excluded_tokens.pickle"
-
 
             if excluded_tokens_file.is_file():
                 with open(excluded_tokens_file, "rb") as etf:
                     excluded_tokens = pickle.load(etf)
-                    print("loaded")
-                    print(excluded_tokens)
+
+            # load the lines that were completely excluded by the user
+
+            excluded_rows_file = model_path / "excluded_rows.pickle"
+
+            if excluded_rows_file.is_file():
+                with open(excluded_rows_file, "rb") as erf:
+                    excluded_rows = pickle.load(erf)
+
 
             # umit temporarily disabled the following line(s)
+            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
             # if theoretical_codes_file.is_file():
             #     with open(theoretical_codes_file, "rb") as tcf:
             #         saved_codes = pickle.load(tcf)
@@ -1255,7 +1276,10 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
 
         # here in possible changes
         parsed_data = parse_raw_text(
-            txt, timestamp=time, is_interviewer=interviewer, in_sentences = sentencize
+            txt, timestamp=time,
+            is_interviewer=interviewer,
+            in_sentences = sentencize,
+            excluded_rows = excluded_rows
         )
 
         column_defs = [
@@ -1466,7 +1490,7 @@ def knowledge_graph(
         has_generated = True
 
         # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(name)
+        pickle_model(name, active_row_data)
 
     if ctx.triggered_id == "graph-slider":
         tokens_changed = True
@@ -1494,7 +1518,9 @@ def knowledge_graph(
     #   dictionary format is {line_num: 'label'}
     #   I left the labels empty so that the tooltip is the active label
     #   Otherwise, all numbers get jumbled up
-    list_of_marks = sorted([m['line'] for m in active_row_data]) # to avoid table sorting to mess things up!
+    # I use sorted to make sure that the user sorting the table does not mess up the graph
+    # I also make sure not to include the lines that were turned off by the user
+    list_of_marks = sorted([l['line'] for l in active_row_data if l['in?']])
     slider_marks = {r: '' for r in list_of_marks}
 
     # display the latest utterance when generating a cumulative layout
