@@ -714,14 +714,22 @@ input_accordion = dbc.Accordion(
             [
                 dbc.Row(
                     dbc.Col(
-                        [dbc.Label("Input File:"), input_file_dropdown, html.P("")],
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Transcript File"),
+                            input_file_dropdown
+                        ]),
+                        class_name="mb-4",
                         width=10,
                         lg=6,
                     )
                 ),
                 dbc.Row(
                     dbc.Col(
-                        [dbc.Label("Mode name:"), mode_name_input, html.P("")],
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Mode name"),
+                            mode_name_input
+                        ]),
+                        class_name="mb-4",
                         width=10,
                         lg=6,
                     )
@@ -735,16 +743,15 @@ input_accordion = dbc.Accordion(
                     )
                 ),
                 dbc.Row([
-                    dbc.Col(sentencize_checkbox, width=3),
-                    dbc.Col(apply_tags_checkbox, width=4),
+                    dbc.Col(sentencize_checkbox, xl=2),
+                    dbc.Col(apply_tags_checkbox, xl=3),
                     dbc.Col(width=2),
                     dbc.Col(
                         dbc.InputGroup([
                             dbc.InputGroupText("Model"),
                             model_selection_dropdown
-                        ]
-                        ),
-                        width=3,
+                        ]),
+                        xl=3,
                         align="end",
                     )
                 ], class_name="mt-4", justify="between"
@@ -861,7 +868,9 @@ graph_type_row = dbc.Row(
             class_name="mt-3",
         ),
         dbc.Col(
-            dbc.Checkbox(label="DMC Mode", id="dmc-mode", value=False),
+            [
+                dbc.Checkbox(label="DMC Mode", id="dmc-mode", value=False, disabled=True)
+            ],
             xs=12,
             md=6,
             xl=2,
@@ -873,175 +882,127 @@ grap_layout_options_div = html.Div(
     [
         html.Br(),
         html.H4("Graph Construction", className="my-4"),
-        dbc.Row(
-            [
-                # dbc.Col(
-                #     [
-                #         html.Span("Min Tokens per Line: ", className="me-4"),
-                #         dcc.Input(
-                #             id="min-tokens",
-                #             type="number",
-                #             min=1,
-                #             max=20,
-                #             step=1,
-                #             value=4,
-                #             style={"margin-top": "-6px"},
-                #         ),
-                #     ],
-                #     md=12,
-                #     xl=3,
-                #     class_name="d-flex mt-3",
-                # ),
+        dbc.Row([
                 dbc.Col(
-                    [
-                        html.Span("Min Co-occurrence: ", className="me-4"),
-                        dcc.Input(
+                    dbc.InputGroup([
+                        dbc.InputGroupText("Min co-occurrence"),
+                        dbc.Input(
                             id="min-co",
                             type="number",
                             min=1,
                             max=10,
                             step=1,
-                            value=1,
-                            style={"margin-top": "-6px"},
+                            value=1
                         ),
-                    ],
-                    md=12,
+                    ]),
+                    lg=6,
                     xl=3,
-                    class_name="d-flex mt-3",
                 ),
                 dbc.Col(
-                    [
-                        html.Span("Min Co-occurrence for Strong Link: ", className="me-4"),
-                        dcc.Input(
+                    dbc.InputGroup([
+                        dbc.InputGroupText("Strong link min co-occurrence"),
+                        dbc.Input(
                             id="min-dmc-co",
                             type="number",
                             min=1,
                             max=10,
                             step=1,
                             value=2,
-                            style={"margin-top": "-6px"},
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
-                dbc.Col(
-                    [
-                        html.Span("DMC Window: ", className="me-4"),
-                        dcc.Input(
-                            id="dmc-window",
-                            type="number",
-                            min=1,
-                            max=11,
-                            step=2,
-                            value=3,
-                            style={"margin-top": "-6px"},
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
+                        )]
+                    ),
+                    lg=6,
+                    xl=4,
                 ),
             ],
-            class_name="my-4",
+            class_name="mt-4"
         ),
         html.Br(),
         html.H4("Visualization", className="my-4"),
-dbc.Row(
+        dbc.Row(
             [
                 dbc.Col(
-                    [
-                        html.Span("Layout: ", className="me-4"),
-                        dbc.Select(
-                            id="graph-layout",
-                            options=[
-                                {"label": "Spring", "value": "1"},
-                                {"label": "Random", "value": "2"},
-                                {"label": "Shell", "value": "3"},
-                                {"label": "Circle", "value": "4"},
-                            ],
-                            value="1",
-                            class_name="w-50",
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
-                dbc.Col(
-                    [
-                        html.Span("Spring iterations: ", className="me-4"),
-                        dcc.Input(
-                            id="layout-iterations",
-                            type="number",
-                            min=0,
-                            max=500,
-                            step=1,
-                            value=10,
-                            style={"margin-top": "-6px"},
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
-                dbc.Col(
-                    [
-                        html.Span("Spring k: ", className="me-4"),
-                        dcc.Input(
-                            id="layout-k",
-                            type="number",
-                            min=0,
-                            max=100,
-                            step=0.05,
-                            value=0.5,
-                            style={"margin-top": "-6px"},
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-                ),
-            ],
-            class_name="my-4",
-        ),
-        dbc.Row([
-            dbc.Col(
-                    [
-                        html.Span("Node Size: ", className="me-4"),
-                        dcc.Input(
+                    dbc.InputGroup([
+                        dbc.InputGroupText("Node Size"),
+                        dbc.Input(
                             id="node-size",
                             type="number",
                             min=1,
                             max=40,
                             step=1,
                             value=5,
-                            style={"margin-top": "-6px"},
-                            className="ms-4",
                         ),
+                    ]),
+                    lg=3,
+                    xl=2,
+                ),
+                dbc.Col([
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Layout"),
+                            dbc.Select(
+                                id="graph-layout",
+                                options=[
+                                    {"label": "Circle", "value": "4"},
+                                    {"label": "Random", "value": "2"},
+                                    {"label": "Shell", "value": "3"},
+                                    {"label": "Spring", "value": "1"},
+                                ],
+                                value="1",
+                            ),
+                        ]),
                     ],
-                    md=12,
+                    lg=5,
                     xl=3,
-                    class_name="d-flex mt-3",
-            ),
-            dbc.Col(
-                [
-                    dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True, class_name="me-4"),
-                ],
-                md=12,
-                xl=3,
-                class_name="d-flex mt-3",
-            ),
-            dbc.Col(
-                [
-                    dbc.Checkbox(label="Display weak links?", id="weak-links", value=True, class_name="me-4"),
-                ],
-                md=12,
-                xl=3,
-                class_name="d-flex mt-3",
-            ),
-        ]),
+                ),
+                dbc.Col(
+                    dbc.InputGroup([
+                        dbc.InputGroupText("Spring iterations"),
+                        dbc.Input(
+                            id="layout-iterations",
+                            type="number",
+                            min=0,
+                            max=500,
+                            step=1,
+                            value=10,
+                        ),
+                    ]),
+                    lg=4,
+                    xl=3,
+                ),
+                dbc.Col(
+                    dbc.InputGroup([
+                        dbc.InputGroupText("Spring k"),
+                        dbc.Input(
+                            id="layout-k",
+                            type="number",
+                            min=0,
+                            max=100,
+                            step=0.05,
+                            value=0.5,
+                        ),
+                    ]),
+                    lg=3,
+                    xl=2,
+                ),
+            ],
+            class_name="mt-4",
+        ),
+        dbc.Row([
+                dbc.Col(
+                    [
+                        dbc.Checkbox(label="Display weak links?", id="weak-links", value=True),
+                    ],
+                    lg=3,
+                    xl=2,
+                ),
+                dbc.Col(
+                    [
+                        dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True),
+                    ],
+                    lg=4,
+                    xl=3,
+                ),
+        ], class_name="mt-4",
+        ),
     ],
     className="my-4",
 )
@@ -1493,7 +1454,6 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, use_nlp_tags):
     Input("graph-slider", "value"),
     Input("include-codes", "value"),
     Input("dmc-mode", "value"),
-    Input("dmc-window", "value"),
     Input("min-co", "value"),
     Input("min-dmc-co", "value"),
     Input("all-labels", "value"),
@@ -1515,7 +1475,6 @@ def knowledge_graph(
     line,
     code_pref,
     dmc,
-    window,
     deg,
     dmc_deg,
     all_labels,
@@ -1590,13 +1549,13 @@ def knowledge_graph(
 
     end = end if end < len(active_data) else len(active_data)
 
-    if dmc:
-        r = int((window - 1) / 2)
-        start = max(0, line - r)
-        end = min(len(active_data), line + r)
-
-        if window == 1:
-            end = start + 1
+    # if dmc:
+    #     r = int((window - 1) / 2)
+    #     start = max(0, line - r)
+    #     end = min(len(active_data), line + r)
+    #
+    #     if window == 1:
+    #         end = start + 1
 
     graph, stats = display_knowledge_graph(
         start_line=start,
