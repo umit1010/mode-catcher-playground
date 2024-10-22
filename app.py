@@ -111,20 +111,12 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row['line'] = i
                 sent_row['utterance'] += s.text
                 data.append(sent_row)
-
-                # create an empty list of excluded tokens for each sentence
-                # I'll pickle & unpickle this list in the future for data presentation
-                excluded_tokens[i-1] = list()
         else:
         # here would I go through and make each token bold using markdown?
             i += 1
             row['line'] = i
             row["utterance"] = utterance.strip()
             data.append(row)
-
-            # create an empty list of excluded tokens for each line
-            # I'll pickle & unpickle this list in the future for data presentation
-            excluded_tokens[i-1] = list()
 
         # if i not in assigned_codes.keys():
         #     assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary
@@ -238,6 +230,7 @@ def process_utterance(raw_text, tags = False, row=0):
 
 def pickle_model(mode_name):
     global nlp
+    global excluded_tokens
 
     models_folder = Path("./models/")
     models_folder.mkdir(exist_ok=True)
@@ -253,6 +246,14 @@ def pickle_model(mode_name):
         pickle.dump(
             (stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL
         )
+
+    excluded_tokens_file = mode_folder / "excluded_tokens.pickle"
+    with open(excluded_tokens_file, "wb") as etf:
+        pickle.dump(
+            excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL
+        )
+        print("dumped")
+        print(excluded_tokens)
 
     # umit temporarily disabled the following line(s)
     # with open(theoretical_codes_file, "wb") as tcf:
@@ -347,6 +348,8 @@ def display_knowledge_graph(
     # UA > if any edits were made in the utterance table or line number, regenerate the graph
     #       otherwise use the same graph for visualization changes
     if tokens_changed:
+
+        # now let's generate the knowledge graph
         G = generate_knowledge_graph(
             start=start_line, end=end_line, sentence_boost=False, with_interviewer=show_interviewer,
         )
@@ -1193,6 +1196,7 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
     global nlp
     global stopped_words
     global unstopped_words
+    global excluded_tokens
     global active_data
 
     if ctx.triggered_id == "parse-button":
@@ -1210,8 +1214,17 @@ def utterance_table(parse_clicks, options, name, txt, sentencize):
                 with open(stopwords_file, "rb") as swf:
                     stopped_words, unstopped_words = pickle.load(swf)
             else:
-                with open(default_stopwords_file, "rb") as f:
-                    stopped_words = pickle.load(f)
+                with open(default_stopwords_file, "rb") as swf:
+                    stopped_words = pickle.load(swf)
+
+            excluded_tokens_file = model_path / "excluded_tokens.pickle"
+
+
+            if excluded_tokens_file.is_file():
+                with open(excluded_tokens_file, "rb") as etf:
+                    excluded_tokens = pickle.load(etf)
+                    print("loaded")
+                    print(excluded_tokens)
 
             # umit temporarily disabled the following line(s)
             # if theoretical_codes_file.is_file():
@@ -1412,7 +1425,7 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, apply_tags):
     Input("node-size", "value"),
     Input("inclusion-options", "value"), # this has been added
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
-    Input("data-table", "cellValueChanged"),
+    # Input("data-table", "cellValueChanged"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
     State('data-table', 'virtualRowData'),
@@ -1434,11 +1447,11 @@ def knowledge_graph(
     multiplier,
     options,
     changed_stop,
-    changed_include,
+    # changed_include,
     disabled,
     name,
     active_row_data,
-    
+    prevent_initial_call=True,
 ):
     global active_data
     global tokens_changed
@@ -1451,6 +1464,9 @@ def knowledge_graph(
 
     if ctx.triggered_id == "graph-button":
         has_generated = True
+
+        # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
+        pickle_model(name)
 
     if ctx.triggered_id == "graph-slider":
         tokens_changed = True
@@ -1466,9 +1482,6 @@ def knowledge_graph(
     
     if not has_generated:
         return empty_return
-
-    # first, let's pickle the user generated model
-    pickle_model(name)
 
     # prevents runtime errors if the user manually removed the values to enter a new one
     if deg is None: deg = 1
