@@ -28,8 +28,7 @@ heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
 # ---- PLATFORM ----
 
-nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later
-# nlp = spacy.load("en_core_web_sm", exclude=["ner"])
+nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
 G = nx.Graph()
 
@@ -78,8 +77,6 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
         for line in txt.splitlines()
         if len(line.strip()) > 0 and line.count(":") > 2
     ]
-
-    print(input_lines)
 
     # to parse the text line by line
     re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
@@ -951,43 +948,7 @@ grap_layout_options_div = html.Div(
         ),
         html.Br(),
         html.H4("Visualization", className="my-4"),
-        dbc.Row([
-            dbc.Col(
-                    [
-                        html.Span("Node Size: ", className="me-4"),
-                        dcc.Input(
-                            id="node-size",
-                            type="number",
-                            min=1,
-                            max=40,
-                            step=1,
-                            value=5,
-                            style={"margin-top": "-6px"},
-                            className="ms-4",
-                        ),
-                    ],
-                    md=12,
-                    xl=3,
-                    class_name="d-flex mt-3",
-            ),
-            dbc.Col(
-                [
-                    dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True, class_name="me-4"),
-                ],
-                md=12,
-                xl=3,
-                class_name="d-flex mt-3",
-            ),
-            dbc.Col(
-                [
-                    dbc.Checkbox(label="Display weak links?", id="weak-links", value=True, class_name="me-4"),
-                ],
-                md=12,
-                xl=3,
-                class_name="d-flex mt-3",
-            ),
-        ]),
-        dbc.Row(
+dbc.Row(
             [
                 dbc.Col(
                     [
@@ -1045,6 +1006,42 @@ grap_layout_options_div = html.Div(
             ],
             class_name="my-4",
         ),
+        dbc.Row([
+            dbc.Col(
+                    [
+                        html.Span("Node Size: ", className="me-4"),
+                        dcc.Input(
+                            id="node-size",
+                            type="number",
+                            min=1,
+                            max=40,
+                            step=1,
+                            value=5,
+                            style={"margin-top": "-6px"},
+                            className="ms-4",
+                        ),
+                    ],
+                    md=12,
+                    xl=3,
+                    class_name="d-flex mt-3",
+            ),
+            dbc.Col(
+                [
+                    dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True, class_name="me-4"),
+                ],
+                md=12,
+                xl=3,
+                class_name="d-flex mt-3",
+            ),
+            dbc.Col(
+                [
+                    dbc.Checkbox(label="Display weak links?", id="weak-links", value=True, class_name="me-4"),
+                ],
+                md=12,
+                xl=3,
+                class_name="d-flex mt-3",
+            ),
+        ]),
     ],
     className="my-4",
 )

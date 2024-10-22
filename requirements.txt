@@ -20,8 +20,6 @@ dash-html-components==2.0.0
 dash-table==5.0.0
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 en-core-web-md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
-# en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl # too large for heroku
-
 Flask==3.0.3
 gunicorn==23.0.0
 h2==4.1.0
@@ -41,7 +39,6 @@ networkx==3.3
 numpy==1.26.4
 packaging==24.1
 pandas==2.2.2
-pip==24.2
 plotly==5.23.0
 preshed==3.0.9
 pycparser==2.22
