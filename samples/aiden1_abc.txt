@@ -12,13 +12,13 @@
 
 [00:01:31] Interviewer: Yeah, that's perfect. Like you will just give it a try. You will think freely and then we will implement your ideas and then see where it takes us, right? Okay, perfect. Let me share my screen with you.
 
-[00:01:47] Participant Aidan: Let me get some ~thing~ for my throat. It's getting scratchy again.
+[00:01:47] Participant Aidan: Let me get some thing for my throat. It's getting scratchy again.
 
 [00:01:56] Interviewer: Yes, take your time, please. Perfect. So I'm looking at the other screen, so I'm going to be looking up a little bit. I hope it doesn't disorient you too much. So I just have this empty NetLogo model. There's nothing in the model, basically. I just created the bare bones version, put it together, and then it's ready for you to start adding your ideas. So what would you like to start with? What would you like to add to your model?
 
 [00:02:39] Participant Aidan: Well, I would like to add, first of all, a person, the self of a person.
 
-[00:02:53] Interviewer: Mm-hmm.
+[00:02:53] Interviewer: Mm hmm.
 
 [00:02:54] Participant Aidan: So it could be anything.
 
@@ -62,7 +62,7 @@
 
 [00:05:59] Participant Aidan: Perfect. 
 
-[00:06:00] Interviewer: Uh-huh. And it's going to be again. What's next? 
+[00:06:00] Interviewer: Uh huh. And it's going to be again. What's next? 
 
 [00:06:07] Participant Aidan: Now. A house, the person's house.
 
@@ -140,7 +140,7 @@
 
 [00:12:57] Interviewer: So we can do it that way. So, I will define, for example, health. The bar may take more time for me to add, but I will add a little label at the bottom that will say that.
 
-[00:13:11] Participant Aidan: Perfect. Maybe the health could be-.
+[00:13:11] Participant Aidan: Perfect. Maybe the health could be .
 
 [00:13:21] Interviewer: Yes, something like that. It's kind of hard to read, but you know. We will fix the visualization later on. We'll fix the font size as well. Okay, that should be this. Okay, so sorry, I interrupted you.
 
@@ -158,7 +158,7 @@
 
 [00:15:38] Participant Aidan: Yeah, maybe they like fun. And we see the results after a week, how overall happy the person would be.
 
-[00:15:48] Interviewer: Yeah, let's do that. So I will do this. Let me show you the visualization that I imagined from what you described, and then let's see if it is what you meant. So we assume that this will happen on a daily basis. I can make it so that 240 ticks a day, for example, to spread out the interaction so that we don't have to slow down the model. So, and if the person is getting plus three, plus five for each space, there should be something like that. _I will define this. _~_Nicholas Matsakis_~_ _Oh. _So currently I only implemented the happiness that comes from the house to show you how it will work. _So technically every five hours, not every five hours, sorry, like five times a day on equal intervals, the house will generate one happiness and send to this person. _Oh, sorry, let me make it smaller a little bit. Maybe like two, I don't know for now. Okay, so it will just keep sending happiness. What, why did the help me? Oh, okay. Sorry, I didn't update the label. Let's see. _So this will send out, that will increase the person's health. Is this what you imagined?
+[00:15:48] Interviewer: Yeah, let's do that. So I will do this. Let me show you the visualization that I imagined from what you described, and then let's see if it is what you meant. So we assume that this will happen on a daily basis. I can make it so that 240 ticks a day, for example, to spread out the interaction so that we don't have to slow down the model. So, and if the person is getting plus three, plus five for each space, there should be something like that. I will define this. Nicholas Matsakis Oh. So currently I only implemented the happiness that comes from the house to show you how it will work. So technically every five hours, not every five hours, sorry, like five times a day on equal intervals, the house will generate one happiness and send to this person. Oh, sorry, let me make it smaller a little bit. Maybe like two, I don't know for now. Okay, so it will just keep sending happiness. What, why did the help me? Oh, okay. Sorry, I didn't update the label. Let's see. So this will send out, that will increase the person's health. Is this what you imagined?
 
 [00:18:29] Participant Aidan: Yeah, this looks nice.
 
@@ -174,13 +174,13 @@
 
 [00:19:28] Participant Aidan: Yes, it could be zero or anywhere to minus three or plus three.
 
-[00:19:37] Interviewer: Okay, let's do that. Okay. Let me try to write this in this. See if this will work. _Happiness, naturalness, and unhappiness. All right, there we go. Let's see if this works. Oh, that works, okay. Okay, now I have to write it. This will be a slightly long piece of code for a simple thing, but sometimes it's like that, you know, like I have to like, this will be heavy._ Yes. Complicated. 
+[00:19:37] Interviewer: Okay, let's do that. Okay. Let me try to write this in this. See if this will work. Happiness, naturalness, and unhappiness. All right, there we go. Let's see if this works. Oh, that works, okay. Okay, now I have to write it. This will be a slightly long piece of code for a simple thing, but sometimes it's like that, you know, like I have to like, this will be heavy. Yes. Complicated. 
 
-[00:21:13] Participant Aidan: ~I'm feeling sick too. Damn. I'm going to go to our city. Look at this one. ~
+[00:21:13] Participant Aidan: I'm feeling sick too. Damn. I'm going to go to our city. Look at this one. 
 
-[00:21:13] Interviewer: _Let's see. What's next though? It was sleeping the whole time. There we go. Naturalness. That's just not gonna do. Okay, let me see if the workflow worked the way we hoped it would._ So it's gonna send like, so the house will always send happiness to this introvert person. The work will sometimes send happiness, sometimes send unhappiness, as you see. Sometimes just neutralness. And the final thing is to implement the social. 
+[00:21:13] Interviewer: Let's see. What's next though? It was sleeping the whole time. There we go. Naturalness. That's just not gonna do. Okay, let me see if the workflow worked the way we hoped it would. So it's gonna send like, so the house will always send happiness to this introvert person. The work will sometimes send happiness, sometimes send unhappiness, as you see. Sometimes just neutralness. And the final thing is to implement the social. 
 
-[00:22:08] Participant Aidan: Mm-hmm. 
+[00:22:08] Participant Aidan: Mm hmm. 
 
 [00:22:18] Interviewer: Yes. And then you said the social will be minus three to minus seven. So. 
 
@@ -190,13 +190,13 @@
 
 [00:22:55] Participant Aidan: No, that's better. 
 
-[00:22:55] Interviewer: So it's going to be. _So how many did it send?_ Oh, it sent three of them. It sent four of them. That's too much. Oh, because I got, okay.
+[00:22:55] Interviewer: So it's going to be. So how many did it send? Oh, it sent three of them. It sent four of them. That's too much. Oh, because I got, okay.
 
 [00:23:19] Participant Aidan: Oh, because it's three people.
 
-[00:23:22] Interviewer: These three people instead of one people, I already forgot what I did, okay. _So it's like one, two, or three. One, two, three, or six. Okay, so this should be done. This will then send correctly. We're waiting. Oh, that unhappy already reached there._ So now we have like, and I did start the person from 10 happiness to begin with, 10 health, sorry, mental health. Did you want to keep it at 10 initially, or did you want to make it zero? Did you want to make it the baseline? It's almost like starting mental health.
+[00:23:22] Interviewer: These three people instead of one people, I already forgot what I did, okay. So it's like one, two, or three. One, two, three, or six. Okay, so this should be done. This will then send correctly. We're waiting. Oh, that unhappy already reached there. So now we have like, and I did start the person from 10 happiness to begin with, 10 health, sorry, mental health. Did you want to keep it at 10 initially, or did you want to make it zero? Did you want to make it the baseline? It's almost like starting mental health.
 
-[00:24:19] Participant Aidan: Um, i think maybe we can lower it, uh, to like five. ~Okay~ so, make it a little bit more neutral. 
+[00:24:19] Participant Aidan: Um, i think maybe we can lower it, uh, to like five. Okay so, make it a little bit more neutral. 
 
 [00:24:32] Interviewer: The person starts with plus five mental health and then these uh it starts interacting like giving these happiness and unhappiness or mutual interactions with the uh with the social life, home and work. Work is sending pretty much three times a day. It's sending either positive, neutral or negative. So it gives a range from minus three negative to plus three positive and all of them in between are equal likelihood. House is always sending five times happiness during the day. Yes. And then the social life sends anywhere between minus three to minus seven unhappiness, minus six unhappiness to this person.
 
@@ -206,25 +206,25 @@
 
 [00:25:47] Participant Aidan: I think based on our lives, there is also a medical side to it.
 
-[00:25:59] Interviewer: Yeah. ~Sorry, your microphone was turned off.~
+[00:25:59] Interviewer: Yeah. Sorry, your microphone was turned off.
 
-[00:26:01] Participant Aidan: ~ Hello, did I lose you?~
+[00:26:01] Participant Aidan:  Hello, did I lose you?
 
-[00:26:01] Interviewer: ~ Yeah.~
+[00:26:01] Interviewer:  Yeah.
 
-[00:26:01] Participant Aidan: ~ I just got a phone call.~
+[00:26:01] Participant Aidan:  I just got a phone call.
 
-[00:26:01] Interviewer: ~ Oh, I see.~
+[00:26:01] Interviewer:  Oh, I see.
 
-[00:26:01] Participant Aidan: ~ So I have to turn that off.~
+[00:26:01] Participant Aidan:  So I have to turn that off.
 
 [00:26:01] Interviewer: You were talking about the medical aspect of things.
 
 [00:26:05] Participant Aidan: Maybe we could add medical on the right of the person. And it would generate some negative stuff.
 
-[00:26:20] Interviewer: _And I think there was some shapes that would be helpful in your thinking._ I think there was the ambulance sign, ambulance shape, if you like that one. I think there is also, you can also just do like a building institution or something like that. I don't know if there was a hospital sign. There's no hospital, but one of these house shapes. There's no medical. Or you can just simply use, let's say like exclamation with the triangle and stuff like that as well. What would you like the shape of the medicals to be?
+[00:26:20] Interviewer: And I think there was some shapes that would be helpful in your thinking. I think there was the ambulance sign, ambulance shape, if you like that one. I think there is also, you can also just do like a building institution or something like that. I don't know if there was a hospital sign. There's no hospital, but one of these house shapes. There's no medical. Or you can just simply use, let's say like exclamation with the triangle and stuff like that as well. What would you like the shape of the medicals to be?
 
-[00:27:15] Participant Aidan: Maybe---.
+[00:27:15] Participant Aidan: Maybe   .
 
 [00:27:18] Interviewer: There's also a doctor here.
 
@@ -246,7 +246,7 @@
 
 [00:28:32] Participant Aidan: Yeah. 
 
-[00:28:32] Interviewer: Okay, perfect. _So let me... Okay, there you go. Okay, so this is much better. People, people. So this should work. So once a day, the doctor, the medical will send anywhere from zero to minus three. _There you go. Oh, they really put it down for her. So what do you think?
+[00:28:32] Interviewer: Okay, perfect. So let me... Okay, there you go. Okay, so this is much better. People, people. So this should work. So once a day, the doctor, the medical will send anywhere from zero to minus three. There you go. Oh, they really put it down for her. So what do you think?
 
 [00:29:47] Participant Aidan: It looks pretty good.
 
@@ -282,11 +282,11 @@
 
 [00:32:10] Participant Aidan: Red is good.
 
-[00:32:12] Interviewer: Okay. _So, these, on four scenes will happen every seven days._ And then they will either send 10 plus, 10 happiness, 10 unhappiness or nothing, or they will always be either 10 happiness or 10 unhappiness.
+[00:32:12] Interviewer: Okay. So, these, on four scenes will happen every seven days. And then they will either send 10 plus, 10 happiness, 10 unhappiness or nothing, or they will always be either 10 happiness or 10 unhappiness.
 
 [00:32:42] Participant Aidan: Zero would be good too.
 
-[00:32:44] Interviewer: OK. So I have to stop in like three minutes after finishing this. _Yeah, let me write this little bit of code too. So that's gonna be unhappiness. It's going to be... Oh, sorry. It's just going to be... Oh, that's going to be neutral, sorry. Should we call rain? Should we just patch happiness? There we go. And I also want to do that. And that's good. And then edge. I like just copying and pasting to speed things up._ There you go. Okay, let me see if this works. Okay, yes, so this is gonna happen. Perfect, what do you think?
+[00:32:44] Interviewer: OK. So I have to stop in like three minutes after finishing this. Yeah, let me write this little bit of code too. So that's gonna be unhappiness. It's going to be... Oh, sorry. It's just going to be... Oh, that's going to be neutral, sorry. Should we call rain? Should we just patch happiness? There we go. And I also want to do that. And that's good. And then edge. I like just copying and pasting to speed things up. There you go. Okay, let me see if this works. Okay, yes, so this is gonna happen. Perfect, what do you think?
 
 [00:35:15] Participant Aidan: This is nice.
 
@@ -298,17 +298,17 @@
 
 [00:35:51] Participant Aidan: And we can change different people, different selves.
 
-[00:35:54] Interviewer: ~Yes, we can definitely change all of those things. When would you like to meet next?~
+[00:35:54] Interviewer: Yes, we can definitely change all of those things. When would you like to meet next?
 
-[00:35:54] Participant Aidan: ~I think this Friday may work. Okay.~
+[00:35:54] Participant Aidan: I think this Friday may work. Okay.
 
-[00:35:54] Interviewer: ~Yeah, of course.~
+[00:35:54] Interviewer: Yeah, of course.
 
-[00:35:54] Participant Aidan: ~What time Friday? I think like two, three o'clock, something like that. I think on Friday morning, I was able to I'll confirm with you regarding that. Okay.~
+[00:35:54] Participant Aidan: What time Friday? I think like two, three o'clock, something like that. I think on Friday morning, I was able to I'll confirm with you regarding that. Okay.
 
-[00:35:54] Interviewer: ~Sounds good. I will put us as three o'clock right now, and then I will send a follow-up too.~
+[00:35:54] Interviewer: Sounds good. I will put us as three o'clock right now, and then I will send a follow up too.
 
-[00:35:54] Participant Aidan: ~Awesome.~
+[00:35:54] Participant Aidan: Awesome.
 
-[00:35:54] Interviewer: ~Let me stop the recording.~
+[00:35:54] Interviewer: Let me stop the recording.
 

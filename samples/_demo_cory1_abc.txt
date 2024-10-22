@@ -1,91 +1,91 @@
-[00:00:00] Participant_Cory: And then the last one was fishing. So my deal was, like, let's say they're like five people, that fish, let's say, every other day, or let's, let's just say on a weekend, and there's like a certain amount of fish in a pond. Then, um, you know, you think about the, the ecosystem of the fish and how they populate, and then the amount of times a person goes fish, those people go fishing, then that will kind of be like an illustration of how, of how the fish are decreasing. You're increasing there because of the people who are fishing. So it kind of shows the, you know, what it's like when people are actually fishing
+[00:00:00] Participant Cory: And then the last one was fishing. So my deal was, like, let's say they're like five people, that fish, let's say, every other day, or let's, let's just say on a weekend, and there's like a certain amount of fish in a pond. Then, um, you know, you think about the, the ecosystem of the fish and how they populate, and then the amount of times a person goes fish, those people go fishing, then that will kind of be like an illustration of how, of how the fish are decreasing. You're increasing there because of the people who are fishing. So it kind of shows the, you know, what it's like when people are actually fishing
 [00:00:00] Interviewer: It's like the impact of human activity on the environment. I really love these four ideas. I think all of them are very suitable for our work. So I think you should pick the one that is most interesting to you.
-[00:00:00] Participant_Cory: I would say, I would say, I think the fishing one, that is more interesting, because it's easier to, for me, to think of on a scale. Now just imagine a pond and people fishing there.
+[00:00:00] Participant Cory: I would say, I would say, I think the fishing one, that is more interesting, because it's easier to, for me, to think of on a scale. Now just imagine a pond and people fishing there.
 [00:00:23] Interviewer: Let's do that. Let me share my screen with you. One second. So now the next part is you will literally just describe, you know, you just said, you are imagining a pond, right? You will literally describe me what you are imagining. And then I will build it for you. And let me stop my video so that I don't distract you with my videos. And we are recording. So let's start creating your model. Tell me, you told me that you will want a pond in the model. Let's create one. Where does the pond go? Like to the center? To the side?
-[00:01:02] Participant_Cory: I would say in the center.
+[00:01:02] Participant Cory: I would say in the center.
 [00:01:05] Interviewer: Okay, is it like a circle pond?
-[00:01:08] Participant_Cory: Probably, like, an irregular circle.
+[00:01:08] Participant Cory: Probably, like, an irregular circle.
 [00:01:16] Interviewer: So, I will create. So and the process will be, you will give me an idea, I will create the first version of it. If the first version look good, seems good, it looks good enough or has minor changes, we will implement it. But if the first version isn't good enough, but it will be more complicated for me to call that the moment, I will take a note and I will say, I will fix this in between but we will move forward, because I don't want to slow you down while you are sharing your ideas. So I will tell you. Let me show you what I mean by that. Like, example I assume the pond will be blue. But if it will be a different color, just let me know. Sorry.
-[00:01:56] Participant_Cory: Yeah, to blue.
+[00:01:56] Participant Cory: Yeah, to blue.
 [00:01:58] Interviewer: So this is, for example, like, not like a pond. But closer, right? Let me actually make it so that it's a bit more granular. So there's a pond in the center and somewhat of a pond, but is it too big? Too small?
-[00:02:19] Participant_Cory: I would imagine it'll, just a little bigger. Maybe twice as big as that is. Yeah. Twice as big.
+[00:02:19] Participant Cory: I would imagine it'll, just a little bigger. Maybe twice as big as that is. Yeah. Twice as big.
 [00:02:30] Interviewer: How about?
-[00:02:30] Participant_Cory: Yeah, that's good.
+[00:02:30] Participant Cory: Yeah, that's good.
 [00:02:31] Interviewer: And let's make it a little bit irregular. As you said, let's see if this will work. Well, let's make it a bit more irregular. How about now? Is it better?
-[00:03:00] Participant_Cory: Yeah, that's, that's fine.
+[00:03:00] Participant Cory: Yeah, that's, that's fine.
 [00:03:02] Interviewer: Okay. But if you wanted a bit more, like, different shapes, we can take a note and I can make it exactly that shape. What's next?
-[00:03:12] Participant_Cory: Um, there are fish in the pond.
+[00:03:12] Participant Cory: Um, there are fish in the pond.
 [00:03:17] Interviewer: Okay, let's add some fish. I will define.
-[00:03:24] Participant_Cory: I'll say, like, I don't know, 20 fish.
+[00:03:24] Participant Cory: I'll say, like, I don't know, 20 fish.
 [00:03:28] Interviewer: So I do remember, we have a fish shape. But let me, let me see if we do have it, and you can also, you know, you don't have to make them look like the fish shape. So there is this fish shape, if it works for you. But you can make them any shape. You can draw a shape, if the fish shape doesn't work for you. And we also have some additional shapes in the library and see if there are other fish shapes too. Surely, there must be some other. So there is this second fish. There's this third fish. So there are three fish shapes. These two. So there's this fish shape, the smaller, and then there's this fish shape, even more colored fish, colorful fish. There's just plain fish. Which, which color shape will be better for you?
-[00:04:40] Participant_Cory: Can you add two different fish?.
+[00:04:40] Participant Cory: Can you add two different fish?.
 [00:04:40] Interviewer: Yeah, of course.
-[00:04:40] Participant_Cory: So maybe like out of the 20, I will say, like, 18 of them be the first type of fish. Yeah. Then the rest of them be fish two.
-[00:04:57] Interviewer: Okay, that--
-[00:04:58] Participant_Cory: Just to add that little diversity, I guess.
+[00:04:40] Participant Cory: So maybe like out of the 20, I will say, like, 18 of them be the first type of fish. Yeah. Then the rest of them be fish two.
+[00:04:57] Interviewer: Okay, that.
+[00:04:58] Participant Cory: Just to add that little diversity, I guess.
 [00:05:10] Interviewer: Make sure that two fishes are not in the same spot. Are they going to be random colors or just a specific color?
-[00:05:22] Participant_Cory: Umm, random colors.
+[00:05:22] Participant Cory: Umm, random colors.
 [00:05:24] Interviewer: Okay, perfect. So let's see how it looks. Okay, sorry, I got the wrong call. So, do they look too small? Do they look good? I can also zoom in.
-[00:06:02] Participant_Cory: Maybe I should have made the pond a little bigger, maybe.
+[00:06:02] Participant Cory: Maybe I should have made the pond a little bigger, maybe.
 [00:06:06] Interviewer: Sure, let's make it, like, even bigger. How about now?
-[00:06:12] Participant_Cory: Yeah, yeah, that's better.
+[00:06:12] Participant Cory: Yeah, yeah, that's better.
 [00:06:14] Interviewer: Do you want this fish to be this small or large?
-[00:06:20] Participant_Cory: Yeah, probably, yeah, just a little bigger, the fish, a little bigger too.
+[00:06:20] Participant Cory: Yeah, probably, yeah, just a little bigger, the fish, a little bigger too.
 [00:06:29] Interviewer: Is this better or a bit bigger?
-[00:06:34] Participant_Cory: Yes, that's better.
+[00:06:34] Participant Cory: Yes, that's better.
 [00:06:36] Interviewer: Okay. And, oh, I know how to grow this, sorry. I can't really, like, make it larger for you to be able to see easier. Also, what's next? We have a pond, we have fish. What do we add more?
-[00:06:52] Participant_Cory: And then, maybe, like, five fishermen who just fish every weekend.
-[00:07:05] Interviewer: So, in terms of the shape for the fishermen, we can use the simple human person shape that-- We can also, we also have a bunch of other people shapes. So we have person, business, construction, doctor, former graduate, and we can also edit these, you know, like, we can make it take the lumberjack and remove the axe, for example. Service, soldier, student, or just a simple person.
-[00:07:36] Participant_Cory: Um, maybe, if it's possible, if one of them could be, like, holding something, you know, to make it look like there's, like, a fisher line going down.
+[00:06:52] Participant Cory: And then, maybe, like, five fishermen who just fish every weekend.
+[00:07:05] Interviewer: So, in terms of the shape for the fishermen, we can use the simple human person shape that. We can also, we also have a bunch of other people shapes. So we have person, business, construction, doctor, former graduate, and we can also edit these, you know, like, we can make it take the lumberjack and remove the axe, for example. Service, soldier, student, or just a simple person.
+[00:07:36] Participant Cory: Um, maybe, if it's possible, if one of them could be, like, holding something, you know, to make it look like there's, like, a fisher line going down.
 [00:07:47] Interviewer: Just make it better. So I will remove this these, like, little things from the farmer, and I will take the head out as well. Okay. With this to... Actually, let's use the simple one, and now let's put, like, a fish at fishing line, is that right?
-[00:08:12] Participant_Cory: Yes. Even like a fishing pole, with a line coming from it.
-[00:08:21] Interviewer: Let's do it. So, something like this. This is the fishing pole and line of, sorry. Oh, okay. Like something like this, right? Like, I mean, I'm gonna do it very, like, it's not going to be great. But just to represent an in-between I can edit that, and then let's put another circle to represent, I don't know, the terms, but does it good?
-[00:09:11] Participant_Cory: Yeah, that looks, yeah, that's, that's pretty close.
+[00:08:12] Participant Cory: Yes. Even like a fishing pole, with a line coming from it.
+[00:08:21] Interviewer: Let's do it. So, something like this. This is the fishing pole and line of, sorry. Oh, okay. Like something like this, right? Like, I mean, I'm gonna do it very, like, it's not going to be great. But just to represent an in between I can edit that, and then let's put another circle to represent, I don't know, the terms, but does it good?
+[00:09:11] Participant Cory: Yeah, that looks, yeah, that's, that's pretty close.
 [00:09:16] Interviewer: Okay, so, I will, you said five people by a fisherman?
-[00:09:22] Participant_Cory: Yes, probably, like, surrounding the pond.
+[00:09:22] Participant Cory: Yes, probably, like, surrounding the pond.
 [00:09:31] Interviewer: This is going to be interesting. So they will move to one of these dark patches. But they, did you also want to change the color of the normal ground? We left it as black ,but did you want to change that too?
-[00:09:50] Participant_Cory: Um, I would, I guess it could be, it could be green.
+[00:09:50] Participant Cory: Um, I would, I guess it could be, it could be green.
 [00:09:53] Interviewer: Okay. Does this look better?
-[00:10:11] Participant_Cory: Yeah, that, that's fine.
-[00:10:13] Interviewer: Okay, perfect. And then, they will move to green patch. That is, what's that blue patch? Let's see if this works. It gives inter-- I didn't change the shape of course. I think they will be too small. Yeah, they are here, but they're very small. How large should I make them?
-[00:11:01] Participant_Cory: It's bigger than the fish, I guess?
+[00:10:11] Participant Cory: Yeah, that, that's fine.
+[00:10:13] Interviewer: Okay, perfect. And then, they will move to green patch. That is, what's that blue patch? Let's see if this works. It gives inter. I didn't change the shape of course. I think they will be too small. Yeah, they are here, but they're very small. How large should I make them?
+[00:11:01] Participant Cory: It's bigger than the fish, I guess?
 [00:11:05] Interviewer: Is this good?
-[00:11:05] Participant_Cory: Yeah. Yeah, that's good.
+[00:11:05] Participant Cory: Yeah. Yeah, that's good.
 [00:11:08] Interviewer: So, each time they are created, they will be placed in random locations. Do you like it that way? Or do you want to...?
-[00:11:15] Participant_Cory: Yeah, yeah, that is random. Yeah, I like it like that.
+[00:11:15] Participant Cory: Yeah, yeah, that is random. Yeah, I like it like that.
 [00:11:19] Interviewer: Okay. And do you like the colors as random, too? Or do you want to give them a specific color?
-[00:11:27] Participant_Cory: I like the random colors. Yeah.
+[00:11:27] Participant Cory: I like the random colors. Yeah.
 [00:11:30] Interviewer: Perfect. So this looks good. We have the fishermen. Sometimes they will be just like, you know, like, by the virtue of random color, they will be green and blend in with the thing. But most of the time, it's easy enough to see. Perfect. So what is next? We have five fisherman, some fish. What next do we have?
-[00:11:56] Participant_Cory: I guess, so, once the, let me think... It's like, what, like, they would be every now then, you know, my head, every now and then, they would, one would catch a fish, one or two would catch a fish.
-[00:12:20] Interviewer: As the fish-- Do the fish move?
-[00:12:23] Participant_Cory: Yes, they continue to move.
+[00:11:56] Participant Cory: I guess, so, once the, let me think... It's like, what, like, they would be every now then, you know, my head, every now and then, they would, one would catch a fish, one or two would catch a fish.
+[00:12:20] Interviewer: As the fish. Do the fish move?
+[00:12:23] Participant Cory: Yes, they continue to move.
 [00:12:25] Interviewer: Let's make them move. And how do they move? Just randomly?
-[00:12:39] Participant_Cory: Yeah, they move randomly.
-[00:12:51] Interviewer: Let's see if the movement looks good to you. You know, sometimes I may program something. What's to be expected how, fishes... Sometimes, I make these basic typos. Okay, so let's see. Do they move--no, sorry. I will fix this. How did they move? Do they move like fish? They move, do you like the way they move?
-[00:13:18] Participant_Cory: Moving kind of antsy. Is it possible for them to move more easily or smoothly?
+[00:12:39] Participant Cory: Yeah, they move randomly.
+[00:12:51] Interviewer: Let's see if the movement looks good to you. You know, sometimes I may program something. What's to be expected how, fishes... Sometimes, I make these basic typos. Okay, so let's see. Do they move? No, sorry. I will fix this. How did they move? Do they move like fish? They move, do you like the way they move?
+[00:13:18] Participant Cory: Moving kind of antsy. Is it possible for them to move more easily or smoothly?
 [00:13:27] Interviewer: Let's see how this works. Is it better?
-[00:13:34] Participant_Cory: Yeah, that's, that's better.
+[00:13:34] Participant Cory: Yeah, that's, that's better.
 [00:13:36] Interviewer: Okay. Yeah, we can make them even more straightforward. They are now going to be moving. Okay. So what else do fish do? Do you want to add more behavior for the fish?
-[00:14:08] Participant_Cory: Um, I guess, like they, I don't know if it'll be too much attention to detail, but I know like, sometimes, they randomly come to a stop. 
+[00:14:08] Participant Cory: Um, I guess, like they, I don't know if it'll be too much attention to detail, but I know like, sometimes, they randomly come to a stop. 
 [00:14:20] Interviewer: The fish? 
-[00:14:20] Participant_Cory: Especially like, yeah, just, I guess, like, when they pad-- or when they see. Because they're all fishing. So they probably notice the bait. Some of them may stop, and some of them may not.
+[00:14:20] Participant Cory: Especially like, yeah, just, I guess, like, when they pad, or when they see. Because they're all fishing. So they probably notice the bait. Some of them may stop, and some of them may not.
 [00:14:33] Interviewer: Okay, some of them may stop and turn back for the bait or just stop there?
-[00:14:38] Participant_Cory: They stop and turn back from the bait. 
+[00:14:38] Participant Cory: They stop and turn back from the bait. 
 [00:14:40] Interviewer: Okay. Let's see. 
-[00:14:43] Participant_Cory: And then some of them would actually stop and get caught.
+[00:14:43] Participant Cory: And then some of them would actually stop and get caught.
 [00:14:48] Interviewer: Okay, I see. So let's do that then. And then, when they get caught today, do they just disappear?
-[00:14:53] Participant_Cory: Ah, yes. 
+[00:14:53] Participant Cory: Ah, yes. 
 [00:14:55] Interviewer: Okay, I will put this monitor here that will count the number of fish for us, the model, so we can see if they ever disappeared, if it's hard to see with the model. So what will happen is, they will go forward. Every step that we take, and then, if there's a, if there's a human nearby, basically, if there's a bait. And then they will see ahead of them, right, like they will not see. They will either stop, or so once, once they stop, do they stop forever? Or do they wait a little bit and then back? Or do they just, they don't?
-[00:15:51] Participant_Cory: Yeah, they would have imagined they would stick on. And if they're, you know, they've gotten, basically, to show that they've gotten caught.
-[00:16:00] Interviewer: And what is the likelihood of a fish getting out? Is it 50-50?? Is it more likely less likely 
-[00:16:13] Participant_Cory: I would say probablility of them actually getting caught I'll say 40 chance out of a 100 
+[00:15:51] Participant Cory: Yeah, they would have imagined they would stick on. And if they're, you know, they've gotten, basically, to show that they've gotten caught.
+[00:16:00] Interviewer: And what is the likelihood of a fish getting out? Is it 50 50?? Is it more likely less likely
+[00:16:13] Participant Cory: I would say probablility of them actually getting caught I'll say 40 chance out of a 100 
 [00:16:29] Interviewer: 40 of the time they will be getting caught and 60 of the time they will just return yes back down and then turn around and leave Let's see if it works If it works Okay So the return so they they are not going Not one of them Some of them got caught Yeah now they are kind of avoiding and sometimes they're just falling in Does it look like the way you wanted it to work 
-[00:17:06] Participant_Cory: Um I think I missed one thing I want to add to so like, I want this to be more, like, to show, maybe, if this possible, some of the fish could actually be populating. So, so there are fish coming in, you know, into the pond as well. So, yeah, and I don't know exactly how that would, I guess some of the colors of fish could be the ones that, that could be doing the populating.
+[00:17:06] Participant Cory: Um I think I missed one thing I want to add to so like, I want this to be more, like, to show, maybe, if this possible, some of the fish could actually be populating. So, so there are fish coming in, you know, into the pond as well. So, yeah, and I don't know exactly how that would, I guess some of the colors of fish could be the ones that, that could be doing the populating.
 [00:17:43] Interviewer: Mm hmm. So, for example, like, would you want each fish to have a random chance of making a baby, or would you, you know, sprouting another fish? Would you like? Okay! So for example, what will be the chance of? Let's do every fish the populating again, but then eventually we may move to, like, only this colored fish can populate again. So what will be the chance of them populating, like, how frequently it will be? Let's see. Let me try something and see if it works for you. So, let's see, if they will. So you see the numbers are increasing 20 to 26. They're getting caught. And then, of course, each one that makes a baby will, the baby will have the same color. So the blues are very higher right now, for example, and I guess because we started having so much fish that the fishermen cannot catch it first. This is overpopulating right now. What do you think?
-[00:19:02] Participant_Cory: It looks like it overpopulated pretty fast. I would think either increasing how much they catch, or decreasing how much they populate. Just to, I guess, so it won't be so cluttered.
+[00:19:02] Participant Cory: It looks like it overpopulated pretty fast. I would think either increasing how much they catch, or decreasing how much they populate. Just to, I guess, so it won't be so cluttered.
 [00:19:20] Interviewer: Which one will be more realistic?, I guess, like decreasing how fast they repopulate? Okay, let's make it this way. 10 times less likely for them to populate at any given time. This time they died. Too fast. I guess. It's been too much. I guess I did it too much. Let's see. Right. How do you think now? The number of, I guess, a plot will also help us to see the change easily to, than the number like. I should also show us the number of, the change in the number of fish in the model. Just to give you an idea, does it work the way you imagined it to work?
-[00:20:17] Participant_Cory: Yeah, this is this is looking a lot better.
+[00:20:17] Participant Cory: Yeah, this is this is looking a lot better.
 [00:20:20] Interviewer: Yeah, it's coming together. Okay. It does seem to be well balanced. Right?
-[00:20:30] Participant_Cory: It looks like it's, it's really getting balanced. Yeah. I was gonna say, based on the chart, it looks like it, you know, up and down. But, But yeah, that's just the nature of things, I guess. 
+[00:20:30] Participant Cory: It looks like it's, it's really getting balanced. Yeah. I was gonna say, based on the chart, it looks like it, you know, up and down. But, But yeah, that's just the nature of things, I guess. 
 [00:20:45] Interviewer: Yeah. And do you have anything else to add? Right now? What, what's next? 
-[00:20:52] Participant_Cory: Um, I would think this is, like, the whole system, I guess. Just catching the fish. Some of them get caught. Some of them don't.
+[00:20:52] Participant Cory: Um, I would think this is, like, the whole system, I guess. Just catching the fish. Some of them get caught. Some of them don't.
