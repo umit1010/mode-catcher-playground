@@ -18,7 +18,7 @@ from dash.dash_table import DataTable # may be obsolete now that we have the ag_
 from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
-
+from datetime import datetime, time
 
 # ---- PLATFORM ----
 
@@ -43,6 +43,8 @@ theoretical_code_list = [
     "levels",
     "slippage",
 ]
+
+change_log = []
 
 app = Dash(
     __name__,
@@ -1006,6 +1008,15 @@ metrics_viewer_wrapper_div = html.Div(
     className="border rounded p-4 my-4",
 )
 
+change_log_viewer_wrapper_div = html.Div(
+    [
+        html.H3("Token Toggle Log", className="mb-4"),
+        html.P(" "),
+        html.Div("This view will be updated when the user toggles tokens.", className="lead", id="changes-div"),
+    ],
+    className="border rounded p-4 my-4",
+)
+
 # -- coding modal view --
 
 coding_modal = dbc.Modal(
@@ -1070,6 +1081,7 @@ app.layout = dbc.Container(
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
+        dbc.Row(dbc.Col(change_log_viewer_wrapper_div)),
         coding_modal,
     ],
     fluid=True,
@@ -1296,21 +1308,26 @@ def helper(options):
 def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     global active_data
     global tokens_changed
+    global change_log
 
     if cell is not None:
         if len(toggle_clicks) > 0:
             if 1 in toggle_clicks:
                 toggled_token = ctx.triggered_id["index"]
                 was_stop = ctx.triggered_id["stop"]
-
+                # toggled token is here
+                curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if was_stop:
                     nlp.vocab[toggled_token].is_stop = False
                     stopped_words.discard(toggled_token)
                     unstopped_words.add(toggled_token)
+                    change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
                 else:
                     nlp.vocab[toggled_token].is_stop = True
                     stopped_words.add(toggled_token)
                     unstopped_words.discard(toggled_token)
+                    change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'))
+
 
                 tokens_changed = True
         i = int(cell["rowId"])
@@ -1344,6 +1361,7 @@ def coding_editor(cell, toggle_clicks, checked_codes, apply_tags):
     Output("graph-slider", "value"),
     Output("metrics-div", "children"),
     Output("min-dmc-co", "value"),
+    Output("changes-div", "children"),
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
     Input("include-codes", "value"),
@@ -1389,6 +1407,7 @@ def knowledge_graph(
     global active_data
     global tokens_changed
     global has_generated
+    global change_log
 
     if disabled:
         return (
@@ -1397,6 +1416,7 @@ def knowledge_graph(
             1,
             "You need to process some data.",
             deg,
+            "This view will be updated when the user toggles tokens."
         )
 
     if ctx.triggered_id == "graph-button":
@@ -1421,6 +1441,8 @@ def knowledge_graph(
             1,
             "You need to process some data.",
             deg,
+            "This view will be updated when the user toggles tokens."
+
         )
 
     # first, let's pickle the user generated model
@@ -1468,7 +1490,7 @@ def knowledge_graph(
         show_weak_links = weak_links,
     )
 
-    return graph, len(active_data), line, stats, dmc_deg
+    return graph, len(active_data), line, stats, dmc_deg, change_log
 
 @app.callback(
     Input("data-table", "cellValueChanged"),
