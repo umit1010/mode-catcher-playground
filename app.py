@@ -63,8 +63,9 @@ server = app.server
 
 def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = [], use_nlp_tags=False):
 
-    global tokens_changed
     global excluded_tokens
+    global nlp
+    global tokens_changed
 
     first_parse = True if len(excluded_tokens) == 0 else False
 
@@ -1206,12 +1207,23 @@ def reset_mode(nclicks, name):
     prevent_initial_call=True,
 )
 def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp_tags):
+    global active_data
     global assigned_codes
+    global excluded_tokens
     global nlp
     global stopped_words
+    global tokens_changed
     global unstopped_words
-    global excluded_tokens
-    global active_data
+
+
+    # first, reset all the globals
+    #   to make sure that switching between transcripts doesn't mess things up
+    active_data = list()
+    assigned_codes = dict()
+    excluded_tokens = dict()
+    stopped_words = set()
+    tokens_changed = True
+    unstopped_words = set()
 
     excluded_rows = []
 
@@ -1248,9 +1260,6 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
             if excluded_rows_file.is_file():
                 with open(excluded_rows_file, "rb") as erf:
                     excluded_rows = pickle.load(erf)
-            else:
-                excluded_rows = []
-
 
             # umit temporarily disabled the following line(s)
             # theoretical_codes_file = model_path / "theoretical_codes.pickle"
