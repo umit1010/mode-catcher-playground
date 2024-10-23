@@ -138,7 +138,10 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row['line'] = i
                 sent_row['in?'] = False if i in excluded_rows else True
                 sent_row['utterance'] = s.text
-                sent_row['highlighted utterance'] = "".join(t.text_with_ws if t.is_stop or t.lemma_ in excluded_in_row or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}" for t in s)
+
+                # create a highlighted version of the tokens
+                # todo note: currently, this doesn't udpate after the user revises a line's tokens.
+                sent_row['highlighted utterance'] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop or t.lemma_ in excluded_in_row or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}" for t in s)
 
                 data.append(sent_row)
         else:
