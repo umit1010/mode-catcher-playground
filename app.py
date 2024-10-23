@@ -1,6 +1,4 @@
-from fileinput import hook_encoded
 import pickle
-from pydoc import classname
 import re
 import os
 from collections import Counter
@@ -13,7 +11,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
-from dash.dash_table import DataTable # may be obsolete now that we have the ag_grid
 import dash_auth
 from itertools import combinations
 
@@ -64,10 +61,12 @@ server = app.server
 
 # ---- NLP ----
 
-def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = []):
+def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = [], use_nlp_tags=False):
 
     global tokens_changed
     global excluded_tokens
+
+    first_parse = True if len(excluded_tokens) == 0 else False
 
     data = list()
 
@@ -119,6 +118,27 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row['line'] = i
                 sent_row['utterance'] += s.text
                 sent_row['in?'] = False if i in excluded_rows else True
+
+                sent_n = i - 1
+                excluded_in_row = excluded_tokens.get(sent_n, [])
+
+                # if the user wants to filter out tokens based on NLP tags
+                #    but only if this transcript is being loaded for the first time
+                #    otherwise, don't overwrite user-made changes
+                if use_nlp_tags and first_parse:
+                    excluded_through_nlp_tags = [ t.lemma_ for t in s if has_excluded_nlp_tag(t) and not t.is_stop ]
+                    excluded_in_row.extend(excluded_through_nlp_tags)
+
+                # add the tokens excluded by the algorithm to the rest of exclusions
+                if sent_n in excluded_tokens.keys():
+                    excluded_tokens[sent_n].extend(excluded_in_row)
+                else:
+                    excluded_tokens[sent_n] = excluded_in_row
+
+                # remove duplicate elements
+                excluded_tokens[sent_n] = list(set(excluded_tokens[sent_n]))
+
+
                 data.append(sent_row)
         else:
         # here would I go through and make each token bold using markdown?
@@ -182,25 +202,19 @@ def has_excluded_nlp_tag(token):
 
 
 # mapping use of certain "tokens" --> words?
-def process_utterance(raw_text, use_nlp_tags = False, row=0):
+def process_utterance(raw_text, row):
 
     global nlp
     global excluded_tokens
 
     doc = nlp(raw_text.strip().lower())
 
-    excluded_in_row = excluded_tokens.get(row, [])
-
-    if use_nlp_tags:
-        excluded_through_nlp_tags = [ token.lemma_ for token in doc if has_excluded_nlp_tag(token) ]
-        excluded_in_row.extend(excluded_through_nlp_tags)
-
     all_tokens = [
         token.lemma_
         for token in doc
         if not nlp.vocab[token.lemma].is_stop
            and not token.is_punct
-           and token not in excluded_in_row
+           and token not in excluded_tokens.get(row, [])
     ]
 
     buttons_for_text = html.Div(
@@ -208,15 +222,18 @@ def process_utterance(raw_text, use_nlp_tags = False, row=0):
             html.Span(
                 dbc.Button(
                     token.text,
-                    id={"type": "toggle-token", "index": token.lemma_,
-                        "stop": True if nlp.vocab[token.lemma].is_stop else False},
+                    id={
+                        "type": "toggle-token",
+                        "index": token.lemma_,
+                        "stop": True if nlp.vocab[token.lemma_].is_stop else False
+                    },
                     n_clicks=0,
-                    color="light" if nlp.vocab[token.lemma].is_stop else "danger" if token.lemma_ in excluded_in_row else "warning",
+                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in excluded_tokens.get(row, []) else "warning",
                     class_name="m-1",
                     size="sm",
                 )
             )
-            if not nlp.vocab[token.lemma].is_punct
+            if not nlp.vocab[token.lemma_].is_punct
             else html.Span(token.text, className="mx-1")
             for token in doc
         ]
@@ -290,7 +307,7 @@ def pickle_model(mode_name, active_rows):
     #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=False):
+def generate_knowledge_graph(start, end, with_interviewer=False):
     global nlp
     global active_data
     global excluded_tokens
@@ -315,7 +332,7 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
             #   - tokens which are manually excluded at specific lines
             tokens = [t.lemma for t in doc_line if not t.is_punct
                                                     and not t.is_stop
-                                                    and not nlp.vocab[t.lemma].is_stop
+                                                    and not nlp.vocab[t.lemma_].is_stop
                                                     and not t.lemma_ in excluded_tokens.get(row, [])
                       ]
 
@@ -333,24 +350,6 @@ def generate_knowledge_graph(start, end, sentence_boost=False, with_interviewer=
                     new_G[t1][t2]["weight"] += 1
                 else:
                     new_G.add_edge(t1, t2, weight=1)
-
-            # boost edges between tokens within the same sentences by 1
-            #   if there are more than 1 sentences in the line --> is this measuring the "amount" of talking?
-
-            if sentence_boost:
-                sentences = [s for s in doc_line.sents]
-
-                if len(sentences) > 1:
-                    for s in sentences:
-                        sent_tokens = [
-                            t.lemma for t in s if not t.is_punct and not t.is_stop
-                        ]
-
-                        # unique tokens within the sentence
-                        s_tokens = set(sent_tokens)
-
-                        for t1, t2 in combinations(s_tokens, 2):
-                            new_G[t1][t2]["weight"] += 1
 
     return new_G
 
@@ -381,7 +380,7 @@ def display_knowledge_graph(
 
         # now let's generate the knowledge graph
         G = generate_knowledge_graph(
-            start=start_line, end=end_line, sentence_boost=False, with_interviewer=show_interviewer,
+            start=start_line, end=end_line, with_interviewer=show_interviewer,
         )
         tokens_changed = False
 
@@ -1205,9 +1204,10 @@ def reset_mode(nclicks, name):
     State("raw-text", "value"),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
+    State("use-nlp-tags", "value"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, options, name, txt, sentencize, model):
+def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp_tags):
     global assigned_codes
     global nlp
     global stopped_words
@@ -1287,7 +1287,8 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model):
             txt, timestamp=time,
             is_interviewer=interviewer,
             in_sentences = sentencize,
-            excluded_rows = excluded_rows
+            excluded_rows = excluded_rows,
+            use_nlp_tags = use_nlp_tags,
         )
 
         column_defs = [
@@ -1365,10 +1366,10 @@ def helper(options):
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     Input({"type": "code-checkbox", "index": ALL}, "value"),
-    State("use-nlp-tags", "value"),
+    # State("use-nlp-tags", "value"),
     prevent_initial_call=True,
 )
-def revise_tokens_view(cell, toggle_clicks, checked_codes, use_nlp_tags):
+def revise_tokens_view(cell, toggle_clicks, checked_codes):
     global active_data
     global tokens_changed
     global excluded_tokens
@@ -1393,10 +1394,7 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, use_nlp_tags):
                 else:
                     # if a token was not a stop word, first check if it is in the excluded tokens list
 
-                    if row not in excluded_tokens.keys():
-                        excluded_tokens[row] = []
-
-                    if toggled_token in excluded_tokens[row]:
+                    if toggled_token in excluded_tokens.get(row, []):
                         # if it was an excluded token, turn it into a stop word
                         # and remove it from the exluded tokens list
 
@@ -1417,10 +1415,10 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes, use_nlp_tags):
 
                         change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
-
                 tokens_changed = True
+
         cell_text = str(active_data[row]["utterance"])
-        token_buttons, token_treemap = process_utterance(cell_text, use_nlp_tags= use_nlp_tags, row=row)
+        token_buttons, token_treemap = process_utterance(cell_text, row=row)
 
         line_num = int(active_data[row]["line"] - 1)
 
@@ -1542,7 +1540,8 @@ def knowledge_graph(
     # if 2 in options: skip every other line
     # add a state checker to the above callback
     if not dmc and ctx.triggered_id == "graph-button":
-        line = line if line != 0 else list(slider_marks.keys())[-1]
+        last_line = list(slider_marks.keys())[-1]
+        line = line if line != 0 and line <= last_line else last_line
 
     start = 0
     end = line
