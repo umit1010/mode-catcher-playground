@@ -113,31 +113,31 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
 
         if in_sentences:
             for s in doc.sents:
-                i += 1
-                sent_row = row.copy()
-                sent_row['line'] = i
-                sent_row['utterance'] += s.text
-                sent_row['in?'] = False if i in excluded_rows else True
 
-                sent_n = i - 1
-                excluded_in_row = excluded_tokens.get(sent_n, [])
+                excluded_in_row = excluded_tokens.get(i, [])
 
                 # if the user wants to filter out tokens based on NLP tags
                 #    but only if this transcript is being loaded for the first time
                 #    otherwise, don't overwrite user-made changes
                 if use_nlp_tags and first_parse:
-                    excluded_through_nlp_tags = [ t.lemma_ for t in s if has_excluded_nlp_tag(t) and not t.is_stop ]
-                    excluded_in_row.extend(excluded_through_nlp_tags)
+                    excluded_in_row.extend([ t.lemma_ for t in s if has_excluded_nlp_tag(t) and not t.is_stop ])
 
                 # add the tokens excluded by the algorithm to the rest of exclusions
-                if sent_n in excluded_tokens.keys():
-                    excluded_tokens[sent_n].extend(excluded_in_row)
+                if i in excluded_tokens.keys():
+                    excluded_tokens[i].extend(excluded_in_row)
                 else:
-                    excluded_tokens[sent_n] = excluded_in_row
+                    excluded_tokens[i] = excluded_in_row
 
                 # remove duplicate elements
-                excluded_tokens[sent_n] = list(set(excluded_tokens[sent_n]))
+                excluded_tokens[i] = list(set(excluded_tokens[i]))
 
+                # create the row data to pass to the ag-grid
+                sent_row = row.copy()
+                i += 1
+                sent_row['line'] = i
+                sent_row['in?'] = False if i in excluded_rows else True
+                sent_row['utterance'] = s.text
+                sent_row['highlighted utterance'] = "".join(t.text_with_ws if t.is_stop or t.lemma_ in excluded_in_row or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}" for t in s)
 
                 data.append(sent_row)
         else:
@@ -700,6 +700,7 @@ inclusion_options = dbc.Checklist(
         {"label": "Display Timestamp", "value": 0},
         {"label": "Display Speaker", "value": 1},
         {"label": "Ignore Interviewer Speech", "value": 2},
+        {"label": "Highlight tokens", "value": 3},
     ],
     value=[0, 1, 2],
     inline=True,
@@ -857,34 +858,32 @@ code_checkboxes_container = dbc.Container(
 
 # -- graph view --
 
-graph_type_row = dbc.Row(
-    [
-        dbc.Col(
-            dbc.Checkbox(label="Deductive Codes", id="include-codes", value=False),
-            xs=12,
-            md=6,
-            xl=2,
-            class_name="mt-3",
-        ),
-        dbc.Col(
-            [
-                dbc.Checkbox(label="DMC Mode", id="dmc-mode", value=False, disabled=True)
-            ],
-            xs=12,
-            md=6,
-            xl=2,
-            class_name="mt-3",
-        ),
-    ]
-)
 grap_layout_options_div = html.Div(
     [
         html.Br(),
         html.H4("Graph Construction", className="my-4"),
+        dbc.Row(
+            [
+                dbc.Col(
+                    dbc.Checkbox(label="Include Deductive Codes", id="include-codes", value=False, disabled=True),
+                    xs=12,
+                    md=6,
+                    xl=2,
+                ),
+                dbc.Col(
+                    [
+                        dbc.Checkbox(label="DMC Mode", id="dmc-mode", value=False, disabled=True)
+                    ],
+                    xs=12,
+                    md=6,
+                    xl=2,
+                ),
+            ], class_name="mt-3"
+        ),
         dbc.Row([
                 dbc.Col(
                     dbc.InputGroup([
-                        dbc.InputGroupText("Min co-occurrence"),
+                        dbc.InputGroupText("Weak min co-occurrence"),
                         dbc.Input(
                             id="min-co",
                             type="number",
@@ -899,7 +898,7 @@ grap_layout_options_div = html.Div(
                 ),
                 dbc.Col(
                     dbc.InputGroup([
-                        dbc.InputGroupText("Strong link min co-occurrence"),
+                        dbc.InputGroupText("Strong min co-occurrence"),
                         dbc.Input(
                             id="min-dmc-co",
                             type="number",
@@ -1011,7 +1010,6 @@ graph_view_options_div = html.Div(
     [
         html.H3("Token Graph", className="mb-4"),
         html.P(" "),
-        graph_type_row,
         html.P(" "),
         html.Div(
             "The token graph will be displayed once you generate it.",
@@ -1281,6 +1279,7 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
         time = True
         speaker = True
         interviewer = True
+        highlight = True if 3 in options else False
 
         # here in possible changes
         parsed_data = parse_raw_text(
@@ -1288,20 +1287,21 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
             is_interviewer=interviewer,
             in_sentences = sentencize,
             excluded_rows = excluded_rows,
-            use_nlp_tags = use_nlp_tags,
+            use_nlp_tags = use_nlp_tags
         )
 
         column_defs = [
-            {'field': 'line', 'id': 'line', 'headerName':'Sent' if sentencize else 'Line', 'editable': False, 'maxWidth': 90},
-            {'field': 'time', 'id': 'time', 'hide': 0 not in options, 'maxWidth': 120},
-            {'field': 'speaker', 'id': 'speaker', 'hide': 1 not in options, 'maxWidth': 140, 'wrapText': False,
+            {'field': 'line', 'headerName': 'Sent' if sentencize else 'Line', 'editable': False, 'maxWidth': 90},
+            {'field': 'time', 'hide': 0 not in options, 'maxWidth': 120},
+            {'field': 'speaker', 'hide': 1 not in options, 'maxWidth': 140, 'wrapText': False,
                 'filter': 'agSpeakerColumnFilter',
                 'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
                 'isExternalFilterPresent': {'function': 2 in options},
                 'doesExternalFilterPass': {'function': "params.data.speaker != 'Interviewer'"}
             },
-            {'field': 'utterance', 'id': 'utterance'},
-            {'field': 'in?', 'id': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
+            {'field': 'utterance', 'hide': 3 in options, 'flex': 1},
+            {'field': 'highlighted utterance', 'headerName': 'Utterance', 'hide': 3 not in options, 'flex': 1},
+            {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
         ]
 
         transcript_table = dag.AgGrid(
@@ -1311,13 +1311,13 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
                     defaultColDef={
                         'resizable': True,
                         'cellStyle': {'wordBreak': 'normal'},
-                        # 'cellRenderer': 'markdown',
+                        'cellRenderer': 'markdown',
                         'wrapText': True,
                         'autoHeight': True,
-                        'filter': True
+                        'filter': True,
                         },
                     dangerously_allow_code=True,
-                    columnSize="responsiveSizeToFit",
+                    columnSize="sizeToFit", # for some reason, using responsiveSizeToFit blocks hiding columns when an inclusion option is checked off
                     style={'height': 600})
 
         editor_section = [transcript_table]
@@ -1338,16 +1338,19 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
 @app.callback(
     Output('data-table', 'columnState'),
     Output('data-table', 'dashGridOptions'),
-    Input("inclusion-options", "value")
+    Input("inclusion-options", "value"),
 )
-def helper(options):
+def apply_table_layout_filters(options):
+
     new_state = [
         {'colId': 'line'},
         {'colId': 'time', 'hide': 0 not in options},
         {'colId': 'speaker', 'hide': 1 not in options},
-        {'colId': 'utterance'},
+        {'colId': 'utterance', 'hide': 3 in options, 'flex':1},
+        {'colId': 'highlighted utterance', 'hide': 3 not in options, 'flex':1},
         {'colId': 'in?'},
     ]
+
     new_filter = {'isExternalFilterPresent': {'function': 'false'}}
     if 2 in options:
         new_filter = {
@@ -1355,6 +1358,7 @@ def helper(options):
             'doesExternalFilterPass': 
                 {'function': "params.data.speaker != 'Interviewer'"}
         }
+
     return new_state, new_filter
 
 
