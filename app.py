@@ -140,7 +140,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row['utterance'] = s.text
 
                 # create a highlighted version of the tokens
-                # todo note: currently, this doesn't udpate after the user revises a line's tokens.
+                # todo note: currently, this doesn't update after the user revises a line's tokens.
                 sent_row['highlighted utterance'] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop or t.lemma_ in excluded_in_row or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}" for t in s)
 
                 data.append(sent_row)
@@ -829,28 +829,32 @@ graph_button = dbc.Button(
 
 generate_div = html.Div([graph_button], className="border rounded p-4 my-4")
 
+# some codes are temporarily highlighted to make the revise modal view shorter
+#   for demo purposes
 theoretical_codes_list = [
     "emergent",
-    "collective behavior"
+    # "collective behavior"
     "centralized",
-    "pre-determined",
-    "god-like control",
+    # "pre-determined",
+    # "god-like control",
     "probabilistic",
-    "stochastic",
-    "uncertainty",
-    "randomness",
+    # "stochastic",
+    # "uncertainty",
+    # "randomness",
     "deterministic",
-    "predictable",
+    # "predictable",
     "monocausal",
-    "multicausal",
+    # "multicausal",
     "non-linear",
-    "criticality",
-    "feedback",
-    "fitting",
-    "levels",
+    # "criticality",
+    # "feedback",
+    # "fitting",
+    # "levels",
     "mid-level",
-    "slippage",
-    "dynamic equilibrium"
+    # "level slippage",
+    "dynamic equilibrium",
+    "...",
+    "..."
 ]
 
 code_checkboxes_container = dbc.Container(
@@ -1212,6 +1216,7 @@ def reset_mode(nclicks, name):
 def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp_tags):
     global active_data
     global assigned_codes
+    global change_log
     global excluded_tokens
     global nlp
     global stopped_words
@@ -1223,6 +1228,7 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
     #   to make sure that switching between transcripts doesn't mess things up
     active_data = list()
     assigned_codes = dict()
+    change_log = []
     excluded_tokens = dict()
     stopped_words = set()
     tokens_changed = True
