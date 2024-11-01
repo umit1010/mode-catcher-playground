@@ -11,6 +11,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
+from dash.exceptions import PreventUpdate
 import dash_auth
 from itertools import combinations
 
@@ -29,7 +30,7 @@ nlp = spacy.blank("en")  # loading a blank model because we'll load the actual m
 
 G = nx.Graph()
 
-tokens_changed: bool = False
+tokens_changed: bool = False ## TODO: This  is a very problematic global because once it's set to True, it remains True.
 stopped_words = set()
 unstopped_words = set()
 assigned_codes = dict()
@@ -49,6 +50,8 @@ theoretical_code_list = [
 ]
 
 change_log = []
+
+# ----- DASH APP CONFIG -----
 
 app = Dash(
     __name__,
@@ -99,6 +102,7 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
             'time': '',
             'speaker': '',
             'utterance': '',
+            'highlighted utterance': '',
             'in?': True
         }
 
@@ -107,8 +111,6 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
 
         if speaker:
             row['speaker'] = speaker
-
-        row['utterance'] = ''
 
         doc = nlp(utterance.strip())
 
@@ -138,10 +140,6 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 sent_row['line'] = i
                 sent_row['in?'] = False if i in excluded_rows else True
                 sent_row['utterance'] = s.text
-
-                # create a highlighted version of the tokens
-                # todo note: currently, this doesn't update after the user revises a line's tokens.
-                sent_row['highlighted utterance'] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop or t.lemma_ in excluded_in_row or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}" for t in s)
 
                 data.append(sent_row)
         else:
@@ -310,6 +308,60 @@ def pickle_model(mode_name, active_rows):
     # with open(theoretical_codes_file, "wb") as tcf:
     #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
 
+# ---- UTTERANCE TABLE ----
+
+# create a highlighted version of any given utterance using the html <mark> tag
+def highlight_utterance(line):
+    global nlp
+    global excluded_tokens
+
+    row = line["line"] - 1
+    doc = nlp(line["utterance"])
+    line["highlighted utterance"] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop
+                                                                or t.lemma_ in excluded_tokens.get(row, [])
+                                                                or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
+                                                            for t in doc)
+    return line
+
+# generate the highlighted utterance column values for the entire dataset
+def generate_highlighted_utterances(data):
+    return list(map(lambda x: highlight_utterance(x), data))
+
+# created this function to refactor table generation because it was used in multiple places
+def generate_utterance_table(data, display_options, in_sents=False):
+
+    return dag.AgGrid(
+        id='data-table',
+        rowData=data,
+        columnDefs=[
+            {'field': 'line', 'headerName': 'Sent' if in_sents else 'Line', 'editable': False, 'maxWidth': 90},
+            {'field': 'time', 'hide': 0 not in display_options, 'maxWidth': 120},
+            {'field': 'speaker', 'hide': 1 not in display_options, 'maxWidth': 140, 'wrapText': False,
+             'filter': 'agSpeakerColumnFilter',
+             'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
+             'isExternalFilterPresent': {'function': 2 in display_options},
+             'doesExternalFilterPass': {'function': "params.data.speaker != 'Interviewer'"}
+             },
+            {'field': 'utterance', 'hide': 3 in display_options, 'flex': 1},
+            {'field': 'highlighted utterance', 'headerName': 'Highlighted Utterance', 'hide': 3 not in display_options, 'flex': 1},
+            {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
+        ],
+        defaultColDef={
+            'resizable': True,
+            'cellStyle': {'wordBreak': 'normal'},
+            'cellRenderer': 'markdown',
+            'wrapText': True,
+            'autoHeight': True,
+            'filter': True,
+        },
+        dashGridOptions={"rowHeight": 40}, # so that the height of single line rows are not recalculated in each update to prevent some interface jitteriness
+        dangerously_allow_code=True, # to enable markdown rendering with the <mark> html tag because commonmark doesn't include highlighting
+        columnSize="sizeToFit", # Umit's note: for some reason, using responsiveSizeToFit blocks hiding columns when an inclusion option is checked off
+        style={'height': 600}
+    )
+
+
+# ---- NETWORK ANALYSIS
 
 def generate_knowledge_graph(start, end, with_interviewer=False):
     global nlp
@@ -804,15 +856,20 @@ input_accordion = dbc.Accordion(
 
 # -- utterances section --
 
+empty_utterances_table_data = [{
+    'line': '0',
+    'time': '00:00:00',
+    'speaker': 'N/A',
+    'utterance': 'Processed text will be displayed in this table.',
+    'in?': False
+}]
+
 utterances_accordion = dbc.Accordion(
     dbc.AccordionItem(
         [inclusion_options,
             html.Div(
                 [
-                    html.P(
-                        "Processed text will be displayed here as a datatable.", # would we ever care about unprocessed text?
-                        className="lead",
-                    )
+                    generate_utterance_table(empty_utterances_table_data, (0, 1, 2), False)
                 ],
                 id="utterances-div",
             )
@@ -1113,6 +1170,7 @@ app.layout = dbc.Container(
                 ]
             )
         ),
+        dcc.Store(id="modal-row-id"), # to keep track of the id of the row that is being revised in the modal view
         dbc.Row(dbc.Col(utterances_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
@@ -1123,7 +1181,6 @@ app.layout = dbc.Container(
     fluid=True,
     class_name="p-4",
 )
-
 
 # ---- CALLBACKS ----
 @app.callback(
@@ -1160,7 +1217,8 @@ def load_input_file(file_name: str):
     Input("mode-name", "value"),
     Input("raw-text", "value"),
 )
-def activate_parse_button(name: str, text: str):
+def enable_parse_button(name: str, text: str):
+
     if len(name.strip()) > 0 and len(text.strip()) > 0:
         return False
 
@@ -1201,19 +1259,22 @@ def reset_mode(nclicks, name):
             return "No action taken because existing model couldn't be found."
 
 @app.callback(
-    Output("utterances-div", "children"),
+    Output("data-table", "rowData"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Input("parse-button", "n_clicks"),
+    Input("coding-modal", "is_open"),
     State("inclusion-options", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
+    State("modal-row-id", "data"),
+    State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp_tags):
+def utterance_table(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, model, use_nlp_tags, revised_row_id, existing_row_data):
     global active_data
     global assigned_codes
     global change_log
@@ -1223,20 +1284,20 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
     global tokens_changed
     global unstopped_words
 
-
-    # first, reset all the globals
-    #   to make sure that switching between transcripts doesn't mess things up
-    active_data = list()
-    assigned_codes = dict()
-    change_log = []
-    excluded_tokens = dict()
-    stopped_words = set()
-    tokens_changed = True
-    unstopped_words = set()
-
-    excluded_rows = []
-
     if ctx.triggered_id == "parse-button":
+
+        # first, reset all the globals
+        #   to make sure that switching between transcripts doesn't mess things up
+        active_data = list()
+        assigned_codes = dict()
+        change_log = []
+        excluded_tokens = dict()
+        stopped_words = set()
+        tokens_changed = True
+        unstopped_words = set()
+        excluded_rows = []
+
+        # paths to model save files
         model_path = Path(f"./models/{str(name).strip()}/")
         default_stopwords_file = Path("./config") / "default_stopwords.pickle"
 
@@ -1259,8 +1320,6 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
             if excluded_tokens_file.is_file():
                 with open(excluded_tokens_file, "rb") as etf:
                     excluded_tokens = pickle.load(etf)
-            else:
-                excluded_tokens = dict()
 
             # load the lines that were completely excluded by the user
 
@@ -1278,6 +1337,7 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
 
                 # assigned_codes = saved_codes
         else:
+            # if there is no model folder, load the default stop words
             with open(default_stopwords_file, "rb") as f:
                 stopped_words = pickle.load(f)
 
@@ -1297,60 +1357,35 @@ def utterance_table(parse_clicks, options, name, txt, sentencize, model, use_nlp
         time = True
         speaker = True
         interviewer = True
-        highlight = True if 3 in options else False
+        highlight = True if 3 in display_options else False
 
         # here in possible changes
         parsed_data = parse_raw_text(
             txt, timestamp=time,
             is_interviewer=interviewer,
-            in_sentences = sentencize,
+            in_sentences = sentencized,
             excluded_rows = excluded_rows,
             use_nlp_tags = use_nlp_tags
         )
 
-        column_defs = [
-            {'field': 'line', 'headerName': 'Sent' if sentencize else 'Line', 'editable': False, 'maxWidth': 90},
-            {'field': 'time', 'hide': 0 not in options, 'maxWidth': 120},
-            {'field': 'speaker', 'hide': 1 not in options, 'maxWidth': 140, 'wrapText': False,
-                'filter': 'agSpeakerColumnFilter',
-                'filterParams': {'comparator': {'function': 'speakerFilterComparator'}},
-                'isExternalFilterPresent': {'function': 2 in options},
-                'doesExternalFilterPass': {'function': "params.data.speaker != 'Interviewer'"}
-            },
-            {'field': 'utterance', 'hide': 3 in options, 'flex': 1},
-            {'field': 'highlighted utterance', 'headerName': 'Utterance', 'hide': 3 not in options, 'flex': 1},
-            {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
-        ]
-
-        transcript_table = dag.AgGrid(
-                    id = 'data-table',
-                    rowData = parsed_data,
-                    columnDefs = column_defs,
-                    defaultColDef={
-                        'resizable': True,
-                        'cellStyle': {'wordBreak': 'normal'},
-                        'cellRenderer': 'markdown',
-                        'wrapText': True,
-                        'autoHeight': True,
-                        'filter': True,
-                        },
-                    dangerously_allow_code=True,
-                    columnSize="sizeToFit", # for some reason, using responsiveSizeToFit blocks hiding columns when an inclusion option is checked off
-                    style={'height': 600})
-
-        editor_section = [transcript_table]
-
         active_data = parsed_data
 
-        return editor_section, "1", False
+        return generate_highlighted_utterances(parsed_data), "1", False
+
+    elif ctx.triggered_id == "coding-modal":
+        # update the highlighted tokens in the table after the user makes changes
+        if not revision_modal_is_open and revised_row_id != -1:
+            # and only if the user makes changes
+            if tokens_changed:
+                tokens_changed = False # reset the flag
+                return generate_highlighted_utterances(existing_row_data), "1", False
+            else:
+                # otherwise, don't update the row data
+                raise PreventUpdate
+        else:
+            raise PreventUpdate
     else:
-        message = [
-            html.P(
-                "Processed text will be displayed here as a datatable.",
-                className="lead",
-            )
-        ]
-        return message, "0", True
+        raise PreventUpdate
 
 # needs to filter out interviewers as third option
 @app.callback(
@@ -1369,7 +1404,9 @@ def apply_table_layout_filters(options):
         {'colId': 'in?'},
     ]
 
-    new_filter = {'isExternalFilterPresent': {'function': 'false'}}
+    new_filter = {
+        'isExternalFilterPresent': {'function': 'false'}
+    }
     if 2 in options:
         new_filter = {
             'isExternalFilterPresent': {'function': 'true'},
@@ -1385,13 +1422,14 @@ def apply_table_layout_filters(options):
     Output("utterance-stats", "children"),
     Output("code-checkboxes-container", "children"),
     Output("coding-modal", "is_open"),
+    Output("modal-row-id", "data"),
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
-    Input({"type": "code-checkbox", "index": ALL}, "value"),
-    # State("use-nlp-tags", "value"),
+    # Input({"type": "code-checkbox", "index": ALL}, "value"), #umit temporarily turned off until implementing deductive codes
+    State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def revise_tokens_view(cell, toggle_clicks, checked_codes):
+def revise_tokens_view(cell, toggle_clicks, row_data):
     global active_data
     global tokens_changed
     global excluded_tokens
@@ -1400,19 +1438,25 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes):
     if cell is not None:
 
         row = int(cell["rowId"])
+        tokens_changed = False
 
         if len(toggle_clicks) > 0:
 
             if 1 in toggle_clicks:
+
                 toggled_token = ctx.triggered_id["index"]
                 was_stop = ctx.triggered_id["stop"]
-                # toggled token is here
+
+                # to log the time this token was toggled
                 curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
                 if was_stop:
+
                     nlp.vocab[toggled_token].is_stop = False
                     stopped_words.discard(toggled_token)
                     unstopped_words.add(toggled_token)
                     change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
+
                 else:
                     # if a token was not a stop word, first check if it is in the excluded tokens list
 
@@ -1428,9 +1472,10 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes):
                         change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
 
                     else:
-                        # if it was not in excluded token list, turn it into an excluded token
 
-                        if len(excluded_tokens[row]) == 0:
+                        # if it was not in excluded tokens list, turn it into an excluded token
+
+                        if len(excluded_tokens.get(row, [])) == 0:
                             excluded_tokens[row] = [toggled_token]
                         else:
                             excluded_tokens[row].append(toggled_token)
@@ -1439,28 +1484,13 @@ def revise_tokens_view(cell, toggle_clicks, checked_codes):
 
                 tokens_changed = True
 
-        cell_text = str(active_data[row]["utterance"])
-        token_buttons, token_treemap = process_utterance(cell_text, row=row)
+        token_buttons, token_treemap = process_utterance(row_data[row]["utterance"], row=row)
 
-        line_num = int(active_data[row]["line"] - 1)
+        codes = generate_code_checkboxes(row)
 
-        # umit temporarily disabled this code
-        # if len(checked_codes) > 0:
-        #     if type(ctx.triggered_id) is not str:
-        #         if ctx.triggered_id["type"] == "code-checkbox":
-        #             codes = generate_code_checkboxes(line_num, checked_codes)
-        #         else:
-        #             codes = generate_code_checkboxes(line_num)
-        #     else:
-        #         codes = generate_code_checkboxes(line_num)
-        # else:
-        #     codes = generate_code_checkboxes(line_num)
-
-        codes = generate_code_checkboxes(line_num)
-
-        return token_buttons, token_treemap, codes, True
+        return token_buttons, token_treemap, codes, True, row
     else:
-        return "Something", "went", "wrong", False
+        return "Something", "went", "wrong", False, -1
 
 
 @app.callback(
