@@ -2,14 +2,106 @@ name: mode-catcher
 channels:
   - conda-forge
 dependencies:
-  - python=3.11.9=h932a869_0_cpython
+  - annotated-types=0.7.0=pyhd8ed1ab_0
+  - blinker=1.8.2=pyhd8ed1ab_0
+  - brotli-python=1.1.0=py311ha891d26_1
+  - bzip2=1.0.8=h99b78c6_7
+  - ca-certificates=2024.8.30=hf0a4a13_0
+  - catalogue=2.0.10=py311h267d04e_0
+  - certifi=2024.8.30=pyhd8ed1ab_0
+  - cffi=1.16.0=py311h4a08483_0
+  - charset-normalizer=3.3.2=pyhd8ed1ab_0
+  - click=8.1.7=unix_pyh707e725_0
+  - cloudpathlib=0.18.1=pyhd8ed1ab_0
+  - colorama=0.4.6=pyhd8ed1ab_0
+  - confection=0.1.4=py311h8d5925d_0
+  - cymem=2.0.8=py311ha891d26_1
+  - cython-blis=0.7.10=py311hb49d859_2
   - dash=2.17.1=pyhd8ed1ab_0
-  - dash-bootstrap-components=1.6.0=pyhd8ed1ab_0
   - dash-auth=2.3.0=pyhd8ed1ab_0
+  - dash-bootstrap-components=1.6.0=pyhd8ed1ab_0
+  - dash-core-components=2.0.0=pyhd8ed1ab_1
+  - dash-html-components=2.0.0=pyhd8ed1ab_1
+  - dash-table=5.0.0=pyhd8ed1ab_1
+  - flask=3.0.3=pyhd8ed1ab_0
+  - gunicorn=23.0.0=py311h267d04e_1
+  - h2=4.1.0=pyhd8ed1ab_0
+  - hpack=4.0.0=pyh9f0ad1d_0
+  - hyperframe=6.0.1=pyhd8ed1ab_0
+  - idna=3.7=pyhd8ed1ab_0
+  - importlib-metadata=8.2.0=pyha770c72_0
+  - itsdangerous=2.2.0=pyhd8ed1ab_0
+  - jinja2=3.1.4=pyhd8ed1ab_0
+  - langcodes=3.3.0=pyhd8ed1ab_0
+  - libblas=3.9.0=23_osxarm64_openblas
+  - libcblas=3.9.0=23_osxarm64_openblas
+  - libcxx=18.1.8=h167917d_2
+  - libexpat=2.6.2=hebf3989_0
+  - libffi=3.4.2=h3422bc3_5
+  - libgfortran=5.0.0=13_2_0_hd922786_3
+  - libgfortran5=13.2.0=hf226fd6_3
+  - liblapack=3.9.0=23_osxarm64_openblas
+  - libopenblas=0.3.27=openmp_h517c56d_1
+  - libsqlite=3.46.0=hfb93653_0
+  - libzlib=1.3.1=hfb2fe0b_1
+  - llvm-openmp=18.1.8=hde57baf_0
+  - markdown-it-py=3.0.0=pyhd8ed1ab_0
+  - markupsafe=2.1.5=py311h05b510d_0
+  - mdurl=0.1.2=pyhd8ed1ab_0
+  - murmurhash=1.0.10=py311ha891d26_1
+  - ncurses=6.5=hb89a1cb_0
+  - nest-asyncio=1.6.0=pyhd8ed1ab_0
   - networkx=3.3=pyhd8ed1ab_1
   - numpy=1.26.4=py311h7125741_0
+  - openssl=3.3.2=h8359307_0
+  - packaging=24.1=pyhd8ed1ab_0
   - pandas=2.2.2=py311h4b4568b_1
+  - pip=24.2=pyhd8ed1ab_0
+  - plotly=5.23.0=pyhd8ed1ab_0
+  - preshed=3.0.9=py311ha891d26_1
+  - pycparser=2.22=pyhd8ed1ab_0
+  - pydantic=2.8.2=pyhd8ed1ab_0
+  - pydantic-core=2.20.1=py311h98c6a39_0
+  - pygments=2.18.0=pyhd8ed1ab_0
+  - pysocks=1.7.1=pyha2e5f31_6
+  - python=3.11.9=h932a869_0_cpython
+  - python-dateutil=2.9.0=pyhd8ed1ab_0
+  - python-tzdata=2024.1=pyhd8ed1ab_0
+  - python_abi=3.11=4_cp311
+  - pytz=2024.1=pyhd8ed1ab_0
+  - readline=8.2=h92ec313_1
+  - requests=2.32.3=pyhd8ed1ab_0
+  - retrying=1.3.3=pyhd8ed1ab_3
+  - rich=13.7.1=pyhd8ed1ab_0
+  - setuptools=71.0.4=pyhd8ed1ab_0
+  - shellingham=1.5.4=pyhd8ed1ab_0
+  - six=1.16.0=pyh6c4a22f_0
+  - smart-open=7.0.4=hd8ed1ab_0
+  - smart_open=7.0.4=pyhd8ed1ab_0
   - spacy=3.7.5=py311hd6dc194_1
+  - spacy-legacy=3.0.12=pyhd8ed1ab_0
+  - spacy-loggers=1.0.5=pyhd8ed1ab_0
+  - srsly=2.4.8=py311ha891d26_1
+  - tenacity=9.0.0=pyhd8ed1ab_0
+  - thinc=8.2.5=py311hd6dc194_0
+  - tk=8.6.13=h5083fa2_1
+  - tqdm=4.66.4=pyhd8ed1ab_0
+  - typer=0.12.3=pyhd8ed1ab_0
+  - typer-slim=0.12.3=pyhd8ed1ab_0
+  - typer-slim-standard=0.12.3=hd8ed1ab_0
+  - typing-extensions=4.12.2=hd8ed1ab_0
+  - typing_extensions=4.12.2=pyha770c72_0
+  - tzdata=2024a=h0c530f3_0
+  - urllib3=2.2.2=pyhd8ed1ab_1
+  - wasabi=1.1.2=py311h267d04e_1
+  - weasel=0.4.1=pyhd8ed1ab_1
+  - werkzeug=3.0.3=pyhd8ed1ab_0
+  - wheel=0.43.0=pyhd8ed1ab_1
+  - wrapt=1.16.0=py311h05b510d_0
+  - xz=5.2.6=h57fd34a_0
+  - zipp=3.19.2=pyhd8ed1ab_0
+  - zstandard=0.23.0=py311h4a6b76e_0
+  - zstd=1.5.6=hb46c0d2_0
   - pip:
       - dash-ag-grid==31.2.0
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl
