@@ -363,7 +363,7 @@ def generate_utterance_table(data, display_options, in_sents=False):
 
 # ---- NETWORK ANALYSIS
 
-def generate_knowledge_graph(start, end, with_interviewer=False):
+def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=0.8, with_interviewer=False):
     global nlp
     global active_data
     global excluded_tokens
@@ -407,6 +407,36 @@ def generate_knowledge_graph(start, end, with_interviewer=False):
                 else:
                     new_G.add_edge(t1, t2, weight=1)
 
+    # combine similar tokens if the "combine-by-similarity" option is chosen
+    #   using the contracted_nodes function of networkx
+    if use_similarity:
+
+        # first, let's make sure the token is in the model's vocab
+        #   or the similarity algorithm will yield random results
+        tokens_in_vocab = [t for t in new_G.nodes if not nlp.vocab[t].is_oov]
+
+        # # now lets compare node pairs to see if we should combine them
+        for n1, n2 in combinations(tokens_in_vocab, 2):
+
+                # first, make sure we're not checking tokens that were already combined
+                #         in a previous iteration of this loop
+                if n1 in new_G.nodes and n2 in new_G.nodes:
+
+                    # then check if the similarity between the two tokens is above the cutoff value
+                    if nlp.vocab[n1].similarity(nlp.vocab[n2]) > similarity_cutoff:
+
+                        # add the frequency of the second node to the first node
+                        new_G.nodes[n1]["count"] += new_G.nodes[n2]["count"]
+
+                        # add the label of the second node to the first node
+                        new_G.nodes[n1]["label"] += f" <sup>+{nlp.vocab.strings[n2]}</sup> "
+
+                        # Umit's NOTE: I did not implement any code that adjusts the weights of the 1st node's edges
+                        #       based on the weights of the 2nd node's edges yet (because time :)
+
+                        # finally combine the two tokens, which keeps the properties of the 1st node
+                        new_G = nx.contracted_nodes(new_G, n1, n2, self_loops=True, copy=True)
+
     return new_G
 
 
@@ -424,19 +454,23 @@ def display_knowledge_graph(
     size_multiplier=2,
     show_interviewer=False,
     show_all_labels=True,
-    show_weak_links=True
+    show_weak_links=True,
+    combine_by_similarity=True,
+    min_similarity=0.8
 ):
     global nlp
     global G
     global tokens_changed
 
-    # UA > if any edits were made in the utterance table or line number, regenerate the graph
+    # UA > if any edits were made in the utterance table or line number, regenerate the graph (nodes and the edge matrix)
     #       otherwise use the same graph for visualization changes
     if tokens_changed:
-
         # now let's generate the knowledge graph
         G = generate_knowledge_graph(
-            start=start_line, end=end_line, with_interviewer=show_interviewer,
+            start=start_line, end=end_line,
+            use_similarity=combine_by_similarity,
+            similarity_cutoff=min_similarity,
+            with_interviewer=show_interviewer,
         )
         tokens_changed = False
 
@@ -461,7 +495,8 @@ def display_knowledge_graph(
     )
     node_degrees = dict(
         G.degree
-    )  
+    )
+
     # because G.degree is a degreeview and doesn't have a values() method
     node_clustering = nx.clustering(G)
     d_centrality = nx.degree_centrality(G)
@@ -739,7 +774,7 @@ model_selection_dropdown = dbc.Select(
         {"label": "Medium", "value": "en_core_web_md"},
         {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
     ],
-    value="en_core_web_sm"
+    value="en_core_web_lg"
 )
 
 reset_button = dbc.Button(
@@ -880,11 +915,27 @@ utterances_accordion = dbc.Accordion(
     # active_item="1",  # collapsed by default
 )
 
-graph_button = dbc.Button(
-    "Generate Graph", id="graph-button", size="lg", n_clicks=0, disabled=True
+generate_div = html.Div([
+    dbc.Row(
+        [
+            dbc.Col(dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True), width=2),
+            dbc.Col(
+                dbc.InputGroup([
+                    dbc.InputGroupText("Min similarity"),
+                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.1, value=0.8),
+                ]), width=3
+            )
+        ],
+        class_name="mb-4"
+    ),
+    dbc.Row(
+        dbc.Col(
+            dbc.Button("Generate Graph", id="graph-button", size="lg", n_clicks=0, disabled=True)
+        )
+    ),
+    ],
+    className="border rounded p-4 my-4"
 )
-
-generate_div = html.Div([graph_button], className="border rounded p-4 my-4")
 
 # some codes are temporarily highlighted to make the revise modal view shorter
 #   for demo purposes
@@ -1149,6 +1200,18 @@ coding_modal = dbc.Modal(
                 ]
             )
         ),
+        dbc.ModalFooter([
+            html.H5("Color key: "),
+
+            dbc.Button("stop word", id="stopword-key-button", color="light", class_name="m-1", size="sm"),
+            dbc.Button("excluded only for this line", id="exclude-key-button", color="danger", class_name="m-1", size="sm",),
+            dbc.Button("included as a node", id="include-key-button", color="warning", class_name="m-1", size="sm",),
+
+            dbc.Tooltip("These gray tokens are excluded from analysis for the entire transcript.", target="stopword-key-button", placement="right"),
+            dbc.Tooltip("These red tokens are excluded from analysis only for this line but may be included in the other lines.", target="exclude-key-button", placement="right"),
+            dbc.Tooltip("These yellow are included in the analysis as the nodes of the token graph.", target="include-key-button", placement="right"),
+
+        ], class_name="d-flex justify-content-start"),
     ],
     id="coding-modal",
     scrollable=True,
@@ -1182,7 +1245,12 @@ app.layout = dbc.Container(
     class_name="p-4",
 )
 
+
+
+
 # ---- CALLBACKS ----
+
+
 @app.callback(
     Output("raw-text", "value"),
     Output("mode-name", "value"),
@@ -1218,11 +1286,8 @@ def load_input_file(file_name: str):
     Input("raw-text", "value"),
 )
 def enable_parse_button(name: str, text: str):
+    return False if len(name.strip()) > 0 and len(text.strip()) > 0 else True
 
-    if len(name.strip()) > 0 and len(text.strip()) > 0:
-        return False
-
-    return True
 
 
 @app.callback(
@@ -1514,9 +1579,10 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     Input("node-size", "value"),
     Input("inclusion-options", "value"), # this has been added
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
-    # Input("data-table", "cellValueChanged"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
+    State("combine-by-similarity", "value"),
+    State("min-similarity", "value"),
     State('data-table', 'virtualRowData'),
     prevent_initial_call=True,
 )
@@ -1535,11 +1601,11 @@ def knowledge_graph(
     multiplier,
     options,
     changed_stop,
-    # changed_include,
     disabled,
     name,
-    active_row_data,
-    prevent_initial_call=True,
+    combine_by_similarity,
+    min_similarity,
+    active_row_data
 ):
     global active_data
     global tokens_changed
@@ -1553,6 +1619,7 @@ def knowledge_graph(
 
     if ctx.triggered_id == "graph-button":
         has_generated = True
+        tokens_changed = True
 
         # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
         pickle_model(name, active_row_data)
@@ -1572,7 +1639,7 @@ def knowledge_graph(
     if not has_generated:
         return empty_return
 
-    # prevents runtime errors if the user manually removed the values to enter a new one
+    # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
     if deg is None: deg = 1
     if dmc_deg is None: dmc_deg = 2
 
@@ -1622,10 +1689,14 @@ def knowledge_graph(
         show_interviewer = 2 not in options,
         show_all_labels=all_labels,
         show_weak_links = weak_links,
+        combine_by_similarity=combine_by_similarity,
+        min_similarity=min_similarity,
     )
 
     return graph, slider_marks, line, stats, dmc_deg, change_log
 
+
+# TODO -> This callback threw an error for Philip
 @app.callback(
     Input("data-table", "cellValueChanged"),
 )
