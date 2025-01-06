@@ -372,7 +372,7 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
 
     # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
-    data_dict_list = active_data[0:end] if start == 0 else active_data
+    data_dict_list = active_data[start:end]
 
     for line in data_dict_list:
         if ((with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"))
@@ -441,7 +441,7 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
 
 
 def display_knowledge_graph(
-    start_line=0,  # if > 0, dmc mode is activated
+    start_line=0,  # if > 0, range mode is activated
     end_line=1,
     case_name="",
     raw_frequency=True,
@@ -450,7 +450,7 @@ def display_knowledge_graph(
     spring_iterations=30,
     spring_k=0.2,
     min_co_occurrence=1,
-    min_dmc_co_occurrence=2,
+    min_strong_co_occurrence=2,
     size_multiplier=2,
     show_interviewer=False,
     show_all_labels=True,
@@ -572,14 +572,14 @@ def display_knowledge_graph(
     light_edge_x = []
     light_edge_y = []
 
-    if min_co_occurrence > min_dmc_co_occurrence:
-        min_dmc_co_occurrence = min_co_occurrence
+    if min_co_occurrence > min_strong_co_occurrence:
+        min_strong_co_occurrence = min_co_occurrence
 
     for n1, n2 in G.edges():
         x0, y0 = pos[n1]
         x1, y1 = pos[n2]
 
-        if G[n1][n2]["weight"] > min_dmc_co_occurrence:
+        if G[n1][n2]["weight"] > min_strong_co_occurrence:
             edge_x.append(x0)
             edge_x.append(x1)
             edge_x.append(None)
@@ -631,7 +631,7 @@ def display_knowledge_graph(
         ),
     )
 
-    plot_title = "Cumulative" if start_line == 0 else "DMC"
+    plot_title = "Entire Transcript" if start_line == 0 else f"Between the Lines {start_line} and {end_line}"
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
@@ -982,21 +982,9 @@ grap_layout_options_div = html.Div(
             [
                 dbc.Col(
                     dbc.Checkbox(label="Include Deductive Codes", id="include-codes", value=False, disabled=True),
-                    xs=12,
-                    md=6,
-                    xl=2,
+                    class_name="mt-2",
+                    md=12, lg=3, xl=2,
                 ),
-                dbc.Col(
-                    [
-                        dbc.Checkbox(label="DMC Mode", id="dmc-mode", value=False, disabled=True)
-                    ],
-                    xs=12,
-                    md=6,
-                    xl=2,
-                ),
-            ], class_name="mt-3"
-        ),
-        dbc.Row([
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Weak min co-occurrence"),
@@ -1009,14 +997,14 @@ grap_layout_options_div = html.Div(
                             value=1
                         ),
                     ]),
-                    lg=6,
-                    xl=3,
+                    class_name="mt-2",
+                    md=6, lg=4, xl=3,
                 ),
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Strong min co-occurrence"),
                         dbc.Input(
-                            id="min-dmc-co",
+                            id="min-strong-co",
                             type="number",
                             min=1,
                             max=10,
@@ -1024,8 +1012,8 @@ grap_layout_options_div = html.Div(
                             value=2,
                         )]
                     ),
-                    lg=6,
-                    xl=4,
+                    class_name="mt-2",
+                    md=6, lg=4, xl=3,
                 ),
             ],
             class_name="mt-4"
@@ -1132,11 +1120,11 @@ graph_view_options_div = html.Div(
             id="graph-div",
             className="text-center",
         ),
-        dcc.Slider(
+        dcc.RangeSlider(
             id="graph-slider",
             step=None,
             marks={0: 'N/A'},
-            value=0,
+            value=[0, 0],
             tooltip={"placement": "bottom", "always_visible": True},
             className="my-4",
         ),
@@ -1563,14 +1551,13 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     Output("graph-slider", "marks"),
     Output("graph-slider", "value"),
     Output("metrics-div", "children"),
-    Output("min-dmc-co", "value"),
+    Output("min-strong-co", "value"),
     Output("changes-div", "children"),
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
     Input("include-codes", "value"),
-    Input("dmc-mode", "value"),
     Input("min-co", "value"),
-    Input("min-dmc-co", "value"),
+    Input("min-strong-co", "value"),
     Input("all-labels", "value"),
     Input("weak-links", "value"),
     Input("graph-layout", "value"),
@@ -1588,11 +1575,10 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
 )
 def knowledge_graph(
     n_clicks,
-    line,
+    line_range,
     code_pref,
-    dmc,
-    deg,
-    dmc_deg,
+    minimum_co_occurrence,
+    minimum_strong_co_occurrence,
     all_labels,
     weak_links,
     layout,
@@ -1612,7 +1598,7 @@ def knowledge_graph(
     global has_generated
     global change_log
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, 0, "You need to process some data.", deg, "This view will be updated when the user toggles tokens."]
+    empty_return = ["You need to process some data.", {0: 'N/A'}, 0, "You need to process some data.", minimum_co_occurrence, "This view will be updated when the user toggles tokens."]
 
     if disabled:
         return empty_return
@@ -1630,7 +1616,7 @@ def knowledge_graph(
     if ctx.triggered_id == "min-co":
         tokens_changed = True
 
-    if ctx.triggered_id == "min-dmc-co":
+    if ctx.triggered_id == "min-strong-co":
         tokens_changed = True
 
     if ctx.triggered_id == "inclusion-options":
@@ -1640,11 +1626,11 @@ def knowledge_graph(
         return empty_return
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
-    if deg is None: deg = 1
-    if dmc_deg is None: dmc_deg = 2
+    if minimum_co_occurrence is None: minimum_co_occurrence = 1
+    if minimum_strong_co_occurrence is None: minimum_strong_co_occurrence = 2
 
-    # make sure min co-occurrence is not larger than min dmc co-occurrence
-    dmc_deg = deg + 1 if deg > dmc_deg - 1 else dmc_deg
+    # make sure min co-occurrence is not larger than min strong co-occurrence
+    minimum_strong_co_occurrence = minimum_co_occurrence + 1 if minimum_co_occurrence > minimum_strong_co_occurrence - 1 else minimum_strong_co_occurrence
 
     # make the slider's tickers match the data at hand (has to be a dict)
     #   dictionary format is {line_num: 'label'}
@@ -1655,25 +1641,16 @@ def knowledge_graph(
     list_of_marks = sorted([l['line'] for l in active_row_data if l['in?']])
     slider_marks = {r: '' for r in list_of_marks}
 
-    # display the latest utterance when generating a cumulative layout
-    # if 2 in options: skip every other line
-    # add a state checker to the above callback
-    if not dmc and ctx.triggered_id == "graph-button":
+    # determine the start and end of the range that the user picked
+    start = line_range[0]
+    end = line_range[1]
+    if ctx.triggered_id == "graph-button":
         last_line = list(slider_marks.keys())[-1]
-        line = line if line != 0 and line <= last_line else last_line
-
-    start = 0
-    end = line
+        end = line_range[1] if line_range[1] != 0 and line_range[1] <= last_line else last_line
 
     end = end if end < len(active_data) else len(active_data)
 
-    # if dmc:
-    #     r = int((window - 1) / 2)
-    #     start = max(0, line - r)
-    #     end = min(len(active_data), line + r)
-    #
-    #     if window == 1:
-    #         end = start + 1
+    selected_range = list([start, end])
 
     graph, stats = display_knowledge_graph(
         start_line=start,
@@ -1683,8 +1660,8 @@ def knowledge_graph(
         layout=layout,
         spring_iterations=iterations,
         spring_k=k,
-        min_co_occurrence=deg,
-        min_dmc_co_occurrence=dmc_deg,
+        min_co_occurrence=minimum_co_occurrence,
+        min_strong_co_occurrence=minimum_strong_co_occurrence,
         size_multiplier=multiplier,
         show_interviewer = 2 not in options,
         show_all_labels=all_labels,
@@ -1693,10 +1670,10 @@ def knowledge_graph(
         min_similarity=min_similarity,
     )
 
-    return graph, slider_marks, line, stats, dmc_deg, change_log
+    return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, change_log
 
 
-# TODO -> This callback threw an error for Philip
+
 @app.callback(
     Input("data-table", "cellValueChanged"),
 )
