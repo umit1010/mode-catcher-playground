@@ -12,9 +12,9 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
+from fastcoref import spacy_component
 import dash_auth
-from itertools import combinations
-
+from itertools import chain, combinations
 from markdown_it.rules_core import inline
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
@@ -34,7 +34,7 @@ tokens_changed: bool = False ## TODO: This  is a very problematic global because
 stopped_words = set()
 unstopped_words = set()
 assigned_codes = dict()
-excluded_tokens = dict() # TODO: Change this to a hidden table column
+excluded_tokens = dict()
 active_data = list()
 has_generated = False
 
@@ -112,7 +112,12 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
         if speaker:
             row['speaker'] = speaker
 
-        doc = nlp(utterance.strip())
+        ## TODO -> Option of turning off coref resolution (see line 1406)
+        doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}})
+        print("--coref spans: ", doc._.coref_clusters)
+
+        ## TODO -> Move resolved text in a separate table grid column
+        ##          Currently, it replaces the existing text (for the sake of quick implementation)
 
         if in_sentences:
             for s in doc.sents:
@@ -139,7 +144,29 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
                 i += 1
                 sent_row['line'] = i
                 sent_row['in?'] = False if i in excluded_rows else True
-                sent_row['utterance'] = s.text
+
+                # check if this sentence contains any resolved coreferences
+                # and replace the resolved string (for now)
+
+                # print("++sentence spans: ", s.start_char, s.end_char, " >> ", s.text_with_ws)
+
+                utterance = s.text
+
+                for c in doc._.coref_clusters:
+                    print("checking cluster: ", c[1])
+                    if s.start_char <= c[1][0] <= s.end_char:
+                        # print("!!! this sentence has a coref !!!")
+
+                        reference = doc.char_span(c[0][0], c[0][1]).text
+                        pronoun = doc.char_span(c[1][0], c[1][1]).text
+
+                        # very terrible coding in the line below :)
+                        # TODO -> fix this replace algorithm because it may replace the wrong pronoun
+                        utterance = utterance.replace(pronoun, reference)
+
+                        # print(" >> new sentence >>", utterance)
+
+                sent_row['utterance'] = utterance
 
                 data.append(sent_row)
         else:
@@ -1396,6 +1423,12 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
 
         # reload the model because it only pulls default stopwords if loaded from the beginning
         nlp = spacy.load(model, exclude=["ner"])
+
+        ## TODO -> Add an interface item so that the user can decide whether they want to use coref resolution or not
+        nlp.add_pipe("fastcoref", config={  'device': 'cpu',
+                                                        # 'model_architecture': 'LingMessCoref', # this model runs slower
+                                                        # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
+                                                     })
 
         # update stop_words of the small model
         #   I have to do it this y because spacy's to_disk method doesn't save stopwords
