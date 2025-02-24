@@ -1,0 +1,41 @@
+# This is a configuration file that contains the deductive/theoretical codes
+
+[processes]
+explanation = """This category is an addition to Jacobson (2001) framework from Chi (2005). The subcategories of Chi's framework is shown below. In general, a scorer who understands the concept of `emergence` should be able to intuitively code for this category without having to refer to Chi’s framework over and over again."""
+
+[processes.direct]
+explanation = """A direct process refers to TO-BE-WRITTEN"""
+keywords = "distinct, constrained, sequential, dependent, terminating"
+conceptual_example = "..."
+verbatim_excerpt = """
+...
+"""
+
+[processes.emergent]
+explanation = """An emergent process refers to TO-BE-WRITTEN"""
+keywords = "uniform, unconstrained, simultaneous, independent, continuous"
+conceptual_example = "..."
+verbatim_excerpt = """
+...
+"""
+
+
+[understanding_phenomena]
+explanation = """TO-BE-WRITTEN"""
+
+[understanding_phenomena.reductive]
+explanation = """A participant who understands a phenomenon *reductively* would try to explain it in terms of independent parts (i.e., the whole is the sum of the parts)."""
+keywords = "parts, whole, sum"
+conceptual_example = "..."
+verbatim_excerpt = """
+...
+"""
+
+[understanding_phenomena.non_reductive]
+explanation = """In contrast, a *non-reductive* thinker would acknowledge the differences between a phenomenon at the macro-level and the sum of its parts, even if they fail to offer a coherently emergent explanation.
+"""
+keywords = "macro, micro, emergent"
+conceptual_example = "..."
+verbatim_excerpt = """
+...
+"""

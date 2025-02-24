@@ -64,7 +64,13 @@ server = app.server
 
 # ---- NLP ----
 
-def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences=True, excluded_rows = [], use_nlp_tags=False):
+def parse_raw_text(txt: str,
+                   timestamp=False,
+                   is_interviewer=False,
+                   in_sentences=True,
+                   excluded_rows = [],
+                   use_nlp_tags=False,
+                   resolve_corefs=False):
 
     global excluded_tokens
     global nlp
@@ -112,9 +118,8 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
         if speaker:
             row['speaker'] = speaker
 
-        ## TODO -> Option of turning off coref resolution (see line 1406)
-        doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}})
-        print("--coref spans: ", doc._.coref_clusters)
+        doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}}) if resolve_corefs else nlp(utterance.strip())
+        # print("--coref spans: ", doc._.coref_clusters)
 
         ## TODO -> Move resolved text in a separate table grid column
         ##          Currently, it replaces the existing text (for the sake of quick implementation)
@@ -152,19 +157,20 @@ def parse_raw_text(txt: str, timestamp=False, is_interviewer=False, in_sentences
 
                 utterance = s.text
 
-                for c in doc._.coref_clusters:
-                    print("checking cluster: ", c[1])
-                    if s.start_char <= c[1][0] <= s.end_char:
-                        # print("!!! this sentence has a coref !!!")
+                if resolve_corefs:
+                    for c in doc._.coref_clusters:
+                        print("checking cluster: ", c[1])
+                        if s.start_char <= c[1][0] <= s.end_char:
+                            # print("!!! this sentence has a coref !!!")
 
-                        reference = doc.char_span(c[0][0], c[0][1]).text
-                        pronoun = doc.char_span(c[1][0], c[1][1]).text
+                            reference = doc.char_span(c[0][0], c[0][1]).text
+                            pronoun = doc.char_span(c[1][0], c[1][1]).text
 
-                        # very terrible coding in the line below :)
-                        # TODO -> fix this replace algorithm because it may replace the wrong pronoun
-                        utterance = utterance.replace(pronoun, reference)
+                            # very terrible coding in the line below :)
+                            # TODO -> fix this replace algorithm because it may replace the wrong pronoun
+                            utterance = utterance.replace(pronoun, reference)
 
-                        # print(" >> new sentence >>", utterance)
+                            # print(" >> new sentence >>", utterance)
 
                 sent_row['utterance'] = utterance
 
@@ -268,33 +274,37 @@ def process_utterance(raw_text, row):
         ]
     )
 
-    token_counts = Counter(all_tokens)
 
-    data_dict = {
-        "token": list(token_counts.keys()),
-        "count": list(token_counts.values()),
-    }
+    ## Umit commented out the following lines on 02/24/2025 to deactivate
+    ##      the treemap visualization of token counts
 
-    df = pd.DataFrame.from_dict(data_dict)
+    # token_counts = Counter(all_tokens)
+    #
+    # data_dict = {
+    #     "token": list(token_counts.keys()),
+    #     "count": list(token_counts.values()),
+    # }
+    #
+    # df = pd.DataFrame.from_dict(data_dict)
+    #
+    # # why a treemap?
+    # fig = px.treemap(
+    #     df,
+    #     path=[px.Constant("tokens"), "token"],
+    #     values="count",
+    #     color="count",
+    #     hover_data="token",
+    #     color_continuous_scale="RdBu",
+    #     color_continuous_midpoint=df["count"].mean(),
+    # )
+    #
+    # fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
+    #
+    # fig.update_coloraxes(showscale=False)
+    #
+    # token_treemap = dcc.Graph(figure=fig, responsive=True, style={"height": "200px"})
 
-    # why a treemap?
-    fig = px.treemap(
-        df,
-        path=[px.Constant("tokens"), "token"],
-        values="count",
-        color="count",
-        hover_data="token",
-        color_continuous_scale="RdBu",
-        color_continuous_midpoint=df["count"].mean(),
-    )
-
-    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
-
-    fig.update_coloraxes(showscale=False)
-
-    token_treemap = dcc.Graph(figure=fig, responsive=True, style={"height": "200px"})
-
-    return buttons_for_text, token_treemap
+    return buttons_for_text #, token_treemap
 
 def pickle_model(mode_name, active_rows):
     global nlp
@@ -794,6 +804,8 @@ parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
 apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True)
+corefs_checkbox = dbc.Checkbox(label="Resolve coreferences", id="resolve-corefs", value=False, disabled=False if heroku_access_pwd is None else True)
+
 model_selection_dropdown = dbc.Select(
     id="model-selection-dropdown",
     options=[
@@ -858,19 +870,23 @@ input_accordion = dbc.Accordion(
                             dbc.Label("Transcript:"),
                             raw_text_input,
                         ]
-                    )
+                    ),
+                    class_name="mb-4",
+                ),
+                dbc.Row(
+
                 ),
                 dbc.Row([
                     dbc.Col(sentencize_checkbox, xl=2),
                     dbc.Col(apply_tags_checkbox, xl=3),
+                    dbc.Col(corefs_checkbox, xl=2),
                     dbc.Col(width=2),
                     dbc.Col(
                         dbc.InputGroup([
                             dbc.InputGroupText("Model"),
                             model_selection_dropdown
                         ]),
-                        xl=3,
-                        align="end",
+                        xl=3
                     )
                 ], class_name="mt-4", justify="between"
                 ),
@@ -1189,17 +1205,21 @@ coding_modal = dbc.Modal(
                     dbc.Col("", id="token-buttons"),
                     dbc.Col(
                         [
-                            dbc.Row(
-                                dbc.Col(
-                                    [
-                                        html.H4("Frequency map"),
-                                        html.Div(
-                                            "Something must have gone wrong!",
-                                            id="utterance-stats",
-                                        ),
-                                    ]
-                                ),
-                            ),
+                            ## Umit commented out the following lines on 02/24/2025 to deactivate
+                            ##      the treemap visualization of token counts
+
+                            # dbc.Row(
+                            #     dbc.Col(
+                            #         [
+                            #             html.H4("Frequency map"),
+                            #             html.Div(
+                            #                 "Something must have gone wrong!",
+                            #                 id="utterance-stats",
+                            #             ),
+                            #         ]
+                            #     ),
+                            # ),
+
                             dbc.Row(
                                 dbc.Col(
                                     [
@@ -1350,11 +1370,12 @@ def reset_mode(nclicks, name):
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
+    State("resolve-corefs", "value"),
     State("modal-row-id", "data"),
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, model, use_nlp_tags, revised_row_id, existing_row_data):
+def utterance_table(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, model, use_nlp_tags, resolve_corefs, revised_row_id, existing_row_data):
     global active_data
     global assigned_codes
     global change_log
@@ -1424,8 +1445,8 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
         # reload the model because it only pulls default stopwords if loaded from the beginning
         nlp = spacy.load(model, exclude=["ner"])
 
-        ## TODO -> Add an interface item so that the user can decide whether they want to use coref resolution or not
-        nlp.add_pipe("fastcoref", config={  'device': 'cpu',
+        if resolve_corefs:
+            nlp.add_pipe("fastcoref", config={  'device': 'cpu',
                                                         # 'model_architecture': 'LingMessCoref', # this model runs slower
                                                         # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
                                                      })
@@ -1451,7 +1472,8 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
             is_interviewer=interviewer,
             in_sentences = sentencized,
             excluded_rows = excluded_rows,
-            use_nlp_tags = use_nlp_tags
+            use_nlp_tags = use_nlp_tags,
+            resolve_corefs=resolve_corefs
         )
 
         active_data = parsed_data
@@ -1505,7 +1527,7 @@ def apply_table_layout_filters(options):
 
 @app.callback(
     Output("token-buttons", "children"),
-    Output("utterance-stats", "children"),
+    # Output("utterance-stats", "children"), # umit temporarily commented out this line on 02/24/2025 to deactivate the treemap visualization
     Output("code-checkboxes-container", "children"),
     Output("coding-modal", "is_open"),
     Output("modal-row-id", "data"),
@@ -1570,11 +1592,11 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
 
                 tokens_changed = True
 
-        token_buttons, token_treemap = process_utterance(row_data[row]["utterance"], row=row)
+        token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
         codes = generate_code_checkboxes(row)
 
-        return token_buttons, token_treemap, codes, True, row
+        return token_buttons, codes, True, row
     else:
         return "Something", "went", "wrong", False, -1
 
@@ -1631,7 +1653,7 @@ def knowledge_graph(
     global has_generated
     global change_log
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, 0, "You need to process some data.", minimum_co_occurrence, "This view will be updated when the user toggles tokens."]
+    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, "This view will be updated when the user toggles tokens."]
 
     if disabled:
         return empty_return
