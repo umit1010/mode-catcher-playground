@@ -19,6 +19,7 @@ from markdown_it.rules_core import inline
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 from datetime import datetime, time
+import tomllib
 
 # --- HEROKU SIMPLE AUTH PASSWORD ---
 
@@ -193,27 +194,57 @@ def parse_raw_text(txt: str,
 
 def generate_code_checkboxes(line_num, values=None):
 
-    if values is not None:
-        assigned_codes[line_num] = values
+    # if values is not None:
+    #     assigned_codes[line_num] = values
+
+    with open("config/deductive_codes.toml", "rb") as f:
+        code_definitions = tomllib.load(f)
+
+    checkboxes = list()
+
+    for category in code_definitions:
+        for code in code_definitions[category]:
+            if type(code_definitions[category][code]) is dict:
+                new_checkbox = html.Div([
+                    dbc.Checkbox(
+                        label=code,
+                        # value=assigned_codes[line_num][code[0]],
+                        id=f"code-checkbox-{code}"
+                    )
+                ], id=f"code-checkbox-div-{code}", className="w-50")
+
+                new_popover = dbc.Popover(
+                        [
+                            dbc.PopoverHeader([
+                                html.Strong(f"{code}"),
+                                html.Em(f" {category}", className="text-muted")
+                            ]),
+                            dbc.PopoverBody([
+                                html.P(code_definitions[category][code]['description']),
+                                html.Pre(f"Keywords: {code_definitions[category][code]['keywords']}"),
+                                html.P(html.Small(html.Strong("Conceptual Example"))),
+                                html.P(html.Small(code_definitions[category][code]['conceptual_example'])),
+                                html.P(html.Small(html.Strong("Verbatim Excerpt"))),
+                                html.P(html.Small(code_definitions[category][code]['verbatim_excerpt'])),
+                            ]),
+                        ],
+                        target=f"code-checkbox-div-{code}",
+                        placement="left",
+                        # body=True,
+                        trigger="hover",
+                    )
+
+                checkboxes.append(new_checkbox)
+                checkboxes.append(new_popover)
+            # else:
+            #     print("> ", code)
 
     container = html.Div(
-        [
-            html.Div(
-                [
-                    dbc.Checkbox(
-                        label=code[1],
-                        disabled=True,
-                        # value=assigned_codes[line_num][code[0]],
-                        id={"type": "code-checkbox", "index": code[1]}
-                    )
-                ],
-                className="w-50",
-            )
-            for code in enumerate(theoretical_codes_list)
-        ],
+        checkboxes,
         className="d-flex align-content-start flex-wrap",
         id="code-checkboxes-container",
     )
+
     return container
 
 # editable tag applications
@@ -813,7 +844,7 @@ model_selection_dropdown = dbc.Select(
         {"label": "Medium", "value": "en_core_web_md"},
         {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
     ],
-    value="en_core_web_lg"
+    value="en_core_web_md"
 )
 
 reset_button = dbc.Button(
@@ -1223,12 +1254,11 @@ coding_modal = dbc.Modal(
                             dbc.Row(
                                 dbc.Col(
                                     [
-                                        dbc.Badge("not implemented", text_color="danger", color="white", className="border small text-italic"),
-                                        html.H4("Deductive Codes"),
+                                        # dbc.Badge("not implemented", text_color="danger", color="white", className="border small text-italic"),
+                                        html.H5("Deductive Codes", className="mb-4"),
                                         code_checkboxes_container,
                                     ]
-                                ),
-                                class_name="mt-4",
+                                )
                             ),
                         ]
                     ),
