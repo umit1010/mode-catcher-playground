@@ -197,6 +197,10 @@ def generate_code_checkboxes(line_num, values=None):
     # if values is not None:
     #     assigned_codes[line_num] = values
 
+    ## TODO -> this function re-reads the toml file every time a line is clicked
+    ##          I will move the logic outside to read the file once at the load
+    ##          and then use the global variable to repopulate the fields
+
     with open("config/deductive_codes.toml", "rb") as f:
         code_definitions = tomllib.load(f)
 
@@ -207,7 +211,7 @@ def generate_code_checkboxes(line_num, values=None):
             if type(code_definitions[category][code]) is dict:
                 new_checkbox = html.Div([
                     dbc.Checkbox(
-                        label=code,
+                        label=code.replace('_', ' '),
                         # value=assigned_codes[line_num][code[0]],
                         id=f"code-checkbox-{code}"
                     )
@@ -216,12 +220,14 @@ def generate_code_checkboxes(line_num, values=None):
                 new_popover = dbc.Popover(
                         [
                             dbc.PopoverHeader([
-                                html.Strong(f"{code}"),
-                                html.Em(f" {category}", className="text-muted")
+                                html.Strong(code),
+                                # html.Sup(html.Em(category, className="text-muted"), className="ms-1"),
+                                html.Sup(dbc.Badge(code_definitions[category][code]['ontology'], color="white", text_color="danger", className="border me-1"), className="ms-1"),
+
                             ]),
                             dbc.PopoverBody([
                                 html.P(code_definitions[category][code]['description']),
-                                html.Pre(f"Keywords: {code_definitions[category][code]['keywords']}"),
+                                html.P(html.Code(f"Keywords: {code_definitions[category][code]['keywords']}")),
                                 html.P(html.Small(html.Strong("Conceptual Example"))),
                                 html.P(html.Small(code_definitions[category][code]['conceptual_example'])),
                                 html.P(html.Small(html.Strong("Verbatim Excerpt"))),
@@ -236,12 +242,19 @@ def generate_code_checkboxes(line_num, values=None):
 
                 checkboxes.append(new_checkbox)
                 checkboxes.append(new_popover)
-            # else:
-            #     print("> ", code)
+            else:
+                checkboxes.append(html.Div(className="w-100 my-2"))
+            #     checkboxes.append(html.H6(category.replace('_', ' '), id=f"category-div-{category}", className=" text-muted"))
+            #
+            #     category_popover = dbc.Popover([
+            #             dbc.PopoverHeader(html.Strong(category)),
+            #             dbc.PopoverBody(html.P(code_definitions[category]['description'])),
+            #         ], target=f"category-div-{category}", placement="left", trigger="hover")
+            #
+            #     checkboxes.append(category_popover)
 
     container = html.Div(
-        checkboxes,
-        className="d-flex align-content-start flex-wrap",
+        html.Small(checkboxes, className="w-100 d-flex align-content-start flex-wrap"),
         id="code-checkboxes-container",
     )
 
@@ -842,9 +855,9 @@ model_selection_dropdown = dbc.Select(
     options=[
         {"label": "Small", "value": "en_core_web_sm"},
         {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
+        {"label": "Large", "value": "en_core_web_md", "disabled": False if heroku_access_pwd is None else True},
     ],
-    value="en_core_web_md"
+    value="en_core_web_lg"
 )
 
 reset_button = dbc.Button(
@@ -861,7 +874,7 @@ inclusion_options = dbc.Checklist(
         {"label": "Display Timestamp", "value": 0},
         {"label": "Display Speaker", "value": 1},
         {"label": "Ignore Interviewer Speech", "value": 2},
-        {"label": "Highlight tokens", "value": 3},
+        {"label": "Highlight Included Tokens", "value": 3},
     ],
     value=[0, 1, 2],
     inline=True,
@@ -1229,41 +1242,36 @@ change_log_viewer_wrapper_div = html.Div(
 
 coding_modal = dbc.Modal(
     [
-        dbc.ModalHeader(dbc.ModalTitle("Revise Tokens"), close_button=True),
+        # dbc.ModalHeader(dbc.ModalTitle("Hey!"), close_button=True),
         dbc.ModalBody(
-            dbc.Row(
-                [
-                    dbc.Col("", id="token-buttons"),
-                    dbc.Col(
-                        [
-                            ## Umit commented out the following lines on 02/24/2025 to deactivate
-                            ##      the treemap visualization of token counts
+            dbc.Row([
+                dbc.Col([
+                    html.H5("Tokens", className="mb-4 pe-4"),
+                    html.Div(id="token-buttons")
+                ]),
+                dbc.Col(
+                    [
+                        ## Umit commented out the following lines on 02/24/2025 to deactivate
+                        ##      the treemap visualization of token counts
 
-                            # dbc.Row(
-                            #     dbc.Col(
-                            #         [
-                            #             html.H4("Frequency map"),
-                            #             html.Div(
-                            #                 "Something must have gone wrong!",
-                            #                 id="utterance-stats",
-                            #             ),
-                            #         ]
-                            #     ),
-                            # ),
+                        # dbc.Row(
+                        #     dbc.Col(
+                        #         [
+                        #             html.H4("Frequency map"),
+                        #             html.Div(
+                        #                 "Something must have gone wrong!",
+                        #                 id="utterance-stats",
+                        #             ),
+                        #         ]
+                        #     ),
+                        # ),
 
-                            dbc.Row(
-                                dbc.Col(
-                                    [
-                                        # dbc.Badge("not implemented", text_color="danger", color="white", className="border small text-italic"),
-                                        html.H5("Deductive Codes", className="mb-4"),
-                                        code_checkboxes_container,
-                                    ]
-                                )
-                            ),
-                        ]
-                    ),
-                ]
-            )
+                        html.H5("Deductive Codes"),
+                        code_checkboxes_container,
+                    ]
+                ),
+            ])
+
         ),
         dbc.ModalFooter([
             html.H5("Color key: "),
@@ -1271,6 +1279,8 @@ coding_modal = dbc.Modal(
             dbc.Button("stop word", id="stopword-key-button", color="light", class_name="m-1", size="sm"),
             dbc.Button("excluded only for this line", id="exclude-key-button", color="danger", class_name="m-1", size="sm",),
             dbc.Button("included as a node", id="include-key-button", color="warning", class_name="m-1", size="sm",),
+
+            # html.Small("* Deductive codes adapted from Jacobson (2001) and Chi (2005).", className="text-muted m-1"),
 
             dbc.Tooltip("These gray tokens are excluded from analysis for the entire transcript.", target="stopword-key-button", placement="right"),
             dbc.Tooltip("These red tokens are excluded from analysis only for this line but may be included in the other lines.", target="exclude-key-button", placement="right"),
@@ -1291,7 +1301,7 @@ app.layout = dbc.Container(
             dbc.Col(
                 [   
                     html.H1(
-                        ["mode-catcher ", html.Em("playground")],
+                        ["mode-catcher ", html.Em("playground", className="text-muted font-weight-light")],
                         className="text-center m-4",
                     ),
                     input_accordion                        

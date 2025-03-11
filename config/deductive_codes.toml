@@ -1,88 +1,180 @@
 # This is a configuration file that contains the deductive/theoretical codes
+# that are shown in the utterance editer sub-view
 
-#[processes]
-#description = """This category is an addition to Jacobson (2001) framework from Chi (2005). The subcategories of Chi's framework is shown below. In general, a scorer who understands the concept of `emergence` should be able to intuitively code for this category without having to refer to Chi’s framework over and over again."""
-#
-#[processes.direct]
-#description = """A direct process refers to TO-BE-WRITTEN"""
-#keywords = "distinct, constrained, sequential, dependent, terminating"
-#conceptual_example = "..."
-#verbatim_excerpt = """
-#...
-#"""
-#
-#[processes.emergent]
-#description = """An emergent process refers to TO-BE-WRITTEN"""
-#keywords = "uniform, unconstrained, simultaneous, independent, continuous"
-#conceptual_example = "..."
-#verbatim_excerpt = """
-#...
-#"""
-#
-#
-#[understanding_phenomena]
-#description = """TO-BE-WRITTEN"""
-#
-#[understanding_phenomena.reductive]
-#description = """A participant who understands a phenomenon *reductively* would try to explain it in terms of independent parts (i.e., the whole is the sum of the parts)."""
-#keywords = "parts, whole, sum"
-#conceptual_example = "..."
-#verbatim_excerpt = """
-#...
-#"""
-#
-#[understanding_phenomena.non_reductive]
-#description = """A *non-reductive* thinker would acknowledge the differences between a phenomenon at the macro-level and the sum of its parts, even if they fail to offer a coherently emergent explanation.
-#"""
-#keywords = "macro, micro, emergent"
-#conceptual_example = "..."
-#verbatim_excerpt = """
-#...
-#"""
+[processes]
+description = "This is an addition to Jacobson’s framework from Chi (2005). In general, a scorer who understands the concept of emergence should be able to intuitively code for this category without having to refer to Chi’s framework in detail. However, we will refer to it if any disputes emerge between multiple coders."
+
+    [processes.direct]
+    description = "Describes processes through components that are distinct, constrained, sequential, dependent, and/or terminating."
+    ontology = "clockwork"
+    keywords = "mechanistic, sequential, step-by-step, top-to-bottom"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+    [processes.emergent]
+    description = "Describes processes through components that are uniform, unconstrained, simultaneous, independent, and/or continuous."
+    ontology = "complexity"
+    keywords = "bottom-up, collective, self-organizing"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+
+
+[understanding_phenomena]
+description = "..."
+
+    [understanding_phenomena.reductive]
+    description = "Tries to explain a phenomenon in terms of independent parts."
+    ontology = "clockwork"
+    keywords = "the whole = sum of the parts"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+    [understanding_phenomena.non_reductive]
+    description = "Acknowledges the differences between the parts at the micro-level and the phenomenon at the macro-level, (even if the explanation is not coherent or emergent)."
+    ontology = "complexity"
+    keywords = "the whole ≠ sum of the parts"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
 
 [control]
 description = "..."
 
-[control.centralized]
-description = "The participant attributes a macro-level outcome/pattern to the actions of a central agent."
-keywords = "leader, manager, king, queen, chief, organizer"
-conceptual_example = "..."
-verbatim_excerpt = "..."
+    [control.centralized]
+    description = "Attributes a macro-level outcome/pattern to the actions of a central agent."
+    ontology = "clockwork"
+    keywords = "leader, manager, king, queen, chief, organizer"
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
 
-[control.decentralized]
-description = "The participant invokes a top-level decision maker that is not actually an agent in the model itself."
-keywords = "god-like, puppet master"
-conceptual_example = "..."
-verbatim_excerpt = "..."
+#    [control.external_agent]
+#    description = "Invokes a higher-level decision maker that is not actually an agent in the model itself."
+#    ontology = "complexity"
+#    keywords = "god-like, puppet master"
+#    conceptual_example = "..."
+#    verbatim_excerpt = "..."
+
+    [control.decentralized]
+    description = "Describes agents that make their own independent decisions."
+    ontology = "complexity"
+    keywords = "agency, autonomous, collective, leaderless, individuality"
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
 
 
 [causes]
 description = "..."
 
-[causes.single]
-description = "The participant attributes a macro-level outcome to a single underlying cause, such as an event, an agent decision, or a chance event."
-keywords = "root cause, one-off,  miracle"
-conceptual_example = "..."
-verbatim_excerpt = "..."
+    [causes.single]
+    description = "Attributes a macro-level outcome to a single underlying cause, such as an event, an agent decision, or a chance event."
+    ontology = "clockwork"
+    keywords = "root cause, one-off,  miracle"
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
 
-[causes.multiple]
-description = "The participant describes a system where a series of causes, such as events or independent agent decisions, culminate in a macro-level outcome or pattern"
-keywords = "distributed, "
-conceptual_example = "..."
-verbatim_excerpt = "..."
+    [causes.multiple]
+    description = "Describes a system where a series of causes, such as events or independent agent decisions, culminate in a macro-level outcome or pattern"
+    ontology = "complexity"
+    keywords = "distributed, "
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
 
 
 [action_effects]
 description = "..."
 
-[action_effects.small_to_small]
-description = "if the participant describes a direct and proportional relationship between agent action(s) and macro-level phenomena."
-keywords = "one-to-one, proportional, linear, whole = sum of parts`"
-conceptual_example = "..."
-verbatim_excerpt = "..."
+    [action_effects.small_to_small]
+    description = "Describes a direct and proportional relationship between agent action(s) and macro-level phenomena."
+    ontology = "clockwork"
+    keywords = "one-to-one, proportional, linear, whole = sum of parts`"
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
 
-[action_effects.small_to_big]
-description = "if the participant describes a disproportional (or non-linear) relationship between agent action(s) and macro-level phenomena."
-keywords = "one-to-one, proportional, linear, whole = sum of parts`"
-conceptual_example = "..."
-verbatim_excerpt = "..."
+    [action_effects.small_to_big]
+    description = "Describes a disproportional (or non-linear) relationship between agent action(s) and macro-level phenomena."
+    ontology = "complexity"
+    keywords = "one-to-one, proportional, linear, whole = sum of parts`"
+    conceptual_example = "..."
+    verbatim_excerpt = "..."
+
+
+[agent_actions]
+description = "This category concerns how participants describe agent behavior (e.g., decision making, movement, interactions, internal states, external features)."
+
+    [agent_actions.predictable]
+    description = "Describes agents that follow a deterministic set of behavioral rules."
+    ontology = "clockwork"
+    keywords = "machine-like, monotonic, humdrum, repetitive"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+    [agent_actions.stochastic]
+    description = "Mentions chance events (or probabilistic distributions) that can alter behavior at any given moment."
+    ontology = "complexity"
+    keywords = "random, uncertain, probabilistic, irregular"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+
+[complex_actions]
+description = "This category applies to descriptions of systems that include micro-level agents and events, as well as a description of the nature of connection between micro and macro levels."
+
+    [complex_actions.from_complex_rules]
+    description = "Describes many discrete parts (agents, events, factors etc.), perhaps even cascading levels, to explain a macro-level outcome."
+    ontology = "clockwork"
+    keywords = "heterogenous, fragmented, complicated"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+    [complex_actions.from_simple_rules]
+    description = "Describes a macro-level outcome that requires relatively simple micro-level agents behaving in relatively simple ways."
+    ontology = "complexity"
+    keywords = "compact, simple, concise"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+
+[final_causes]
+description = "This category concerns whether a participant attributes purposefulness to micro-level agents."
+
+    [final_causes.teleological]
+    description = "Believes or implies that micro level agents are somehow aware of how their actions lead to the macro-level outcome."
+    ontology = "clockwork"
+    keywords = "level-slippage, top-to-bottom"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+    [final_causes.non_teleological]
+    description = "Describes micro-level agents who are behaving independently without being aware the macro-level outcomes."
+    ontology = "complexity"
+    keywords = "unwitting, oblivious,"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+
+[ontology]
+description = "Concerns the way a participant breaks down a system or phenomenon into its constituent parts (e.g., agents, environment, events, possibilities)."
+
+    [ontology.static_structures]
+    description = "Describes the system as made up of pieces that never change or alter their behavior."
+    ontology = "clockwork"
+    keywords = "unchanging, fixed, immutable, finite"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+#    [ontology.events]
+#    description = "Includes distinct and discrete events in their description."
+#    ontology = "clockwork"
+#    keywords = "isolated, one-off, definite, ends, terminal"
+#    conceptual_example = ""
+#    verbatim_excerpt = ""
+
+    [ontology.equilibration]
+    description = "Describes a system where many relatively similar events happen perpetually but the macro-level outcome eventually reaches a state that seems stable."
+    ontology = "complexity"
+    keywords = "non-stop, perpetual, balancing"
+    conceptual_example = ""
+    verbatim_excerpt = ""
+
+
