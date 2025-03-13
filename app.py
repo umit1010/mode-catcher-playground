@@ -12,10 +12,10 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
-from fastcoref import spacy_component
+#from fastcoref import spacy_component
 import dash_auth
 from itertools import chain, combinations
-from markdown_it.rules_core import inline
+#from markdown_it.rules_core import inline
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
 from datetime import datetime, time
@@ -50,7 +50,7 @@ theoretical_code_list = [
     "slippage",
 ]
 
-change_log = []
+change_log = list()
 
 # ----- DASH APP CONFIG -----
 
@@ -441,7 +441,6 @@ def generate_utterance_table(data, display_options, in_sents=False):
         style={'height': 600}
     )
 
-
 # ---- NETWORK ANALYSIS
 
 def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=0.8, with_interviewer=False):
@@ -471,6 +470,8 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma_].is_stop
                                                     and not t.lemma_ in excluded_tokens.get(row, [])
+                                                    and not t.dep_ == 'acomp'
+                                                    and not t.dep_ == 'parataxis'
                       ]
 
             token_counts = Counter(tokens)
@@ -1059,6 +1060,57 @@ code_checkboxes_container = dbc.Container(
     id="code-checkboxes-container",
 )
 
+# -- user changes log section
+
+# based on generate_utterance_table function
+def generate_log_table(data, display_options, in_sents=False):
+
+    return dag.AgGrid(
+        id='log-data-table',
+        rowData=data,
+        columnDefs=[
+            {'field': 'time', 'hide': 0 not in display_options, 'maxWidth': 300},
+            {'field': 'line', 'editable': False, 'maxWidth': 90},
+            {'field': 'change', 'hide': 3 in display_options, 'flex': 1},
+        ],
+        defaultColDef={
+            'resizable': True,
+            'cellStyle': {'wordBreak': 'normal'},
+            'cellRenderer': 'markdown',
+            'wrapText': True,
+            'autoHeight': True,
+            'filter': True,
+        },
+        dashGridOptions={"rowHeight": 40}, # so that the height of single line rows are not recalculated in each update to prevent some interface jitteriness
+        dangerously_allow_code=True, # to enable markdown rendering with the <mark> html tag because commonmark doesn't include highlighting
+        columnSize="sizeToFit", # Umit's note: for some reason, using responsiveSizeToFit blocks hiding columns when an inclusion option is checked off
+        style={'height': 600}
+    )
+
+empty_log_table_data = [{
+    'time': 'YYYY-MM-DD 00:00:00',
+    'line': '0',
+    'change': 'User token changes will be displayed in this table.',
+}]
+
+user_log_accordion = dbc.Accordion(
+    dbc.AccordionItem(
+        [
+            html.Div(
+                [
+                    generate_log_table(empty_log_table_data, (0, 1, 2), False)
+                ],
+                id="log-div",
+            )
+        ],
+        id="log",
+        title="User Actions",
+    ),
+    # active_item="1",  # collapsed by default
+)
+
+# TO DO: add the table itself to the app and change it each time a user logs a change
+
 # -- graph view --
 
 grap_layout_options_div = html.Div(
@@ -1229,14 +1281,15 @@ metrics_viewer_wrapper_div = html.Div(
     className="border rounded p-4 my-4",
 )
 
-change_log_viewer_wrapper_div = html.Div(
+# replaced by user_log_accordion in code
+'''change_log_viewer_wrapper_div = html.Div(
     [
         html.H3("User Actions", className="mb-4"),
         html.P(" "),
         html.Div(html.P("This view will be updated when the user toggles tokens.", className="lead"), id="changes-div"),
     ],
     className="border rounded p-4 my-4",
-)
+) '''
 
 # -- coding modal view --
 
@@ -1313,7 +1366,7 @@ app.layout = dbc.Container(
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
-        dbc.Row(dbc.Col(change_log_viewer_wrapper_div)),
+        dbc.Row(dbc.Col(user_log_accordion)),
         coding_modal,
     ],
     fluid=True,
@@ -1431,7 +1484,7 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
         #   to make sure that switching between transcripts doesn't mess things up
         active_data = list()
         assigned_codes = dict()
-        change_log = []
+        change_log = list()
         excluded_tokens = dict()
         stopped_words = set()
         tokens_changed = True
@@ -1582,7 +1635,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     global tokens_changed
     global excluded_tokens
     global change_log
-
+    # create global table 
     if cell is not None:
 
         row = int(cell["rowId"])
@@ -1603,7 +1656,8 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                     nlp.vocab[toggled_token].is_stop = False
                     stopped_words.discard(toggled_token)
                     unstopped_words.add(toggled_token)
-                    change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
+                    change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'})
+                    # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
 
                 else:
                     # if a token was not a stop word, first check if it is in the excluded tokens list
@@ -1616,8 +1670,8 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         stopped_words.add(toggled_token)
                         unstopped_words.discard(toggled_token)
                         excluded_tokens[row].remove(toggled_token)
-
-                        change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'})
+                        # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
 
                     else:
 
@@ -1628,7 +1682,8 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         else:
                             excluded_tokens[row].append(toggled_token)
 
-                        change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'})
+                        # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
                 tokens_changed = True
 
@@ -1638,7 +1693,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
 
         return token_buttons, codes, True, row
     else:
-        return "Something", "went", "wrong", False, -1
+        return "Something", "wrong", False, -1
 
 
 @app.callback(
@@ -1647,7 +1702,8 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     Output("graph-slider", "value"),
     Output("metrics-div", "children"),
     Output("min-strong-co", "value"),
-    Output("changes-div", "children"),
+    # Output("changes-div", "children"),
+    Output("log-data-table", "rowData"),
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
     Input("include-codes", "value"),
@@ -1693,7 +1749,7 @@ def knowledge_graph(
     global has_generated
     global change_log
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, "This view will be updated when the user toggles tokens."]
+    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, change_log]
 
     if disabled:
         return empty_return
@@ -1764,22 +1820,35 @@ def knowledge_graph(
         combine_by_similarity=combine_by_similarity,
         min_similarity=min_similarity,
     )
-
+    # change_log = [{'dict a': 'test a'}, {'dict b': 'test b'}, {'dict c': 'test c'}]
     return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, change_log
+    # need to update change_log
 
 
 
 @app.callback(
+    Output("log-data-table", "rowData", allow_duplicate=True),
     Input("data-table", "cellValueChanged"),
+    prevent_initial_call=True,
 )
 def update_included_lines(changed):
     global tokens_changed
+    global change_log
 
     if changed:
         i = int(changed[0]["rowId"])
         cell_incl = changed[0]['data']['in?']
         active_data[i]['in?'] = cell_incl
         tokens_changed = True
+        curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        text = ''
+        if cell_incl:
+            text = f'At time {curr_time}: Row {i+1} is now included from the network.'
+        else:
+            text = f'At time {curr_time}: Row {i+1} is now excluded from the network.'
+        change_log.append({'time': curr_time, 'line': i+1, 'change': text})
+    return change_log
+        
 
 # --- HEROKU SIMPLE AUTH CHECK ---
 
