@@ -271,13 +271,16 @@ def has_excluded_nlp_tag(token):
     # intj (421) == interjection
     # prep (443) == preposition
     # mark (423) == marker
+    # acomp (398) = "adjectival complement"
+    # parataxis (436)
 
     # TODO -> Use combinations of tag and dep to isolate tokens that are not meaningful
     #   for example an interjection such as "no" may be userful in some interviews, but not in all
     # TODO -> Design the final list of tag + dep combinations that should be excluded
     #      if the list of things to exclude is too large, we can instead focus on what to include
 
-    return token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423
+    return (token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423 
+        or t.dep == 398 or t.dep == 436)
 
 
 # mapping use of certain "tokens" --> words?
@@ -470,8 +473,6 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma_].is_stop
                                                     and not t.lemma_ in excluded_tokens.get(row, [])
-                                                    and not t.dep_ == 'acomp'
-                                                    and not t.dep_ == 'parataxis'
                       ]
 
             token_counts = Counter(tokens)
