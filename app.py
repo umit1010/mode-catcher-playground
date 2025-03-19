@@ -271,13 +271,16 @@ def has_excluded_nlp_tag(token):
     # intj (421) == interjection
     # prep (443) == preposition
     # mark (423) == marker
+    # acomp (398) = "adjectival complement"
+    # parataxis (436)
 
     # TODO -> Use combinations of tag and dep to isolate tokens that are not meaningful
     #   for example an interjection such as "no" may be userful in some interviews, but not in all
     # TODO -> Design the final list of tag + dep combinations that should be excluded
     #      if the list of things to exclude is too large, we can instead focus on what to include
 
-    return token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423
+    return (token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423 
+        or t.dep == 398 or t.dep == 436)
 
 
 # mapping use of certain "tokens" --> words?
@@ -470,8 +473,6 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma_].is_stop
                                                     and not t.lemma_ in excluded_tokens.get(row, [])
-                                                    and not t.dep_ == 'acomp'
-                                                    and not t.dep_ == 'parataxis'
                       ]
 
             token_counts = Counter(tokens)
@@ -1656,7 +1657,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                     nlp.vocab[toggled_token].is_stop = False
                     stopped_words.discard(toggled_token)
                     unstopped_words.add(toggled_token)
-                    change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'})
+                    change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
                     # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
 
                 else:
@@ -1670,7 +1671,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         stopped_words.add(toggled_token)
                         unstopped_words.discard(toggled_token)
                         excluded_tokens[row].remove(toggled_token)
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'})
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
 
                     else:
@@ -1682,7 +1683,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         else:
                             excluded_tokens[row].append(toggled_token)
 
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'})
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
                 tokens_changed = True
@@ -1843,9 +1844,9 @@ def update_included_lines(changed):
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         text = ''
         if cell_incl:
-            text = f'At time {curr_time}: Row {i+1} is now included from the network.'
+            text = f'The line is turned ON.'
         else:
-            text = f'At time {curr_time}: Row {i+1} is now excluded from the network.'
+            text = f'The line is turned OFF.'
         change_log.append({'time': curr_time, 'line': i+1, 'change': text})
     return change_log
         
