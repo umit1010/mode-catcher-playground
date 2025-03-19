@@ -36,6 +36,7 @@ stopped_words = set()
 unstopped_words = set()
 assigned_codes = dict()
 excluded_tokens = dict()
+deductive_label_definitions = dict() ## Keeps the info about the labels, not user selections
 active_data = list()
 has_generated = False
 
@@ -65,6 +66,14 @@ server = app.server
 
 # ---- NLP ----
 
+def load_deductive_label_definitions():
+    global deductive_label_definitions
+
+    config_folder = Path("./config/")
+
+    with open(config_folder / "deductive_label_definitions.toml", "rb") as f:
+        deductive_label_definitions = tomllib.load(f)
+
 def parse_raw_text(txt: str,
                    timestamp=False,
                    is_interviewer=False,
@@ -76,6 +85,8 @@ def parse_raw_text(txt: str,
     global excluded_tokens
     global nlp
     global tokens_changed
+
+    load_deductive_label_definitions()
 
     first_parse = True if len(excluded_tokens) == 0 else False
 
@@ -194,71 +205,74 @@ def parse_raw_text(txt: str,
 
 def generate_code_checkboxes(line_num, values=None):
 
-    # if values is not None:
-    #     assigned_codes[line_num] = values
+    global deductive_label_definitions
 
-    ## TODO -> this function re-reads the toml file every time a line is clicked
-    ##          I will move the logic outside to read the file once at the load
-    ##          and then use the global variable to repopulate the fields
+    ## Umit's note on 03/19/2025:
+    ##  I know the following nested list comprehension is a bit hard to read
+    ##  but it is kind of the most efficient way to write this code
 
-    with open("config/deductive_codes.toml", "rb") as f:
-        code_definitions = tomllib.load(f)
+    checkboxes_container = html.Div(
+        [
+            dbc.Row([
+                dbc.Col(html.Span(category, className="fw-semibold"), width=12),
+                dbc.Col(
+                    [
+                        dbc.Checklist(
+                            id=f"checklist-{category}",
+                            options=[{"label": code, "value": code} for code in deductive_label_definitions[category].keys()],
+                            label_checked_class_name="text-success",
+                            inline=True,
+                        ),
+                        dbc.Popover(
+                            [
+                                dbc.PopoverHeader(category.replace("_", " "), class_name="fw-semibold"),
+                                dbc.PopoverBody(
+                                    [
+                                        html.Div(
+                                            [
+                                                html.H5(
+                                                    dbc.Badge(
+                                                        code.replace("_", " "),
+                                                        color="white",
+                                                        text_color="primary",
+                                                        className="border p-2 mt-3 mb-0",
+                                                    )
+                                                ),
+                                                html.P(
+                                                    html.Small(
+                                                        html.Code(deductive_label_definitions[category][code]['keywords'])
+                                                    ), className="ms-2",
+                                                ),
+                                                html.P([
+                                                        html.Span("Conceptual Example: ", className="fw-medium"),
+                                                        html.Em(deductive_label_definitions[category][code]['conceptual_example'])
+                                                    ], className="ms-2",
+                                                ),
 
-    checkboxes = list()
-
-    for category in code_definitions:
-        for code in code_definitions[category]:
-            if type(code_definitions[category][code]) is dict:
-                new_checkbox = html.Div([
-                    dbc.Checkbox(
-                        label=code.replace('_', ' '),
-                        # value=assigned_codes[line_num][code[0]],
-                        id=f"code-checkbox-{code}"
-                    )
-                ], id=f"code-checkbox-div-{code}", className="w-50")
-
-                new_popover = dbc.Popover(
-                        [
-                            dbc.PopoverHeader([
-                                html.Strong(code),
-                                # html.Sup(html.Em(category, className="text-muted"), className="ms-1"),
-                                html.Sup(dbc.Badge(code_definitions[category][code]['ontology'], color="white", text_color="danger", className="border me-1"), className="ms-1"),
-
-                            ]),
-                            dbc.PopoverBody([
-                                html.P(code_definitions[category][code]['description']),
-                                html.P(html.Code(f"Keywords: {code_definitions[category][code]['keywords']}")),
-                                html.P(html.Small(html.Strong("Conceptual Example"))),
-                                html.P(html.Small(code_definitions[category][code]['conceptual_example'])),
-                                html.P(html.Small(html.Strong("Verbatim Excerpt"))),
-                                html.P(html.Small(code_definitions[category][code]['verbatim_excerpt'])),
-                            ]),
-                        ],
-                        target=f"code-checkbox-div-{code}",
-                        placement="left",
-                        # body=True,
-                        trigger="hover",
-                    )
-
-                checkboxes.append(new_checkbox)
-                checkboxes.append(new_popover)
-            else:
-                checkboxes.append(html.Div(className="w-100 my-2"))
-            #     checkboxes.append(html.H6(category.replace('_', ' '), id=f"category-div-{category}", className=" text-muted"))
-            #
-            #     category_popover = dbc.Popover([
-            #             dbc.PopoverHeader(html.Strong(category)),
-            #             dbc.PopoverBody(html.P(code_definitions[category]['description'])),
-            #         ], target=f"category-div-{category}", placement="left", trigger="hover")
-            #
-            #     checkboxes.append(category_popover)
-
-    container = html.Div(
-        html.Small(checkboxes, className="w-100 d-flex align-content-start flex-wrap"),
+                                                html.P([
+                                                        html.Span("Verbatim Excerpt: ", className="fw-medium"),
+                                                        html.Em(deductive_label_definitions[category][code]['verbatim_excerpt'])
+                                                    ], className="ms-2",
+                                                ),
+                                            ],
+                                        ) for code in deductive_label_definitions[category].keys()
+                                    ],
+                                    className="mb-4"
+                                )
+                            ],
+                            target=f"checklist-{category}",
+                            placement="left",
+                            trigger="hover",
+                            # delay = {"show": 100, "hide": 20}  # leaving here in case we need to activate a delay in the future
+                        )
+                    ], width=12
+                ),
+            ], class_name="my-3") for category in deductive_label_definitions.keys()
+        ],
         id="code-checkboxes-container",
     )
 
-    return container
+    return checkboxes_container
 
 # editable tag applications
 def has_excluded_nlp_tag(token):
