@@ -1657,7 +1657,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                     nlp.vocab[toggled_token].is_stop = False
                     stopped_words.discard(toggled_token)
                     unstopped_words.add(toggled_token)
-                    change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'})
+                    change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
                     # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
 
                 else:
@@ -1671,7 +1671,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         stopped_words.add(toggled_token)
                         unstopped_words.discard(toggled_token)
                         excluded_tokens[row].remove(toggled_token)
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.\n'})
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
 
                     else:
@@ -1683,7 +1683,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                         else:
                             excluded_tokens[row].append(toggled_token)
 
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'})
+                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
                 tokens_changed = True
@@ -1844,9 +1844,9 @@ def update_included_lines(changed):
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         text = ''
         if cell_incl:
-            text = f'At time {curr_time}: Row {i+1} is now included from the network.'
+            text = f'The line is turned ON.'
         else:
-            text = f'At time {curr_time}: Row {i+1} is now excluded from the network.'
+            text = f'The line is turned OFF.'
         change_log.append({'time': curr_time, 'line': i+1, 'change': text})
     return change_log
         
