@@ -48,7 +48,7 @@
 
     [linearity.nonlinear]
     keywords = "critical threshold, tipping point, delayed outcome, butterfly effect"
-    conceptual_example = "No jams form when there are only N cars, but a jam forms when there are N+1 cars."
+    conceptual_example = "Even if there is no traffic jam with N cars on the road, one more car joining the road (N+1) may cause a traffic jam."
     verbatim_excerpt = "{to-be-written}"
 
     [linearity.linear]
@@ -68,15 +68,15 @@
     [cognitive_load.small_n]
     keywords = "sparse, very few, less than five, distinct individuals"
     conceptual_example = "Adding only 2-3 cars to a traffic model."
-    verbatim_excerpt = "{to-be-written}"
+    verbatim_excerpt = "I would like to add, first of all, a person, the self of a person."
 
     [cognitive_load.mid_level]
     keywords = "manageable, not too few but not too many, small group"
     conceptual_example = "Adding 10-20 cars to a traffic model."
-    verbatim_excerpt = "{to-be-written}"
+    verbatim_excerpt = "So maybe like out of the 20, I will say, like, 18 of them be the first type of fish."
 
     [cognitive_load.large_n]
     keywords = "lots of, plentiful, large community"
     conceptual_example = "Adding hundreds of cars to a traffic model."
-    verbatim_excerpt = "{to-be-written}"
+    verbatim_excerpt = "I was thinking of modeling it for 1,000 people."
 

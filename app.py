@@ -34,9 +34,10 @@ G = nx.Graph()
 tokens_changed: bool = False ## TODO: This  is a very problematic global because once it's set to True, it remains True.
 stopped_words = set()
 unstopped_words = set()
-assigned_codes = dict()
+excluded_rows = set()
 excluded_tokens = dict()
-deductive_label_definitions = dict() ## Keeps the info about the labels, not user selections
+deductive_code_definitions = dict() ## Keeps the info about the labels, not user selections
+assigned_deductive_codes = dict() ## keeps the labels selected by the user for each line
 active_data = list()
 has_generated = False
 
@@ -57,22 +58,37 @@ change_log = list()
 
 app = Dash(
     __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
 
 # needed to be able to publish the script on Heroku
 server = app.server
 
+
+# ---- UTILITY FUNCTIONS ----
+
+def flush_globals():
+    global active_data
+    global assigned_deductive_codes
+    global change_log
+    global deductive_code_definitions
+    global excluded_tokens
+    global nlp
+    global stopped_words
+    global tokens_changed
+    global unstopped_words
+
+    active_data = list()
+    assigned_deductive_codes = dict()
+    change_log = list()
+    excluded_tokens = dict()
+    stopped_words = set()
+    tokens_changed = True
+    unstopped_words = set()
+
+
 # ---- NLP ----
-
-def load_deductive_label_definitions():
-    global deductive_label_definitions
-
-    config_folder = Path("./config/")
-
-    with open(config_folder / "deductive_label_definitions.toml", "rb") as f:
-        deductive_label_definitions = tomllib.load(f)
 
 def parse_raw_text(txt: str,
                    timestamp=False,
@@ -85,8 +101,6 @@ def parse_raw_text(txt: str,
     global excluded_tokens
     global nlp
     global tokens_changed
-
-    load_deductive_label_definitions()
 
     first_parse = True if len(excluded_tokens) == 0 else False
 
@@ -195,17 +209,21 @@ def parse_raw_text(txt: str,
             row['in?'] = False if i in excluded_rows else True
             data.append(row)
 
-        # if i not in assigned_codes.keys():
-        #     assigned_codes[i] = [False] * len(theoretical_code_list) # initializing the assigned_codes dictionary
-
     tokens_changed = True
 
     return data
 
 
-def generate_code_checkboxes(line_num, values=None):
+def generate_code_checkboxes(line_num):
 
-    global deductive_label_definitions
+    global deductive_code_definitions
+    global assigned_deductive_codes
+
+    ## Create an empty list of values if the user did not select any values for this line
+    if line_num not in assigned_deductive_codes.keys():
+        assigned_deductive_codes[line_num] = dict(
+            (category, "") for category in deductive_code_definitions.keys()
+        )
 
     ## Umit's note on 03/19/2025:
     ##  I know the following nested list comprehension is a bit hard to read
@@ -214,13 +232,21 @@ def generate_code_checkboxes(line_num, values=None):
     checkboxes_container = html.Div(
         [
             dbc.Row([
+
+                # category title
                 dbc.Col(html.Span(category, className="fw-semibold"), width=12),
+
+                # create the checkboxes & the popover
                 dbc.Col(
                     [
                         dbc.Checklist(
-                            id=f"checklist-{category}",
-                            options=[{"label": code, "value": code} for code in deductive_label_definitions[category].keys()],
+                            id={
+                                "type": "code-checklist",
+                                "index": f"{line_num}-{category}"
+                            },
+                            options=[{"label": code, "value": code} for code in deductive_code_definitions[category].keys()],
                             label_checked_class_name="text-success",
+                            value = assigned_deductive_codes[line_num][category],
                             inline=True,
                         ),
                         dbc.Popover(
@@ -240,34 +266,39 @@ def generate_code_checkboxes(line_num, values=None):
                                                 ),
                                                 html.P(
                                                     html.Small(
-                                                        html.Code(deductive_label_definitions[category][code]['keywords'])
+                                                        html.Code(deductive_code_definitions[category][code]['keywords'])
                                                     ), className="ms-2",
                                                 ),
                                                 html.P([
                                                         html.Span("Conceptual Example: ", className="fw-medium"),
-                                                        html.Em(deductive_label_definitions[category][code]['conceptual_example'])
+                                                        html.Br(),
+                                                        html.Em(deductive_code_definitions[category][code]['conceptual_example'])
                                                     ], className="ms-2",
                                                 ),
 
                                                 html.P([
                                                         html.Span("Verbatim Excerpt: ", className="fw-medium"),
-                                                        html.Em(deductive_label_definitions[category][code]['verbatim_excerpt'])
+                                                        html.Br(),
+                                                        html.Em(f"\"{deductive_code_definitions[category][code]['verbatim_excerpt']}\"")
                                                     ], className="ms-2",
                                                 ),
                                             ],
-                                        ) for code in deductive_label_definitions[category].keys()
+                                        ) for code in deductive_code_definitions[category].keys()
                                     ],
                                     className="mb-4"
                                 )
                             ],
-                            target=f"checklist-{category}",
+                            target={
+                                "type": "code-checklist",
+                                "index": f"{line_num}{category}"
+                            },
                             placement="left",
                             trigger="hover",
                             # delay = {"show": 100, "hide": 20}  # leaving here in case we need to activate a delay in the future
                         )
                     ], width=12
                 ),
-            ], class_name="my-3") for category in deductive_label_definitions.keys()
+            ], class_name="my-3") for category in deductive_code_definitions.keys()
         ],
         id="code-checkboxes-container",
     )
@@ -294,7 +325,7 @@ def has_excluded_nlp_tag(token):
     #      if the list of things to exclude is too large, we can instead focus on what to include
 
     return (token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423 
-        or t.dep == 398 or t.dep == 436)
+        or token.dep == 398 or token.dep == 436)
 
 
 # mapping use of certain "tokens" --> words?
@@ -324,7 +355,7 @@ def process_utterance(raw_text, row):
                         "stop": True if nlp.vocab[token.lemma_].is_stop else False
                     },
                     n_clicks=0,
-                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in excluded_tokens.get(row, []) else "warning",
+                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in excluded_tokens.get(row, []) else "success",
                     class_name="m-1",
                     size="sm",
                 )
@@ -367,44 +398,35 @@ def process_utterance(raw_text, row):
 
     return buttons_for_text #, token_treemap
 
-def pickle_model(mode_name, active_rows):
+def pickle_model(name, active_rows, spacy_model, is_sentencized):
     global nlp
     global excluded_tokens
+    global excluded_rows
+    global assigned_deductive_codes
 
     models_folder = Path("./models/")
     models_folder.mkdir(exist_ok=True)
 
-    mode_folder = models_folder / mode_name
-    mode_folder.mkdir(exist_ok=True)
+    model_path = models_folder / f"{str(name).strip()}-{spacy_model}-sent_{is_sentencized}/"
+    model_path.mkdir(exist_ok=True)
 
     # pickle the stop words changed by the user
-    stopwords_file = mode_folder / "stopwords.pickle"
-
-    with open(stopwords_file, "wb") as swf:
-        pickle.dump(
-            (stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL
-        )
+    with open(model_path / "stopwords.pickle", "wb") as swf:
+        pickle.dump((stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the tokens that are excluded in individual lines by the user
-
-    excluded_tokens_file = mode_folder / "excluded_tokens.pickle"
-    with open(excluded_tokens_file, "wb") as etf:
-        pickle.dump(
-            excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL
-        )
+    with open(model_path / "excluded_tokens.pickle", "wb") as etf:
+        pickle.dump(excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the rows that are completely excluded by the user
     excluded_rows = [l['line'] for l in active_rows if not l['in?']]
-    excluded_rows_file = mode_folder / "excluded_rows.pickle"
-    with open(excluded_rows_file, "wb") as erf:
-        pickle.dump(
-            excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL
-        )
+    with open(model_path / "excluded_rows.pickle", "wb") as erf:
+        pickle.dump(excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # umit temporarily disabled the following line(s)
-    # theoretical_codes_file = mode_folder / "theoretical_codes.pickle"
-    # with open(theoretical_codes_file, "wb") as tcf:
-    #     pickle.dump(assigned_codes, tcf, protocol=pickle.HIGHEST_PROTOCOL)
+    # pickle the user selected deductive codes
+    with open(model_path / "assigned_deductive_codes.pickle", "wb") as etf:
+        pickle.dump(assigned_deductive_codes, etf, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 # ---- UTTERANCE TABLE ----
 
@@ -854,7 +876,7 @@ input_file_dropdown = dbc.Select(
     file_list, id="input-file-dropdown", value="_demo_cory1_abc.txt"
 )
 
-mode_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter mode name ...")
+model_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter model name ...")
 
 raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.", value="", rows=10, id="raw-text"
@@ -877,7 +899,7 @@ model_selection_dropdown = dbc.Select(
 )
 
 reset_button = dbc.Button(
-    "Reset Mode",
+    "Reset Model",
     id="reset-button",
     color="danger",
     outline=True,
@@ -917,7 +939,7 @@ input_accordion = dbc.Accordion(
                     dbc.Col(
                         dbc.InputGroup([
                             dbc.InputGroupText("Mode name"),
-                            mode_name_input
+                            model_name_input
                         ]),
                         class_name="mb-4",
                         width=10,
@@ -1038,41 +1060,6 @@ generate_div = html.Div([
     ),
     ],
     className="border rounded p-4 my-4"
-)
-
-# some codes are temporarily highlighted to make the revise modal view shorter
-#   for demo purposes
-theoretical_codes_list = [
-    "emergent",
-    # "collective behavior"
-    "centralized",
-    # "pre-determined",
-    # "god-like control",
-    "probabilistic",
-    # "stochastic",
-    # "uncertainty",
-    # "randomness",
-    "deterministic",
-    # "predictable",
-    "monocausal",
-    # "multicausal",
-    "non-linear",
-    # "criticality",
-    # "feedback",
-    # "fitting",
-    # "levels",
-    "mid-level",
-    # "level slippage",
-    "dynamic equilibrium",
-    "...",
-    "..."
-]
-
-code_checkboxes_container = dbc.Container(
-    "",
-    fluid=True,
-    class_name="d-flex align-content-start flex-wrap",
-    id="code-checkboxes-container",
 )
 
 # -- user changes log section
@@ -1310,7 +1297,7 @@ metrics_viewer_wrapper_div = html.Div(
 
 coding_modal = dbc.Modal(
     [
-        # dbc.ModalHeader(dbc.ModalTitle("Hey!"), close_button=True),
+        dbc.ModalHeader(dbc.ModalTitle("Revise"), close_button=True),
         dbc.ModalBody(
             dbc.Row([
                 dbc.Col([
@@ -1335,7 +1322,7 @@ coding_modal = dbc.Modal(
                         # ),
 
                         html.H5("Deductive Codes"),
-                        code_checkboxes_container,
+                        dbc.Container(id="code-checkboxes-container")
                     ]
                 ),
             ])
@@ -1346,13 +1333,13 @@ coding_modal = dbc.Modal(
 
             dbc.Button("stop word", id="stopword-key-button", color="light", class_name="m-1", size="sm"),
             dbc.Button("excluded only for this line", id="exclude-key-button", color="danger", class_name="m-1", size="sm",),
-            dbc.Button("included as a node", id="include-key-button", color="warning", class_name="m-1", size="sm",),
+            dbc.Button("included as a node", id="include-key-button", color="success", class_name="m-1", size="sm",),
 
             # html.Small("* Deductive codes adapted from Jacobson (2001) and Chi (2005).", className="text-muted m-1"),
 
-            dbc.Tooltip("These gray tokens are excluded from analysis for the entire transcript.", target="stopword-key-button", placement="right"),
-            dbc.Tooltip("These red tokens are excluded from analysis only for this line but may be included in the other lines.", target="exclude-key-button", placement="right"),
-            dbc.Tooltip("These yellow are included in the analysis as the nodes of the token graph.", target="include-key-button", placement="right"),
+            dbc.Tooltip("Gray tokens are excluded from analysis for the entire transcript.", target="stopword-key-button", placement="right"),
+            dbc.Tooltip("Red tokens are excluded from analysis only for this line but may be included in the other lines.", target="exclude-key-button", placement="right"),
+            dbc.Tooltip("Yellow are included in the analysis.", target="include-key-button", placement="right"),
 
         ], class_name="d-flex justify-content-start"),
     ],
@@ -1383,6 +1370,7 @@ app.layout = dbc.Container(
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
         dbc.Row(dbc.Col(user_log_accordion)),
         coding_modal,
+        dcc.Interval(id='refresh-interval', interval=1, disabled=True), # to activate when we want to force page refresh (e.g. resetting)
     ],
     fluid=True,
     class_name="p-4",
@@ -1405,11 +1393,11 @@ def load_input_file(file_name: str):
 
     # gets path to file and removed .txt from the file's name
     file_path = Path(INPUT_FOLDER) / file_name
-    mode_name = file_name.removesuffix(".txt")
+    model_name = file_name.removesuffix(".txt")
 
     # checks file existence
     if not file_path.is_file():
-        return "It doesn't seem like that file exists anymore.", mode_name
+        return "It doesn't seem like that file exists anymore.", model_name
 
     # opens file and reads the file 
     # puts the text in one string instead of a list of lines
@@ -1418,9 +1406,9 @@ def load_input_file(file_name: str):
 
     # checks if there is actually text (rather than empty file/string)
     if len(file_text) > 0:
-        return file_text, mode_name
+        return file_text, model_name
 
-    return "File was there, but it had no text.", mode_name
+    return "File was there, but it had no text.", model_name
 
 
 @app.callback(
@@ -1437,34 +1425,50 @@ def enable_parse_button(name: str, text: str):
     Output("reset-message-div", "children"),
     Input("reset-button", "n_clicks"),
     State("mode-name", "value"),
+    State("by-sent", "value"),
+    State("model-selection-dropdown", "value"),
+    prevent_initial_call=True,
 )
-def reset_mode(nclicks, name):
+def reset_model(nclicks, name, sentencized, model):
+
     if ctx.triggered_id == "reset-button":
-        # gets path of current model
-        model_path = Path(f"./models/{str(name).strip()}/")
 
-        # checks whether the path has directory
+        # first, let's get rid of the existing user generated model files
+
+        ## path of current model folder
+        model_path = Path(f"./models/{str(name).strip()}-{model}-sent_{sentencized}/")
+
+        ## checks whether a model folder exists
         if model_path.is_dir():
-            # gets paths to specific files (stopwords and theoretical codes)
-            stopwords_file = model_path / "stopwords.pickle"
-            # umit temporarily disabled the following line(s)
-            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
 
-            # unlink deletes the pickled file (because it has been updated already?)
-            if stopwords_file.is_file():
-                stopwords_file.unlink()
-            
-            # umit temporarily disabled the following line(s)
-            # if theoretical_codes_file.is_file():
-            #     theoretical_codes_file.unlink()
+            # first, delete all the files in the folder (unlink == delete)
+            for pickle_file in model_path.iterdir():
+                pickle_file.unlink()
 
-            # for key in assigned_codes:
-            #     assigned_codes[key] = [False] * len(theoretical_code_list)
+            ## then, remove the folder itself
+            model_path.rmdir()
 
-            return "Existing mode files were cleared. Page refresh is recommended."
+        flush_globals()
 
-        else:
-            return "No action taken because existing model couldn't be found."
+        # now let's trigger a page refresh
+
+        return dbc.Alert(
+            [
+                html.I(className="bi bi-info-circle-fill me-2"),
+                dbc.Badge(
+                    f"<{str(name).strip()}-{model}-sent_{sentencized}>",
+                    color="light",
+                    text_color="danger",
+                    class_name="p-2"
+                ),
+                html.Span(" was reset successfully; A page refresh is highly recommended."),
+            ],
+            color="danger"
+        )
+
+    else:
+        return ""
+
 
 @app.callback(
     Output("data-table", "rowData"),
@@ -1485,8 +1489,10 @@ def reset_mode(nclicks, name):
 )
 def utterance_table(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, model, use_nlp_tags, resolve_corefs, revised_row_id, existing_row_data):
     global active_data
-    global assigned_codes
+    global assigned_deductive_codes
     global change_log
+    global deductive_code_definitions
+    global excluded_rows
     global excluded_tokens
     global nlp
     global stopped_words
@@ -1497,20 +1503,15 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
 
         # first, reset all the globals
         #   to make sure that switching between transcripts doesn't mess things up
-        active_data = list()
-        assigned_codes = dict()
-        change_log = list()
-        excluded_tokens = dict()
-        stopped_words = set()
-        tokens_changed = True
-        unstopped_words = set()
+        flush_globals()
         excluded_rows = []
 
-        # paths to model save files
-        model_path = Path(f"./models/{str(name).strip()}/")
-        default_stopwords_file = Path("./config") / "default_stopwords.pickle"
+        # paths to model save files follows the format ./models/{case_name}-{sentencized?}-{model}/
+        model_path = Path(f"./models/{str(name).strip()}-{model}-sent_{sentencized}/")
 
-        # loading pickled files
+        config_folder = Path("./config/")
+
+        # loading pickled model files if they exist
         if model_path.is_dir():
 
             # load the user-made changes to the stopwords
@@ -1520,8 +1521,9 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
                 with open(stopwords_file, "rb") as swf:
                     stopped_words, unstopped_words = pickle.load(swf)
             else:
-                with open(default_stopwords_file, "rb") as swf:
+                with open(config_folder / "default_stopwords.pickle", "rb") as swf:
                     stopped_words = pickle.load(swf)
+
 
             # load the tokens that were excluded on specific lines by the user
             excluded_tokens_file = model_path / "excluded_tokens.pickle"
@@ -1530,25 +1532,28 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
                 with open(excluded_tokens_file, "rb") as etf:
                     excluded_tokens = pickle.load(etf)
 
-            # load the lines that were completely excluded by the user
 
+            # load the lines that were completely excluded by the user
             excluded_rows_file = model_path / "excluded_rows.pickle"
 
             if excluded_rows_file.is_file():
                 with open(excluded_rows_file, "rb") as erf:
                     excluded_rows = pickle.load(erf)
 
-            # umit temporarily disabled the following line(s)
-            # theoretical_codes_file = model_path / "theoretical_codes.pickle"
-            # if theoretical_codes_file.is_file():
-            #     with open(theoretical_codes_file, "rb") as tcf:
-            #         saved_codes = pickle.load(tcf)
+            # load the deductive codes selected by the user
+            assigned_deductive_codes_file = model_path / "assigned_deductive_codes.pickle"
+            if assigned_deductive_codes_file.is_file():
+                with open(assigned_deductive_codes_file, "rb") as tcf:
+                    assigned_deductive_codes = pickle.load(tcf)
 
-                # assigned_codes = saved_codes
         else:
             # if there is no model folder, load the default stop words
-            with open(default_stopwords_file, "rb") as f:
+            with open(config_folder / "default_stopwords.pickle", "rb") as f:
                 stopped_words = pickle.load(f)
+
+        # load deductive code definitions
+        with open(config_folder / "deductive_label_definitions.toml", "rb") as f:
+            deductive_code_definitions = tomllib.load(f)
 
         # reload the model because it only pulls default stopwords if loaded from the beginning
         nlp = spacy.load(model, exclude=["ner"])
@@ -1641,7 +1646,6 @@ def apply_table_layout_filters(options):
     Output("modal-row-id", "data"),
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
-    # Input({"type": "code-checkbox", "index": ALL}, "value"), #umit temporarily turned off until implementing deductive codes
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
@@ -1737,6 +1741,8 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     State("combine-by-similarity", "value"),
     State("min-similarity", "value"),
     State('data-table', 'virtualRowData'),
+    State("by-sent", "value"),
+    State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
 def knowledge_graph(
@@ -1757,7 +1763,9 @@ def knowledge_graph(
     name,
     combine_by_similarity,
     min_similarity,
-    active_row_data
+    active_row_data,
+    is_sentencized,
+    spacy_model
 ):
     global active_data
     global tokens_changed
@@ -1774,7 +1782,7 @@ def knowledge_graph(
         tokens_changed = True
 
         # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(name, active_row_data)
+        pickle_model(name, active_row_data, spacy_model, is_sentencized)
 
     if ctx.triggered_id == "graph-slider":
         tokens_changed = True
@@ -1839,6 +1847,19 @@ def knowledge_graph(
     return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, change_log
     # need to update change_log
 
+
+@app.callback(
+    Input({"type": "code-checklist", "index": ALL}, "value"),
+    prevent_initial_call=True,
+)
+def save_user_assigned_deductive_codes(val):
+
+    global assigned_deductive_codes
+
+    line_num, category = ctx.triggered_id["index"].split("-")
+    line_num = int(line_num)
+
+    assigned_deductive_codes[line_num][category] = ctx.triggered[0]["value"]
 
 
 @app.callback(
