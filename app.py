@@ -410,6 +410,13 @@ def pickle_model(name, active_rows, spacy_model, is_sentencized):
     model_path = models_folder / f"{str(name).strip()}-{spacy_model}-sent_{is_sentencized}/"
     model_path.mkdir(exist_ok=True)
 
+    # repeat for user logged changes
+    user_log_folder = Path("./user-log/")
+    user_log_folder.mkdir(exist_ok=True)
+    user_log_path = user_log_folder / f"{str(name).strip()}-{spacy_model}-sent_{is_sentencized}/"
+    user_log_path.mkdir(exist_ok=True)
+    user_log_file = user_log_path / "user-log.pickle"
+
     # pickle the stop words changed by the user
     with open(model_path / "stopwords.pickle", "wb") as swf:
         pickle.dump((stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL)
@@ -426,6 +433,12 @@ def pickle_model(name, active_rows, spacy_model, is_sentencized):
     # pickle the user selected deductive codes
     with open(model_path / "assigned_deductive_codes.pickle", "wb") as etf:
         pickle.dump(assigned_deductive_codes, etf, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the user log
+    with open(user_log_file, "wb") as ulf:
+        pickle.dump(
+            change_log, ulf, protocol=pickle.HIGHEST_PROTOCOL
+        )
 
 
 # ---- UTTERANCE TABLE ----
@@ -1094,6 +1107,8 @@ empty_log_table_data = [{
     'line': '0',
     'change': 'User token changes will be displayed in this table.',
 }]
+if len(change_log) > 0:
+    empty_log_table_data = change_log
 
 user_log_accordion = dbc.Accordion(
     dbc.AccordionItem(
@@ -1510,6 +1525,16 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
         model_path = Path(f"./models/{str(name).strip()}-{model}-sent_{sentencized}/")
 
         config_folder = Path("./config/")
+
+        user_log_path = Path(f"./user-log/{str(name).strip()}-{model}-sent_{sentencized}/")
+
+
+        # loading pickled user-log
+        if user_log_path.is_dir():
+            user_log_file = user_log_path / "user-log.pickle"
+            if user_log_file.is_file():
+                with open(user_log_file, "rb") as ulf:
+                    change_log = pickle.load(ulf)
 
         # loading pickled model files if they exist
         if model_path.is_dir():
