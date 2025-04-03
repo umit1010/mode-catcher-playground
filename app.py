@@ -25,36 +25,33 @@ import tomllib
 
 heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
 
-# ---- PLATFORM ----
+
+# ---- PLATFORM SETUP ----
 
 nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
 G = nx.Graph()
 
-tokens_changed: bool = False ## TODO: This  is a very problematic global because once it's set to True, it remains True.
-stopped_words = set()
-unstopped_words = set()
-excluded_rows = set()
-excluded_tokens = dict()
-deductive_code_definitions = dict() ## Keeps the info about the labels, not user selections
-assigned_deductive_codes = dict() ## keeps the labels selected by the user for each line
+
+# ---- GLOBAL VARIABLES ----
+
 active_data = list()
-has_generated = False
+assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
+deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
+excluded_rows = set()
+graph_button_clicked = False ## TODO: find out what "has generated?" means :)
+graphed_tokens_changed: bool = False  ## TODO: problematic global because once it's set to True, it remains True.
+lemmas_excluded_from_lines = dict()
+stopped_lemmas = set()
+unstopped_lemmas = set()
+user_actions = list()
 
-theoretical_code_list = [ 
-    "emergent",
-    "centralized",
-    "probabilistic",
-    "deterministic",
-    "feedback",
-    "fitting",
-    "levels",
-    "slippage",
-]
+# constants
+MODELS_FOLDER = Path("./models/")
+CONFIG_FOLDER = Path("./config/")
 
-change_log = list()
 
-# ----- DASH APP CONFIG -----
+# ----- DASH APP CONFIGURATION -----
 
 app = Dash(
     __name__,
@@ -71,24 +68,122 @@ server = app.server
 def flush_globals():
     global active_data
     global assigned_deductive_codes
-    global change_log
+    global user_actions
     global deductive_code_definitions
-    global excluded_tokens
+    global lemmas_excluded_from_lines
     global nlp
-    global stopped_words
-    global tokens_changed
-    global unstopped_words
+    global stopped_lemmas
+    global graphed_tokens_changed
+    global unstopped_lemmas
 
     active_data = list()
     assigned_deductive_codes = dict()
-    change_log = list()
-    excluded_tokens = dict()
-    stopped_words = set()
-    tokens_changed = True
-    unstopped_words = set()
+    user_actions = list()
+    lemmas_excluded_from_lines = dict()
+    stopped_lemmas = set()
+    graphed_tokens_changed = True
+    unstopped_lemmas = set()
 
 
-# ---- NLP ----
+def get_model_path(mode_name, spacy_model, is_sentencized):
+    ## create the models folder if it doesn't exist already
+    ##     exists_ok = True -> don't overwrite if it already exists
+    if not MODELS_FOLDER.is_dir():
+        MODELS_FOLDER.mkdir(exist_ok=True)
+
+    ## define the path of the mode (case, participant) for the selected transcript
+    mode_path = MODELS_FOLDER / str(mode_name).strip()
+    if not mode_path.exists():
+        mode_path.mkdir(exist_ok=True)
+
+    ## define the subfolder that corresponds to the specific parsing parameters of the model
+    model_path = mode_path / f"{spacy_model}.{'sentencized' if is_sentencized else ''}/"
+    if not model_path.exists():
+        model_path.mkdir(exist_ok=True)
+
+    return model_path
+
+def pickle_model(mode_name, active_rows, spacy_model, is_sentencized):
+    global nlp
+    global lemmas_excluded_from_lines
+    global excluded_rows
+    global assigned_deductive_codes
+
+    model_path = get_model_path(mode_name, spacy_model, is_sentencized)
+
+    # pickle the stop words changed by the user
+    with open(model_path / "stopwords.pickle", "wb") as f:
+        pickle.dump((stopped_lemmas, unstopped_lemmas), f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the tokens that are excluded in individual lines by the user
+    with open(model_path / "excluded_tokens.pickle", "wb") as f:
+        pickle.dump(lemmas_excluded_from_lines, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the rows that are completely excluded by the user
+    with open(model_path / "excluded_rows.pickle", "wb") as f:
+        pickle.dump(excluded_rows, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the user selected deductive codes
+    with open(model_path / "assigned_deductive_codes.pickle", "wb") as f:
+        pickle.dump(assigned_deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the user actions log
+    with open(model_path / "user_actions.pickle", "wb") as f:
+        pickle.dump(user_actions, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
+    global assigned_deductive_codes
+    global deductive_code_definitions
+    global excluded_rows
+    global lemmas_excluded_from_lines
+    global stopped_lemmas
+    global unstopped_lemmas
+    global user_actions
+
+    model_path = get_model_path(mode_name, spacy_model, is_sentencized)
+
+    # load deductive code definitions
+    with open(CONFIG_FOLDER / "deductive_label_definitions.toml", "rb") as f:
+        deductive_code_definitions = tomllib.load(f)
+
+    # load the default stopwords list
+    with open(CONFIG_FOLDER / "default_stopwords.pickle", "rb") as f:
+        stopped_lemmas = pickle.load(f)
+
+    # load the user-made changes to the stopwords (if they exist)
+    stopwords_file = model_path / "stopwords.pickle"
+    if stopwords_file.is_file():
+        with open(stopwords_file, "rb") as f:
+            stopped_lemmas, unstopped_lemmas = pickle.load(f)
+
+    # load the tokens that were excluded on specific lines by the user
+    excluded_tokens_file = model_path / "excluded_tokens.pickle"
+    if excluded_tokens_file.is_file():
+        with open(excluded_tokens_file, "rb") as f:
+            lemmas_excluded_from_lines = pickle.load(f)
+
+    # load the lines that were completely excluded by the user
+    excluded_rows_file = model_path / "excluded_rows.pickle"
+    if excluded_rows_file.is_file():
+        with open(excluded_rows_file, "rb") as f:
+            excluded_rows = pickle.load(f)
+
+    # load the deductive codes selected by the user
+    assigned_deductive_codes_file = model_path / "assigned_deductive_codes.pickle"
+    if assigned_deductive_codes_file.is_file():
+        with open(assigned_deductive_codes_file, "rb") as f:
+            assigned_deductive_codes = pickle.load(f)
+
+    # load the user actions log
+    user_actions_log_file = model_path / "user_actions.pickle"
+    if user_actions_log_file.is_file():
+        with open(user_actions_log_file, "rb") as f:
+            user_actions = pickle.load(f)
+
+
+
+# ---- NLP FUNCTIONS ----
 
 def parse_raw_text(txt: str,
                    timestamp=False,
@@ -98,11 +193,11 @@ def parse_raw_text(txt: str,
                    use_nlp_tags=False,
                    resolve_corefs=False):
 
-    global excluded_tokens
+    global lemmas_excluded_from_lines
     global nlp
-    global tokens_changed
+    global graphed_tokens_changed
 
-    first_parse = True if len(excluded_tokens) == 0 else False
+    first_parse = True if len(lemmas_excluded_from_lines) == 0 else False
 
     data = list()
 
@@ -153,7 +248,7 @@ def parse_raw_text(txt: str,
         if in_sentences:
             for s in doc.sents:
 
-                excluded_in_row = excluded_tokens.get(i, [])
+                excluded_in_row = lemmas_excluded_from_lines.get(i, [])
 
                 # if the user wants to filter out tokens based on NLP tags
                 #    but only if this transcript is being loaded for the first time
@@ -162,13 +257,13 @@ def parse_raw_text(txt: str,
                     excluded_in_row.extend([ t.lemma_ for t in s if has_excluded_nlp_tag(t) and not t.is_stop ])
 
                 # add the tokens excluded by the algorithm to the rest of exclusions
-                if i in excluded_tokens.keys():
-                    excluded_tokens[i].extend(excluded_in_row)
+                if i in lemmas_excluded_from_lines.keys():
+                    lemmas_excluded_from_lines[i].extend(excluded_in_row)
                 else:
-                    excluded_tokens[i] = excluded_in_row
+                    lemmas_excluded_from_lines[i] = excluded_in_row
 
                 # remove duplicate elements
-                excluded_tokens[i] = list(set(excluded_tokens[i]))
+                lemmas_excluded_from_lines[i] = list(set(lemmas_excluded_from_lines[i]))
 
                 # create the row data to pass to the ag-grid
                 sent_row = row.copy()
@@ -209,7 +304,7 @@ def parse_raw_text(txt: str,
             row['in?'] = False if i in excluded_rows else True
             data.append(row)
 
-    tokens_changed = True
+    graphed_tokens_changed = True
 
     return data
 
@@ -332,7 +427,7 @@ def has_excluded_nlp_tag(token):
 def process_utterance(raw_text, row):
 
     global nlp
-    global excluded_tokens
+    global lemmas_excluded_from_lines
 
     doc = nlp(raw_text.strip().lower())
 
@@ -341,7 +436,7 @@ def process_utterance(raw_text, row):
         for token in doc
         if not nlp.vocab[token.lemma].is_stop
            and not token.is_punct
-           and token not in excluded_tokens.get(row, [])
+           and token not in lemmas_excluded_from_lines.get(row, [])
     ]
 
     buttons_for_text = html.Div(
@@ -355,7 +450,7 @@ def process_utterance(raw_text, row):
                         "stop": True if nlp.vocab[token.lemma_].is_stop else False
                     },
                     n_clicks=0,
-                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in excluded_tokens.get(row, []) else "success",
+                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in lemmas_excluded_from_lines.get(row, []) else "success",
                     class_name="m-1",
                     size="sm",
                 )
@@ -398,47 +493,7 @@ def process_utterance(raw_text, row):
 
     return buttons_for_text #, token_treemap
 
-def pickle_model(name, active_rows, spacy_model, is_sentencized):
-    global nlp
-    global excluded_tokens
-    global excluded_rows
-    global assigned_deductive_codes
 
-    models_folder = Path("./models/")
-    models_folder.mkdir(exist_ok=True)
-
-    model_path = models_folder / f"{str(name).strip()}-{spacy_model}-sent_{is_sentencized}/"
-    model_path.mkdir(exist_ok=True)
-
-    # repeat for user logged changes
-    user_log_folder = Path("./user-log/")
-    user_log_folder.mkdir(exist_ok=True)
-    user_log_path = user_log_folder / f"{str(name).strip()}-{spacy_model}-sent_{is_sentencized}/"
-    user_log_path.mkdir(exist_ok=True)
-    user_log_file = user_log_path / "user-log.pickle"
-
-    # pickle the stop words changed by the user
-    with open(model_path / "stopwords.pickle", "wb") as swf:
-        pickle.dump((stopped_words, unstopped_words), swf, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # pickle the tokens that are excluded in individual lines by the user
-    with open(model_path / "excluded_tokens.pickle", "wb") as etf:
-        pickle.dump(excluded_tokens, etf, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # pickle the rows that are completely excluded by the user
-    excluded_rows = [l['line'] for l in active_rows if not l['in?']]
-    with open(model_path / "excluded_rows.pickle", "wb") as erf:
-        pickle.dump(excluded_rows, erf, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # pickle the user selected deductive codes
-    with open(model_path / "assigned_deductive_codes.pickle", "wb") as etf:
-        pickle.dump(assigned_deductive_codes, etf, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # pickle the user log
-    with open(user_log_file, "wb") as ulf:
-        pickle.dump(
-            change_log, ulf, protocol=pickle.HIGHEST_PROTOCOL
-        )
 
 
 # ---- UTTERANCE TABLE ----
@@ -446,13 +501,13 @@ def pickle_model(name, active_rows, spacy_model, is_sentencized):
 # create a highlighted version of any given utterance using the html <mark> tag
 def highlight_utterance(line):
     global nlp
-    global excluded_tokens
+    global lemmas_excluded_from_lines
 
     row = line["line"] - 1
     doc = nlp(line["utterance"])
     line["highlighted utterance"] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop
-                                                                or t.lemma_ in excluded_tokens.get(row, [])
-                                                                or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
+                                                              or t.lemma_ in lemmas_excluded_from_lines.get(row, [])
+                                                              or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
                                                             for t in doc)
     return line
 
@@ -495,10 +550,10 @@ def generate_utterance_table(data, display_options, in_sents=False):
 
 # ---- NETWORK ANALYSIS
 
-def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=0.8, with_interviewer=False):
+def generate_token_graph_object(start, end, use_similarity=True, similarity_cutoff=0.8, with_interviewer=False):
     global nlp
     global active_data
-    global excluded_tokens
+    global lemmas_excluded_from_lines
 
     new_G = nx.Graph()
 
@@ -521,7 +576,7 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
             tokens = [t.lemma for t in doc_line if not t.is_punct
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma_].is_stop
-                                                    and not t.lemma_ in excluded_tokens.get(row, [])
+                                                    and not t.lemma_ in lemmas_excluded_from_lines.get(row, [])
                       ]
 
             token_counts = Counter(tokens)
@@ -572,11 +627,12 @@ def generate_knowledge_graph(start, end, use_similarity=True, similarity_cutoff=
     return new_G
 
 
-def display_knowledge_graph(
+def draw_token_graph_plotly_object(
     start_line=0,  # if > 0, range mode is activated
     end_line=1,
-    case_name="",
-    raw_frequency=True,
+    mode_name="",
+    sentencized=False,
+    spacy_model="en_core_web_sm",
     with_codes=False,
     layout=1,
     spring_iterations=30,
@@ -592,19 +648,19 @@ def display_knowledge_graph(
 ):
     global nlp
     global G
-    global tokens_changed
+    global graphed_tokens_changed
 
     # UA > if any edits were made in the utterance table or line number, regenerate the graph (nodes and the edge matrix)
     #       otherwise use the same graph for visualization changes
-    if tokens_changed:
+    if graphed_tokens_changed:
         # now let's generate the knowledge graph
-        G = generate_knowledge_graph(
+        G = generate_token_graph_object(
             start=start_line, end=end_line,
             use_similarity=combine_by_similarity,
             similarity_cutoff=min_similarity,
             with_interviewer=show_interviewer,
         )
-        tokens_changed = False
+        graphed_tokens_changed = False
 
     # first, remove edges that are below the degree offset value (like less than min degrees)
     edges_to_drop = [
@@ -635,12 +691,6 @@ def display_knowledge_graph(
     b_centrality = nx.betweenness_centrality(G)
 
     # VISUALIZE
-
-    # if showing a cumulative graph, just show the current line number
-    #    otherwise, show the range of the line numbers
-    plot_header = f"{end_line}" if start_line == 0 else f"[{start_line},{end_line}]"
-
-    # create node label but don't show labels for nodes with only 1 count
 
     # find the most central node so that we can show labels of the nodes in its ego graph in the plot
     #      but hide the labels of the others for easier viewing
@@ -683,18 +733,22 @@ def display_knowledge_graph(
     if spring_iterations is None:
         spring_iterations = 1
 
+    layout_title = "Spring"
     if layout == "1":
         pos = nx.spring_layout(
             G, iterations=spring_iterations, seed=layout_seed, k=spring_k
         )
 
     if layout == "2":
+        layout_title = "Random"
         pos = nx.random_layout(G, seed=layout_seed)
 
     if layout == "3":
+        layout_title = "Shell"
         pos = nx.shell_layout(G)
 
     if layout == "4":
+        layout_title = "Circular"
         pos = nx.circular_layout(G)
 
     # create the plotly graph for the network
@@ -763,20 +817,27 @@ def display_knowledge_graph(
         ),
     )
 
-    plot_title = "Entire Transcript" if start_line == 0 else f"Between the Lines {start_line} and {end_line}"
+    subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | CO: (min={min_co_occurrence}, strong>={min_strong_co_occurrence}) | Layout: {layout_title if layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: <{spacy_model}> | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes the Interviewer' if show_interviewer else ''} "
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
         layout=go.Layout(
             title=dict(
-                text=f"{case_name} | {plot_title} View @ at {plot_header}",
+                text=mode_name,
+                font=dict(size=24, weight="bold"),
+                subtitle=dict(
+                    text = subtitle_user_choices,
+                    font = dict(size=16, color="gray")
+                ),
                 x=0.5,
+                y=1,
                 xanchor="center",
+                yanchor="top",
             ),
             font=dict(size=16),
             hovermode="closest",
             height=600,
-            margin=dict(l=0, r=0, t=40, b=40),
+            margin=dict(l=0, r=0, t=80, b=40),
             showlegend=False,
             uirevision="none"
         ),
@@ -854,12 +915,23 @@ def display_knowledge_graph(
     
         fig_metrics.update_yaxes(row=1, col=1)
         fig_metrics.update_yaxes(row=1, col=2)
-        fig_metrics.update_layout(showlegend=False,
-                                  title=dict(
-                                      text=f"density = {nx.density(G):.3f}",
-                                      x=0.5, xanchor='center'),
-                                  margin=dict(l=0, r=0, t=40, b=40)
-                                  )
+        fig_metrics.update_layout(
+            showlegend=False,
+            title=dict(
+                text=f"Metrics for {mode_name}",
+                font=dict(size=24, weight="bold"),
+                subtitle=dict(
+                    text=f"density = {nx.density(G):.3f} | {subtitle_user_choices}",
+                    font=dict(size=10, color="gray")
+                ),
+                x=0.5,
+                y=0.95,
+                xanchor="center",
+                yanchor="top"
+            ),
+            margin = dict(l=0, r=0, t=80, b=40),
+        )
+
     else:
         graph_metrics = html.P("No metrics to display yet because there are no connected tokens.",className="lead",)
 
@@ -906,7 +978,7 @@ model_selection_dropdown = dbc.Select(
     options=[
         {"label": "Small", "value": "en_core_web_sm"},
         {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_md", "disabled": False if heroku_access_pwd is None else True},
+        {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
     ],
     value="en_core_web_lg"
 )
@@ -1107,8 +1179,8 @@ empty_log_table_data = [{
     'line': '0',
     'change': 'User token changes will be displayed in this table.',
 }]
-if len(change_log) > 0:
-    empty_log_table_data = change_log
+if len(user_actions) > 0:
+    empty_log_table_data = user_actions
 
 user_log_accordion = dbc.Accordion(
     dbc.AccordionItem(
@@ -1384,8 +1456,7 @@ app.layout = dbc.Container(
         dbc.Row(dbc.Col(graph_view_options_div)),
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
         dbc.Row(dbc.Col(user_log_accordion)),
-        coding_modal,
-        dcc.Interval(id='refresh-interval', interval=1, disabled=True), # to activate when we want to force page refresh (e.g. resetting)
+        coding_modal
     ],
     fluid=True,
     class_name="p-4",
@@ -1402,7 +1473,7 @@ app.layout = dbc.Container(
     Output("mode-name", "value"),
     Input("input-file-dropdown", "value"),
 )
-def load_input_file(file_name: str):
+def load_input_file_callback(file_name: str):
     if file_name == "__manual entry__":
         return "", ""
 
@@ -1431,7 +1502,7 @@ def load_input_file(file_name: str):
     Input("mode-name", "value"),
     Input("raw-text", "value"),
 )
-def enable_parse_button(name: str, text: str):
+def enable_parse_button_callback(name: str, text: str):
     return False if len(name.strip()) > 0 and len(text.strip()) > 0 else True
 
 
@@ -1444,7 +1515,7 @@ def enable_parse_button(name: str, text: str):
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
-def reset_model(nclicks, name, sentencized, model):
+def reset_model_button_callback(nclicks, name, sentencized, model):
 
     if ctx.triggered_id == "reset-button":
 
@@ -1502,17 +1573,17 @@ def reset_model(nclicks, name, sentencized, model):
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def utterance_table(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, model, use_nlp_tags, resolve_corefs, revised_row_id, existing_row_data):
+def parse_button_callback(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, resolve_corefs, revised_row_id, existing_row_data):
     global active_data
     global assigned_deductive_codes
-    global change_log
+    global user_actions
     global deductive_code_definitions
     global excluded_rows
-    global excluded_tokens
+    global lemmas_excluded_from_lines
     global nlp
-    global stopped_words
-    global tokens_changed
-    global unstopped_words
+    global stopped_lemmas
+    global graphed_tokens_changed
+    global unstopped_lemmas
 
     if ctx.triggered_id == "parse-button":
 
@@ -1521,67 +1592,10 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
         flush_globals()
         excluded_rows = []
 
-        # paths to model save files follows the format ./models/{case_name}-{sentencized?}-{model}/
-        model_path = Path(f"./models/{str(name).strip()}-{model}-sent_{sentencized}/")
-
-        config_folder = Path("./config/")
-
-        user_log_path = Path(f"./user-log/{str(name).strip()}-{model}-sent_{sentencized}/")
-
-
-        # loading pickled user-log
-        if user_log_path.is_dir():
-            user_log_file = user_log_path / "user-log.pickle"
-            if user_log_file.is_file():
-                with open(user_log_file, "rb") as ulf:
-                    change_log = pickle.load(ulf)
-
-        # loading pickled model files if they exist
-        if model_path.is_dir():
-
-            # load the user-made changes to the stopwords
-            stopwords_file = model_path / "stopwords.pickle"
-
-            if stopwords_file.is_file():
-                with open(stopwords_file, "rb") as swf:
-                    stopped_words, unstopped_words = pickle.load(swf)
-            else:
-                with open(config_folder / "default_stopwords.pickle", "rb") as swf:
-                    stopped_words = pickle.load(swf)
-
-
-            # load the tokens that were excluded on specific lines by the user
-            excluded_tokens_file = model_path / "excluded_tokens.pickle"
-
-            if excluded_tokens_file.is_file():
-                with open(excluded_tokens_file, "rb") as etf:
-                    excluded_tokens = pickle.load(etf)
-
-
-            # load the lines that were completely excluded by the user
-            excluded_rows_file = model_path / "excluded_rows.pickle"
-
-            if excluded_rows_file.is_file():
-                with open(excluded_rows_file, "rb") as erf:
-                    excluded_rows = pickle.load(erf)
-
-            # load the deductive codes selected by the user
-            assigned_deductive_codes_file = model_path / "assigned_deductive_codes.pickle"
-            if assigned_deductive_codes_file.is_file():
-                with open(assigned_deductive_codes_file, "rb") as tcf:
-                    assigned_deductive_codes = pickle.load(tcf)
-
-        else:
-            # if there is no model folder, load the default stop words
-            with open(config_folder / "default_stopwords.pickle", "rb") as f:
-                stopped_words = pickle.load(f)
-
-        # load deductive code definitions
-        with open(config_folder / "deductive_label_definitions.toml", "rb") as f:
-            deductive_code_definitions = tomllib.load(f)
+        unpickle_defaults_and_model(name, spacy_model, sentencized)
 
         # reload the model because it only pulls default stopwords if loaded from the beginning
-        nlp = spacy.load(model, exclude=["ner"])
+        nlp = spacy.load(spacy_model, exclude=["ner"])
 
         if resolve_corefs:
             nlp.add_pipe("fastcoref", config={  'device': 'cpu',
@@ -1591,10 +1605,10 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
 
         # update stop_words of the small model
         #   I have to do it this y because spacy's to_disk method doesn't save stopwords
-        for word in stopped_words:
+        for word in stopped_lemmas:
             nlp.vocab[word].is_stop = True
 
-        for word in unstopped_words:
+        for word in unstopped_lemmas:
             nlp.vocab[word].is_stop = False
 
         # tokens that are excluded from a specific line, but not the entire analysis
@@ -1622,8 +1636,8 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
         # update the highlighted tokens in the table after the user makes changes
         if not revision_modal_is_open and revised_row_id != -1:
             # and only if the user makes changes
-            if tokens_changed:
-                tokens_changed = False # reset the flag
+            if graphed_tokens_changed:
+                graphed_tokens_changed = False # reset the flag
                 return generate_highlighted_utterances(existing_row_data), "1", False
             else:
                 # otherwise, don't update the row data
@@ -1633,13 +1647,14 @@ def utterance_table(parse_clicks, revision_modal_is_open, display_options, name,
     else:
         raise PreventUpdate
 
+
 # needs to filter out interviewers as third option
 @app.callback(
     Output('data-table', 'columnState'),
     Output('data-table', 'dashGridOptions'),
     Input("inclusion-options", "value"),
 )
-def apply_table_layout_filters(options):
+def apply_table_layout_filters_callback(options):
 
     new_state = [
         {'colId': 'line'},
@@ -1674,16 +1689,16 @@ def apply_table_layout_filters(options):
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def revise_tokens_view(cell, toggle_clicks, row_data):
+def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     global active_data
-    global tokens_changed
-    global excluded_tokens
-    global change_log
+    global graphed_tokens_changed
+    global lemmas_excluded_from_lines
+    global user_actions
     # create global table 
     if cell is not None:
 
         row = int(cell["rowId"])
-        tokens_changed = False
+        graphed_tokens_changed = False
 
         if len(toggle_clicks) > 0:
 
@@ -1698,38 +1713,38 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
                 if was_stop:
 
                     nlp.vocab[toggled_token].is_stop = False
-                    stopped_words.discard(toggled_token)
-                    unstopped_words.add(toggled_token)
-                    change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
+                    stopped_lemmas.discard(toggled_token)
+                    unstopped_lemmas.add(toggled_token)
+                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
                     # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
 
                 else:
                     # if a token was not a stop word, first check if it is in the excluded tokens list
 
-                    if toggled_token in excluded_tokens.get(row, []):
+                    if toggled_token in lemmas_excluded_from_lines.get(row, []):
                         # if it was an excluded token, turn it into a stop word
                         # and remove it from the exluded tokens list
 
                         nlp.vocab[toggled_token].is_stop = True
-                        stopped_words.add(toggled_token)
-                        unstopped_words.discard(toggled_token)
-                        excluded_tokens[row].remove(toggled_token)
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
+                        stopped_lemmas.add(toggled_token)
+                        unstopped_lemmas.discard(toggled_token)
+                        lemmas_excluded_from_lines[row].remove(toggled_token)
+                        user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
 
                     else:
 
                         # if it was not in excluded tokens list, turn it into an excluded token
 
-                        if len(excluded_tokens.get(row, [])) == 0:
-                            excluded_tokens[row] = [toggled_token]
+                        if len(lemmas_excluded_from_lines.get(row, [])) == 0:
+                            lemmas_excluded_from_lines[row] = [toggled_token]
                         else:
-                            excluded_tokens[row].append(toggled_token)
+                            lemmas_excluded_from_lines[row].append(toggled_token)
 
-                        change_log.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
+                        user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
-                tokens_changed = True
+                graphed_tokens_changed = True
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
@@ -1770,7 +1785,7 @@ def revise_tokens_view(cell, toggle_clicks, row_data):
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
-def knowledge_graph(
+def generate_graph_button_callback(
     n_clicks,
     line_range,
     code_pref,
@@ -1793,35 +1808,35 @@ def knowledge_graph(
     spacy_model
 ):
     global active_data
-    global tokens_changed
-    global has_generated
-    global change_log
+    global graphed_tokens_changed
+    global graph_button_clicked
+    global user_actions
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, change_log]
+    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, user_actions]
 
     if disabled:
         return empty_return
 
     if ctx.triggered_id == "graph-button":
-        has_generated = True
-        tokens_changed = True
+        graph_button_clicked = True
+        graphed_tokens_changed = True
 
-        # also pickle the user's actions if the user clicks the "Generate Knowledge Graph" button
+        # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
         pickle_model(name, active_row_data, spacy_model, is_sentencized)
 
     if ctx.triggered_id == "graph-slider":
-        tokens_changed = True
+        graphed_tokens_changed = True
 
     if ctx.triggered_id == "min-co":
-        tokens_changed = True
+        graphed_tokens_changed = True
 
     if ctx.triggered_id == "min-strong-co":
-        tokens_changed = True
+        graphed_tokens_changed = True
 
     if ctx.triggered_id == "inclusion-options":
-        tokens_changed = True
+        graphed_tokens_changed = True
     
-    if not has_generated:
+    if not graph_button_clicked:
         return empty_return
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
@@ -1851,10 +1866,12 @@ def knowledge_graph(
 
     selected_range = list([start, end])
 
-    graph, stats = display_knowledge_graph(
+    graph, stats = draw_token_graph_plotly_object(
         start_line=start,
         end_line=end,
-        case_name=name,
+        mode_name=name,
+        sentencized=is_sentencized,
+        spacy_model=spacy_model,
         with_codes=code_pref,
         layout=layout,
         spring_iterations=iterations,
@@ -1869,7 +1886,7 @@ def knowledge_graph(
         min_similarity=min_similarity,
     )
     # change_log = [{'dict a': 'test a'}, {'dict b': 'test b'}, {'dict c': 'test c'}]
-    return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, change_log
+    return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, user_actions
     # need to update change_log
 
 
@@ -1877,7 +1894,7 @@ def knowledge_graph(
     Input({"type": "code-checklist", "index": ALL}, "value"),
     prevent_initial_call=True,
 )
-def save_user_assigned_deductive_codes(val):
+def save_user_assigned_deductive_codes_callback(val):
 
     global assigned_deductive_codes
 
@@ -1892,23 +1909,23 @@ def save_user_assigned_deductive_codes(val):
     Input("data-table", "cellValueChanged"),
     prevent_initial_call=True,
 )
-def update_included_lines(changed):
-    global tokens_changed
-    global change_log
+def update_included_lines_callback(changed):
+    global graphed_tokens_changed
+    global user_actions
 
     if changed:
         i = int(changed[0]["rowId"])
         cell_incl = changed[0]['data']['in?']
         active_data[i]['in?'] = cell_incl
-        tokens_changed = True
+        graphed_tokens_changed = True
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         text = ''
         if cell_incl:
             text = f'The line is turned ON.'
         else:
             text = f'The line is turned OFF.'
-        change_log.append({'time': curr_time, 'line': i+1, 'change': text})
-    return change_log
+        user_actions.append({'time': curr_time, 'line': i + 1, 'change': text})
+    return user_actions
         
 
 # --- HEROKU SIMPLE AUTH CHECK ---
