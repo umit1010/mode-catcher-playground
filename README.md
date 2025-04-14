@@ -24,13 +24,12 @@ You can read the following three short papers to get started with the underlying
 
 I recommend using a conda-based setup to get the current version of the playground up and running on your computer. I prepared a list of instructions below that should work fine on Mac or Linux, but if you use a Windows computer or run into any issues, let me know, and we can troubleshoot via a Zoom meeting:
 
+* If you have not done so already, install `conda`: 
+  * Here is a tutorial: https://docs.anaconda.com/free/miniconda/miniconda-install/ 
+  * Once conda is installed, open a new terminal window, and you should see the prompt change to `(base) ~`
+
 * Navigate to a folder of your choosing and clone the git repository:
   * `git clone https://github.com/umit1010/mode-catcher-playground.git`
-
-
-* Install miniconda following the tutorial here: 
-  * https://docs.anaconda.com/free/miniconda/miniconda-install/ 
-  * Once conda is installed, open a new terminal window, and you should see the prompt change to `(base) ~`
 
 * Navigate to the newly created `mode-catcher-playground` directory
   * `cd mode-catcher-playground`
