@@ -1,0 +1,551 @@
+[00:00:00] Interviewer: Okay, so.
+
+[00:00:05] Participant Lena: All right, yeah, so I've been giving some thought, and was going to go a different direction than the horse topic we attacked at. I was thinking. I was thinking of like natural events that have happened lately, and that Hurricane Ida was going on down in New Orleans and there is a lot of flooding. So, I was wondering, you know, if we could do a model showing like agriculture related to hurricanes and like regrowth of it? So you know, like say you have just a general cornfield. You get a hurricane comes through kind of destroys everything, what it looks like to get the regrowth going? Maybe mixing in any other natural disasters to see if there's like a difference, or I guess, we could ask seeing if there's a difference, like in the time it takes for regrowth of the crop? The disasters? 
+
+[00:01:03] Interviewer: That would be a cool idea, do you want to get started with it?
+
+[00:01:06] Participant Lena: Yeah let's do that.
+
+[00:01:07] Interviewer: Let me share my screen. Then, I will just put my standard buttons quickly. 
+
+[00:01:12] Participant Lena: My neighbor is mowing his yard so hopefully it's. 
+
+[00:01:15] Interviewer: I don't hear anything.
+
+[00:01:18] Participant Lena: To.
+
+[00:01:18] Interviewer: It doesn't distract me too much, but I really don't hear anything. As usual, you don't really need to worry about what do I exactly write. Here in the code section. For that, I keep it so that you can follow and then you can maybe like sometimes catch some things and stuff like that that I made a mistake. So, how should we go about creating your model? What would you like to create first?
+
+[00:01:45] Participant Lena: So can we take a look at what kind of vegetation you have? Like crops? Like corn, tomatoes? Things like that.
+
+[00:01:53] Interviewer: We have a bunch of. Let me double check. So, we have these plants. Plant medium. Plant small. Do we have corn. Let's see. And we can always draw, of course. We'll put a placeholder shape and then in between two meetings I can draw.
+
+[00:02:17] Participant Lena: Okay.
+
+[00:02:19] Interviewer: We don't have corn, but we have tomatoes.
+
+[00:02:22] Participant Lena: Corn was just something that came to mind but any other vegetation will do. I think, you know actually the plant, small, medium, regular might be good to just show the different effects. Sizes, so let's do all three of those if you can.
+
+[00:02:38] Interviewer: Okay, ... I am adding those. Sorry. I imported those. There's an apple here, for example.
+
+[00:02:45] Participant Lena: Okay. Yeah, that's.
+
+[00:02:47] Interviewer: That's important one too. We can, we can take our time with these things, you know, like we also don't need to rush. You will see me rushing to write the code, so that I don't want to slow you down as you're thinking and you're sharing your ideas. There's cactus here. You want to import that too?
+
+[00:03:09] Participant Lena: I don't think we need cactus. Let's see what else we have. I'll let you know if I see anything. Let's do some flowers and then flower budding. I think that'd be interesting.
+
+[00:03:35] Interviewer: So did flowers
+
+[00:03:40] Participant Lena: Let's go ahead and let's put a couple houses in there too, actually.
+
+[00:03:45] Interviewer: Which houses? 
+
+[00:03:46] Participant Lena: Yeah. We can do. Let's do bungalow and ranch.
+
+[00:03:59] Interviewer: And then there were a few other things here. Like, I guess, they all are distributed. There's a lily pad here. There's a leaf. There are leaves here.
+
+[00:04:06] Participant Lena: No. Let's do. If you can scroll up a little bit. I saw log.
+
+[00:04:17] Interviewer: Oh yeah! There are logs here. Here you go. Logs. There. Good. 
+
+[00:04:31] Participant Lena: Let's see. We did all the plants.
+
+[00:04:44] Interviewer: There's a pumpkin here, I guess.
+
+[00:04:48] Participant Lena: Yeah, let's throw a pumpkin in there.
+
+[00:04:52] Interviewer: Okay. There's a strawberry.
+
+[00:05:01] Participant Lena: Yeah that looks good. We can include that one. And then, I also saw sun. Let's go ahead and.
+
+[00:05:08] Interviewer: Add the sun.
+
+[00:05:09] Participant Lena: Yeah.
+
+[00:05:10] Interviewer: Okay. There Tree. Pine.
+
+[00:05:24] Participant Lena: Let's do both the tree and the tree pine.
+
+[00:05:36] Interviewer: That's pretty much it of the ready made shapes we have and we can always you know, make new shapes.
+
+[00:05:42] Participant Lena: Yeah, I like it. That's a good variety to get started.
+
+[00:05:45] Interviewer: So, I won't take out the other unrelated ones to not take our time, like the airplane, arrow, and stuff, but basically we have apple. We have flower, flower budding. We have houses, normal house, house bungalow, house ranch. We have leaf. We have logs. We have plants small, medium, and large. We have pumpkin. Strawberry, sun, tree, tree pine, and that's pretty much it. Okay. Just and we can always go back and look there. You know, if you don't remember like what kind of shape do we have. We can look back. Okay.
+
+[00:06:22] Participant Lena: So, should I just start with a shape?
+
+[00:06:25] Interviewer: Yeah.
+
+[00:06:26] Participant Lena: Okay. Let's do the bungalow house.
+
+[00:06:31] Interviewer: So, I will just define them as a term for, for us to follow. Houses. House. And then, how many should we create?
+
+[00:06:43] Participant Lena: Let's do five.
+
+[00:06:45] Interviewer: Where would you like to place them?
+
+[00:06:49] Participant Lena: Let's do random.
+
+[00:07:00] Interviewer: Let's see. Okay, they are kind of small. You like them that way or do you want them bigger?
+
+[00:07:07] Participant Lena: Yeah, let's blow them up.
+
+[00:07:09] Interviewer: Okay. How about this?
+
+[00:07:13] Participant Lena: Could you even do a little bit bigger than that? Yeah, I like that.
+
+[00:07:21] Interviewer: You have houses. They are going in random places. Do you like the colors or do you want a specific color?
+
+[00:07:29] Participant Lena: Well, now when I'm looking at them in random places, I'm wondering if could we change that to being like one on each corner and then one in the middle?
+
+[00:07:37] Interviewer: Okay. Sure. Yeah. Of course. Yeah. See if this works. They are in corners but they are in. Let me see. I'm making sure that they look like not in tucked away like, that yeah. Okay.
+
+[00:09:02] Participant Lena: Yeah and I like the random on the colors.
+
+[00:09:06] Interviewer: And what's next now?
+
+[00:09:08] Participant Lena: Okay let's add. Two ranches. Two ranch houses. With the same size as the other ones, I guess that's a size five? And then, could the two of them go on the left and the right of the brown house?
+
+[00:09:56] Interviewer: Yes. How does this look?
+
+[00:10:00] Participant Lena: Cool. That's perfect. Alright, so let's go ahead and plant some. Can you pull up the list again? Of the icons?
+
+[00:10:14] Interviewer: So, the apple. And the flower and flower budding.
+
+[00:10:20] Participant Lena: Okay.
+
+[00:10:21] Interviewer: We have the leaf. Sorry. Logs, plant, medium, small, large, pumpkin, strawberry, and trees.
+
+[00:10:32] Participant Lena: Okay. You can close out of, out of that. Let's do. Let's do four trees. And can we put them like between the blue and the green so like in that middle row.
+
+[00:11:03] Interviewer: These, these like right here?
+
+[00:11:06] Participant Lena: Down a little bit. Yeah. Like right. 
+
+[00:11:10] Interviewer: Okay.
+
+[00:11:11] Participant Lena: In there.
+
+[00:11:12] Interviewer: And then. What's this, for example, this tree. What do you think?
+
+[00:11:28] Participant Lena: Could we do them a little bit bigger.
+
+[00:11:28] Interviewer: How about 5? Is it too big? 
+
+[00:11:28] Participant Lena: Oh yeah that might be too big! What does four look like? 
+
+[00:11:28] Interviewer: Let's see. Still too big? 
+
+[00:11:28] Participant Lena: Yeah. I guess let's go with three like you originally had.
+
+[00:11:58] Interviewer: Or two? Which one do you prefer?
+
+[00:12:04] Participant Lena: I like two better actually, I think.
+
+[00:12:06] Interviewer: Two and a half. Halfway between two and half, 2.75. It's up to you. You like the random colors with them as well?
+
+[00:12:15] Participant Lena: Can we make them green?
+
+[00:12:22] Interviewer: So every time they will be distributed along this this line, but they will be placed in random places. Is it fine or?
+
+[00:12:30] Participant Lena: Is there a way to put them, I guess, like can you have them on the same imaginary line and like the yellow, blue, and purple is on?
+
+[00:12:41] Interviewer: Oh, right here. Like you mean 
+
+[00:12:43] Participant Lena: Yeah so it'd go like. If you drew an imaginary line. The three houses, the trees would be on them.
+
+[00:12:51] Interviewer: Yeah and then, they should be not. Okay.
+
+[00:12:55] Participant Lena: But not like overlapping the house.
+
+[00:12:58] Interviewer: That's a little different. So, how will the process go is sometimes I will write these complex pieces of code, sometimes I will say lauren let's keep them overlapping right now, but I will take a note of your idea, and then I will do in between right so, but this time I can do it's actually relatively simple.
+
+[00:13:18] Participant Lena: Okay. 
+
+[00:13:31] Interviewer: They will never overlap with the houses. They will be there.
+
+[00:13:41] Participant Lena: All right, looks good. 
+
+[00:13:42] Interviewer: Is it fine if they are on the right sides or you know, like the edges, or did did you want them to be really right in between all the houses.
+
+[00:13:49] Participant Lena: I think the edges are okay.
+
+[00:13:52] Interviewer: Yeah.
+
+[00:13:53] Participant Lena: Well it looks good. Thanks. How about if we plant some flowers. Let's do. Let's do fifteen and have them be pretty small.
+
+[00:14:08] Interviewer: One second. I will actually. Do you want flower, flower budding or?
+
+[00:14:20] Participant Lena: Let's do flowers and then we'll actually do flower budding after.
+
+[00:14:21] Interviewer: Mm hmm. And then where do they go? 
+
+[00:14:30] Participant Lena: Could we have them like. Hold on. To the right of. Like in between those top two houses?
+
+[00:14:51] Interviewer: Okay, of course. Should be something like this, okay. It will again be slightly randomly placed but.
+
+[00:15:23] Participant Lena: Pretty cool. Could we make them all purple?
+
+[00:15:29] Interviewer: Yes. Okay. There you go. 
+
+[00:15:44] Participant Lena: Awesome. Okay. This is pretty neat.
+
+[00:15:49] Interviewer: Mhm. It's coming together.
+
+[00:15:50] Participant Lena: Yeah. Let's do those flower budding.
+
+[00:15:55] Interviewer: Okay.
+
+[00:15:56] Participant Lena: Let's do twenty of those and also, if we can make them the same size as the purple flowers. In the place that would be like in that same space. If we can do that, between those, the pink and the grey house.
+
+[00:16:15] Interviewer: On the top. Okay. Pretty much the same. Now, they're going to be purple too?
+
+[00:16:27] Participant Lena: Let's have them be yellow.
+
+[00:16:36] Interviewer: Sometimes they overlap a little bit. Let me place a note. Is. Did you want them to be overlapping or did you want them to be actually like a nice neat line? 
+
+[00:16:46] Participant Lena: The OCD in me wants them to be a nice neat line. Would it be possible to have like purple flower, yellow budding, purple flower, yellow budding through the line or would that be?
+
+[00:16:59] Interviewer: Yeah. Of course. Let's do it that way then. It's going to be. Like it's not going to be neat again. We will make it neat in between meetings so that. I am as OCD as you. I totally agree with you, but for the sake of time and then continue to hear your thoughts, I'll keep it like this.
+
+[00:17:36] Participant Lena: Sounds good. 
+
+[00:17:38] Interviewer: Yeah. 
+
+[00:17:47] Participant Lena: Okay, do you think we could do something with that leaf icon in the middle row with the trees? So maybe we could do, like, 10 leaves that are, that are orange? And then for size, I'm thinking smaller than the tree but definitely bigger than those flowers and bud flowers.
+
+[00:18:14] Interviewer: Let's see. So. And they are near trees, or they are just distributed along the? 
+
+[00:18:31] Participant Lena: Let's do distributed and if they overlap. Could we do like that same pattern when you do get a chance to take a look at it. Like the line above it will have with like the flowers and the buddings with every other.
+
+[00:18:33] Interviewer: Yeah.
+
+[00:18:34] Participant Lena: I guess, actually maybe that might not work with the trees and the leaves because there's a certain number of one versus the other but.
+
+[00:18:46] Interviewer: Should be a bit below. It's like this. No, it's too little. But it's on the house. Okay. 
+
+[00:19:28] Participant Lena: Is there a way to move the leaves up to be like the same, like imaginary line?
+
+[00:19:53] Interviewer: See.
+
+[00:19:55] Participant Lena: Cool. 
+
+[00:19:56] Interviewer: Yeah. Okay, now, we have the leaves.
+
+[00:20:03] Participant Lena: I like it. Alright, so on that bottom row, I'm thinking that's where we can do like the vegetables and like the pumpkin, the strawberries, the apple. So, maybe we could start with the pumpkins and do like 15 of those? And for color, maybe, we can make them, what's your pink?
+
+[00:20:40] Interviewer: And then, this will be. See. How many did you say? 20? 15? 
+
+[00:20:58] Participant Lena: Let's do 15. 
+
+[00:20:59] Interviewer: Too high, right now. Too low. There we go.
+
+[00:21:16] Participant Lena: Yeah looks great. Okay. Let's do some. Let's do seven strawberries. And then, let's make the strawberries red.
+
+[00:21:50] Interviewer: No, I will have pumpkin, strawberries. Again, they will be like overlapping, but I will work on.
+
+[00:21:57] Participant Lena: Okay. Sounds good. So, we had apples too. Let's do 10 apples. And we can make the apples yellow.
+
+[00:22:16] Interviewer: There you go. There are like so many, they did, they do overlap quite a bit, but you know we can maybe perhaps play with the vertical position a little bit to, you know, like.
+
+[00:22:43] Participant Lena: Sure.
+
+[00:22:44] Interviewer: A little bit like up and down. I don't know.
+
+[00:22:48] Participant Lena: Ya I'd be open to that.
+
+[00:22:50] Interviewer: Okay.
+
+[00:22:54] Participant Lena: Pretty cool.
+
+[00:22:59] Interviewer: Yeah.
+
+[00:22:59] Participant Lena: I feel like the top row just needs a little more flowers and buds. How many do we have up there right now? Do you know?
+
+[00:23:07] Interviewer: So for flowers, we have 15 flowers and 20 budding flowers.
+
+[00:23:14] Participant Lena: Can you see what it'd look like with 30 flowers? Okay. Let's do. Let's do. Let's do the same for the buds. Let's do 30 buds too. That's a little bit better.
+
+[00:23:49] Interviewer: Because of the random distribution it sometimes leaves like someplace empty. As I said, I will fix it too actually.
+
+[00:23:57] Participant Lena: Sounds good. Yeah, this is a good start. We have the houses. We have the different rows of things to look at like veg, like the regrowth. So at this point. We should put in the sun, I'm thinking.
+
+[00:24:17] Interviewer: We should put the sun? Yes.
+
+[00:24:33] Participant Lena: Can we put the sun, like, in the top center?
+
+[00:24:38] Interviewer: Top center? Okay. It's up there. I guess what's the color?
+
+[00:24:51] Participant Lena: Let's do yellow and then for size, let's make it. Can we see what it looks like bigger than the houses?
+
+[00:25:02] Interviewer: Something like this?
+
+[00:25:14] Participant Lena: Yeah. I actually like that. Could we then move the first row of houses down a little bit?
+
+[00:25:26] Interviewer: Yeah. Should be like this?
+
+[00:25:27] Participant Lena: Yeah I like that, and then also. Yeah.
+
+[00:25:28] Interviewer: There we go. Does it look good?
+
+[00:25:53] Participant Lena: Yeah. It looks great. Alright, maybe we should look at that list again to see what else is on there. To put it in here.
+
+[00:26:21] Interviewer: See.
+
+[00:26:21] Participant Lena: Can we put logs in on that same row as like the trees and the leaves? And could we do like five and see what that looks like?
+
+[00:26:41] Interviewer: What should be their shape or their color?
+
+[00:26:50] Participant Lena: Can we do brown. My neighbor's dog is upset about something.
+
+[00:27:04] Interviewer: Oh, this could equals five or that. Color. Brown. Are they too big?
+
+[00:27:43] Participant Lena: Yeah those might be too big actually. Could we make them like. i'm almost. Yeah. Maybe that size is good.
+
+[00:27:56] Interviewer: There we go.
+
+[00:27:57] Participant Lena: Yeah. That looks good. All right, I'm wondering if we should start looking at seeing if there's any like rain.
+
+[00:28:07] Interviewer: Mm hmm. So for rain, we can represent the rain, I guess, with like little dots or little lines. We can also represent it with images like. Where is that? There was a drop, I think. Yeah, they're like little drops.
+
+[00:28:38] Participant Lena: So. Question for you. Like if we're looking at the way that the different weather can impact like these scenarios. How do we, do that? Like with different weather? Like how do we display that on a model? Like do we make one copy of this with rain and then another copy of it with like fire?
+
+[00:29:03] Interviewer: We can basically make it like a parameter of the model. We can, for example, put like a option here that will say weather condition, right? We will maybe have choices such as.
+
+[00:29:19] Participant Lena: Oh I gotcha. Okay cool.
+
+[00:29:21] Interviewer: Sunny, rain, fire. Yes. And then, here, we will choose the one we want and then, corresponds to that.
+
+[00:29:31] Participant Lena: Okay.
+
+[00:29:31] Interviewer: If it's raining, do this. If it's sunny, do this.
+
+[00:29:36] Participant Lena: Awesome. Well. Do we have any of those icons for clouds?
+
+[00:29:43] Interviewer: Yeah. We do.
+
+[00:29:47] Participant Lena: I guess, maybe, we can work on the sunny right now and then move on to rain.
+
+[00:29:52] Interviewer: Yes. So let me bring the cloud here. There you go. Cloud.
+
+[00:30:02] Participant Lena: Sweet. Perfect. 
+
+[00:30:03] Interviewer: Cloud shape. Yes. So you want to start with the sunny and then maybe we will implement the rain. And of course, we don't have to finish everything today. We can go as far as we can today. Come back the next meeting. Okay. So you would like to start implementing the sunny condition?
+
+[00:30:18] Participant Lena: Yeah. Let's do. Can we do like five clouds that are white?
+
+[00:30:34] Interviewer: And they only happen when it's sunny.
+
+[00:30:38] Participant Lena: What?
+
+[00:30:38] Interviewer: You only have those clouds when it's sunny or do we always have those clouds?
+
+[00:30:47] Participant Lena: I'd say we probably always can have them.
+
+[00:30:55] Interviewer: Let's create the clouds. You said five?
+
+[00:31:03] Participant Lena: Yeah. Let's see what that looks like.
+
+[00:31:07] Interviewer: Their color is?
+
+[00:31:12] Participant Lena: White.
+
+[00:31:13] Interviewer: And then they are, I am assuming on the top.
+
+[00:31:26] Participant Lena: Yep. You got it. 
+
+[00:31:29] Interviewer: Are they too small?
+
+[00:31:32] Participant Lena: Yeah. Those are pretty small. I wonder what size are they right now? Five?
+
+[00:31:39] Interviewer: By default they are size one.
+
+[00:31:41] Participant Lena: Gotcha. What does five look like? Is that gonna be too big?
+
+[00:31:53] Interviewer: I mean it really depends on how, how you want to.
+
+[00:31:56] Participant Lena: I mean actually the, the five works.
+
+[00:31:59] Interviewer: Okay.
+
+[00:32:01] Participant Lena: Yeah.
+
+[00:32:02] Interviewer: Is their location good or should they be lower or higher? 
+
+[00:32:04] Participant Lena: Are we able to have them fixed in a spot?
+
+[00:32:08] Interviewer: Yes, of course.
+
+[00:32:11] Participant Lena: Could we have like three on the left and then two on the right of the sun.
+
+[00:32:16] Interviewer: Okay.
+
+[00:32:18] Participant Lena: That way you're like, the sun is not like blocked by the clouds and it's going to be a sunny condition.
+
+[00:32:25] Interviewer: Overlapping with the sun right still?
+
+[00:32:27] Participant Lena: Yeah. I mean we could even make it four clouds if that's easier. Two on each side.
+
+[00:32:31] Interviewer: Okay, of course. So like this? 
+
+[00:32:34] Participant Lena: Yeah. 
+
+[00:32:34] Interviewer: There you go. How does this look?
+
+[00:32:35] Participant Lena: Perfect. 
+
+[00:32:36] Interviewer: What's next. 
+
+[00:32:37] Participant Lena: Are we able to. So we're able to keep the clouds, if we go to the rain? 
+
+[00:32:41] Interviewer: Yeah 
+
+[00:32:41] Participant Lena: Okay, let's go to the rain condition. And then, can we take out the sun?
+
+[00:32:42] Interviewer: Okay, so if the condition, if it is rain, there will be no sun. If it is sun, there will be sun.
+
+[00:34:35] Participant Lena: Now if it is raining, can we add more clouds? 
+
+[00:34:41] Interviewer: Yes. 
+
+[00:34:42] Participant Lena: Okay. How about if it's rainy, we have like seven clouds.
+
+[00:34:47] Interviewer: Okay. And then, they are all over the place? We always have four clouds, so I just need to create three more clouds. Three more. You like it like that?
+
+[00:35:42] Participant Lena: Love it.
+
+[00:35:43] Interviewer: I can also spread them out a little more. 
+
+[00:35:46] Participant Lena: Oh yeah. I mean if you can spread them out and that's easy.
+
+[00:35:50] Interviewer: Yeah. So if it's rain, it's going to be looking like this. If it's sunny, it's going to be looking like this.
+
+[00:35:57] Participant Lena: Perfect. And then, can we add some well quite a bit of rain, like those droplets?
+
+[00:36:05] Interviewer: Yeah. So do you want them to start raining when we click the go button, or do you want them to just be there? Right away initially? 
+
+[00:36:10] Participant Lena: Maybe when we press go.
+
+[00:36:14] Interviewer: Mm hmm so when we press go if it's raining, the clouds will generate droplets and then they will drop to the ground.
+
+[00:36:21] Participant Lena: Cool.
+
+[00:36:24] Interviewer: Let's do it. And then I guess we can say. What should be the color of the rain?
+
+[00:37:20] Participant Lena: Let's do blue.
+
+[00:37:27] Interviewer: So, it should rain right now. Oooh. They are very big. They should be small. Sorry. Raining a bit too much. Yeah. Is it still too big? The rain? 
+
+[00:37:48] Participant Lena: What does it look like a little smaller than that?
+
+[00:37:53] Interviewer: Make them half the size.
+
+[00:37:56] Participant Lena: That's perfect.
+
+[00:37:57] Interviewer: Okay, so what happens right now is that the rain goes down and then it should, should it disappear when it's at the bottom. Should it accumulate there. 
+
+[00:38:06] Participant Lena: Should it what I'm sorry?
+
+[00:38:09] Interviewer: So when it rains, just keeps raining and they just like accumulate here, you see, at the bottom.
+
+[00:38:15] Participant Lena: Yeah. I think that's fine.
+
+[00:38:16] Interviewer: That's fine? Okay.
+
+[00:38:17] Participant Lena: Yeah. All right, so I think, do we have any like lightning or anything like that?
+
+[00:38:25] Interviewer: Yeah we can check that out. I will actually make them disappear, right now, because if there's too many, they may slow down the model.
+
+[00:38:53] Participant Lena: Oh, I gotchu. 
+
+[00:38:55] Interviewer: Disappear. So now, let's do lighting. I think there was a lightning. There you go. We have. So how does the lightning work? 
+
+[00:39:19] Participant Lena: Well, I guess, I should ask that to you. Does it come like out of the clouds? Like the rain does, or is this?
+
+[00:39:31] Interviewer: Perfectly up to you, I mean you can just decide to make it come from the cloud and hit the ground. You can. You can go between clouds, you know. Lightning kinda whichever way you want to.
+
+[00:39:45] Participant Lena: Let's do. Let's do six lightning and then, can we have them coming from the clouds with two of them hitting that pink house?
+
+[00:39:57] Interviewer: Okay okay.
+
+[00:39:59] Participant Lena: Is that difficult?
+
+[00:40:01] Interviewer: Not super difficult. So four of them go in between clouds. And then two of them go to the pink house.
+
+[00:40:28] Participant Lena: Yeah 
+
+[00:40:33] Interviewer: Okay. I will take a note again. What's the color of the lightnings?
+
+[00:40:49] Participant Lena: Can we do gray?
+
+[00:41:09] Interviewer: Yeah. And then, these will be going that way and then I will put two more. And then all of this should be at the cloud level right?
+
+[00:41:28] Participant Lena: Yes, please.
+
+[00:42:16] Interviewer: And then, the lightnings. So if they are going sideways, they will just go. Sideways. What will happen if they hit the house?
+
+[00:42:26] Participant Lena: Let's make the house catch fire. 
+
+[00:42:28] Interviewer: Okay, so let's see if. Okay. Give me one second. Let's see if they even go to the house. And then, we will have the house catch. Okay, they don't turn correctly, though. Let's make it rotatable, so that they rotate, right when they go and then. So they should go. Okay. Anyways I will fix that little bit of thing too. It goes and then it doesn't return from that side.
+
+[00:44:01] Participant Lena: Oh okay. 
+
+[00:44:03] Interviewer: Is it fine or is it too small.
+
+[00:44:04] Participant Lena: I was just going to say, could we change it to being like a little smaller than the clouds?
+
+[00:44:10] Interviewer: Okay. Make the clouds size five, so let's make them size two. See the lightning hit this one, but it passes because we didn't make that.
+
+[00:44:32] Participant Lena: Can we make the color of the lightning, i'm thinking like yellow might help it stand out more.
+
+[00:44:46] Interviewer: You get lightning hit the house. Should we change the shape of the house to make it catch fire or should we make, create some fires there?
+
+[00:45:06] Participant Lena: Yeah, I was thinking like we create fire, because then, like I was thinking that that whole line, will end up catching fire.
+
+[00:45:15] Interviewer: Okay. Yeah. There's a fire shape here. Let's do that.
+
+[00:45:18] Participant Lena: Okay 
+
+[00:45:19] Interviewer: Here. Create this hatch fires spawn I set this. I set that. Okay. And the lightning. Fine, I guess. Woah, something happened. Space. Caught fire okay.
+
+[00:46:03] Participant Lena: Can we make the flame bigger. 
+
+[00:46:09] Interviewer: Yes. 
+
+[00:46:09] Participant Lena: We're gonna make it really catch fire.
+
+[00:46:18] Interviewer: It will catch fire. Okay. So, now you think it will start spreading to the next items?
+
+[00:46:24] Participant Lena: Yes. 
+
+[00:46:25] Interviewer: Okay. Perfect. Now, one thing that's confusing me. Multiple can come from different directions. Right?
+
+[00:46:57] Participant Lena: Yeah.
+
+[00:47:01] Interviewer: They hit the house. They burn it. So, what do you think so far?
+
+[00:47:07] Participant Lena: This is pretty cool.
+
+[00:47:09] Interviewer: We did write a lot of code in just 50 minutes. Let me take a note okay.
+
+[00:47:19] Participant Lena: You're doing an amazing job.
+
+[00:47:21] Interviewer: I think you are doing an amazing job too. Like you did describe a lot of things in a very short time. We were able to put it together really nicely. So, I will pause here because we are in the 50 minute mark almost. I don't want to, yeah. Do you have any immediate ideas that you would like to share, so I can take note and we can go back in the next meeting? Like any other things that you wanted to implement that was on your mind?
+
+[00:47:49] Participant Lena: I'm thinking maybe we could incorporate a couple of animals. I'm not sure if we have wind as a factor. How we could illustrate that?
+
+[00:48:11] Interviewer: And you also shared a few conditions. You said there is rainy, there's sunny. What's the difference between those that you had in mind? Like what would happen if it was sunny?
+
+[00:48:21] Participant Lena: Well, if it's sunny, maybe we have people walking around. And then if it's raining, of course, we might have like two people outside, whereas sunny maybe it's 10 or 20. Like a lot less if its rainy. And we could have the same apply to animals too.
+
+[00:48:57] Interviewer: Want more animals outside if it's sunny.
+
+[00:49:03] Participant Lena: Yeah. I'm thinking also we may want to like build in ground, so like that probably is pretty simple to do, but like a resting line for like the houses. Have on them kind of thing.
+
+[00:49:30] Interviewer: We don't have to come up with all the ideas. I just wanted to note down any immediate ideas.
+
+[00:49:36] Participant Lena: Well, I think that captures it all.
+
+[00:49:38] Interviewer: Mhm. Great 
+
+[00:49:38] Participant Lena: This is really neat.

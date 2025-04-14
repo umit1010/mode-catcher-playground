@@ -1,0 +1,463 @@
+[00:00:00] Interviewer: ...on in your site either. This helps with the transcription again of the interaction but you can probably turn it off on your side if you don't need to.
+
+[00:00:09] Participant_Dawn: Okay.
+
+[00:00:10] Interviewer: Let me know if it distracts you. Um so, um. Did you think about model ideas? I know you shared some ideas with me and I gave you some feedback from the upwork chat. Yeah. What are your? What? Where? Where do you stand in terms of ideas right now?
+
+[00:00:26] Participant_Dawn: I was, uh, thinking about volcano.
+
+[00:00:31] Interviewer: Oh that's very interesting can you tell me?
+
+[00:00:34] Participant_Dawn: Eruptions.
+
+[00:00:38] Interviewer: Yeah that's very interesting. Um yeah.
+
+[00:00:42] Participant_Dawn: Is that one good?
+
+[00:00:44] Interviewer: I mean it really doesn't need to be good or bad uh it just needs to be um not too challenging for.
+
+[00:00:51] Participant_Dawn: Okay.
+
+[00:00:52] Interviewer: Right? So this one seems like pretty doable but you need to give me a bit more what do you think about volcanoes what's your thinking
+
+[00:01:01] Participant_Dawn: Okay. Well, I'm thinking about an island. So there's a volcano in an island. It's about to erupt. And there's like few houses around it. And people, how will they get out of it?
+
+[00:01:32] Interviewer: This is a great idea. I think this is very doable, and it will be fun too. Where did the idea come from?
+
+[00:01:42] Participant_Dawn: I watched a movie before, a long time ago. I'm not sure if you're familiar with it. It's Pompeii.
+
+[00:01:51] Interviewer: Yeah, I am.
+
+[00:01:53] Participant_Dawn: Okay. Yeah, I just remembered suddenly. I was trying to think of the idea. And then there you go.
+
+[00:02:02] Interviewer: Nice. So let's get started creating it. The best way is to just get to it. So you mentioned that you are thinking of having an island. Should I create an island in here?
+
+[00:02:13] Participant_Dawn: Yes, please.
+
+[00:02:14] Interviewer: Okay. Let's make one. Go ahead.
+
+[00:02:18] Participant_Dawn: I can't see your screen right now, so I'm not sure.
+
+[00:02:21] Interviewer: I'm glad you reminded. Pleased do remind those things to me.
+
+[00:02:24] Participant_Dawn: Okay. Thank you.
+
+[00:02:27] Interviewer: How about now?
+
+[00:02:28] Participant_Dawn: Yep.
+
+[00:02:32] Interviewer: OK, perfect. My head will be sideways because I'm looking at my second screen.
+
+[00:02:36] Participant_Dawn: Yeah, no problem.
+
+[00:02:39] Interviewer: So again, I will write the code just so that you see that I write a code and something happens, not for you to remember what's in the code or pay attention too much. And I will start creating the model. And oftentimes, I will create a simpler version of your idea to continue moving forward for us to not Slow down too much, because I don't want to lose your thinking. But in meetings, I can polish the model further for you. So let's make an island. So if there's an island, there's sea around it, right? Let's make the sea first.
+
+[00:03:18] Participant_Dawn: Yes.
+
+[00:03:20] Interviewer: So what should be the color of the sea?
+
+[00:03:24] Participant_Dawn: Blue, please.
+
+[00:03:25] Interviewer: Blue. So is this a good blue, or should it be darker, lighter?
+
+[00:03:31] SPEAKER_01: Umm. I think lighter. Can it be? Oh patch. That's probably good.
+
+[00:03:40] Interviewer: _Let's see._ _Oh it's too much let me try cyan to see if._ Does this work better.
+
+[00:03:47] Participant_Dawn: That's better.
+
+[00:03:48] Interviewer: Okay and then now in this. Should the island be in the center? Should the island be?
+
+[00:04:07] Participant_Dawn: In the center please.
+
+[00:04:07] Interviewer: Let me see. Let's make it a bit more patchy like that. Let me see. Does this look good?
+
+[00:04:21] Participant_Dawn: Yes. Can you add wave?
+
+[00:04:24] Interviewer: Yeah, why not? I can add the waves in the same way I added the ground to this plate that made it a bit patchy. And then I can make it a bit more actual waves, because I think we have wave shapes. You know what? Let's try that. Let me see if we have a wave shape. So from library, we will look at it. Let me go to W. If not waves, maybe we can find a wave-like shape. There's no wave shape. So let me implement the simpler version, which is like patchy almost.
+
+[00:05:03] Participant_Dawn: Yeah.
+
+[00:05:05] Interviewer: And if you don't like it, the way it looks, does it look like an island and waves? Or do you not like it?
+
+[00:05:13] Participant_Dawn: Oh, that's better.
+
+[00:05:14] Interviewer: That's better? OK, let me actually make the island solid. Is this better?
+
+[00:05:18] Participant_Dawn: Yeah. Yes, that's better.
+
+[00:05:19] Interviewer: I'm overthinking it, right? It's just . And do you like the ground color brown?
+
+[00:05:27] Participant_Dawn: Yes.
+
+[00:05:27] Interviewer: OK.
+
+[00:05:28] Participant_Dawn: That's better.
+
+[00:05:30] Interviewer: Now, so we have an island in the center of the ocean.
+
+[00:05:37] Participant_Dawn: Can you add some boats?
+
+[00:05:43] Interviewer: Of course. _Define the boats_. And let's see what the boats should look like. So do we have a boat shape? _Should have a boat shape. So scroll._ Yeah, there are a few boat shapes: boat one, boat two, boat three.
+
+[00:06:04] Participant_Dawn: Can you? Yes.
+
+[00:06:07] Interviewer: Is the boat two better? Is the boat three better? Is the boat one better? Which shape is better for you?
+
+[00:06:14] Participant_Dawn: Can you add different ones?
+
+[00:06:17] Interviewer: Yeah, let me see. Yeah, like various shapes. How many boats should we create?
+
+[00:06:25] Participant_Dawn: Five.
+
+[00:06:28] Interviewer: And they are right next to the island or somewhere in the sea, randomly?
+
+[00:06:33] Participant_Dawn: Around the sea.
+
+[00:06:34] Interviewer: OK. So the way I programmed it, _it's at five, right?_ The boats will be anywhere. Every time I click setup, they will be at random places. _I didn't add some of my standard code._ So they will be randomly created in the places. And each one will currently have a random color and a random shape from one of those shapes. Are they too small? Good sized? What do you think?
+
+[00:07:27] Participant_Dawn: It's probably good.
+
+[00:07:29] Interviewer: Perfect. So we have boats. What's next?
+
+[00:07:34] Participant_Dawn: Can we add some houses now?
+
+[00:07:37] Interviewer: Yes. OK. Let's look at the house shapes again. We have a very simple house shape like this. But we also have different house shapes too. _Let me add this._ So we have, for example, house colonial, house efficiency, ranch, two-story. Would you like just a simple house or something?
+
+[00:08:10] Participant_Dawn: Just a simple one.
+
+[00:08:12] Interviewer: How many houses?
+
+[00:08:15] Participant_Dawn: Probably 10. Different sizes.
+
+[00:08:18] Interviewer: Different sizes? Let's try this. And then where are they on the island? Are they randomly distributed?
+
+[00:08:28] Participant_Dawn: Just randomly.
+
+[00:08:30] Interviewer: OK. And are they random colors or are they a specific color?
+
+[00:08:43] Participant_Dawn: Randomly, please.
+
+[00:08:45] Interviewer: _Oh, I didn't set the shape._ Too big right now?
+
+[00:08:54] Participant_Dawn: They're too big.
+
+[00:09:00] Interviewer: If they are brown, they should not be brown. I just want to make sure that no houses are brown and blends into the background. How does this look right now?
+
+[00:09:13] Participant_Dawn: That's better.
+
+[00:09:17] Interviewer: So every time we create an ocean, we create an island at the center, we put some boats in random places, and put some houses in random places. What's next?
+
+[00:09:30] Participant_Dawn: Can we add the volcano now?
+
+[00:09:31] Interviewer: What should be the? _Give me one second._ I thought we have a volcano shape, but let me see if we can find something similar so that it will be a recognizable image. And you can stop me and say that that shape works, for example, if it's not even a volcano shape. Good. And we can also create our own shapes it will probably slow us down right now but we can put like a temporary shape.
+
+[00:10:06] Participant_Dawn: Yeah we can do that.
+
+[00:10:07] Interviewer: And then create.
+
+[00:10:08] Participant_Dawn: Probably just a rectangle for now.
+
+[00:10:12] Interviewer: Rectangle or triangle?
+
+[00:10:14] Participant_Dawn: I mean triangle sorry.
+
+[00:10:16] Interviewer: Okay so let's put the triangle. Okay now. What's the color of the volcano?
+
+[00:10:50] Participant_Dawn: Probably darker brown.
+
+[00:10:53] Interviewer: OK, darker brown. So let me click Setup and see how it looks. It's probably going to be too small. Is it too small right now?
+
+[00:11:02] Participant_Dawn: Yeah, too small.
+
+[00:11:03] Interviewer: How about now? Is it too big? Is it good?
+
+[00:11:13] Participant_Dawn: Probably a little bit bigger.
+
+[00:11:15] Interviewer: OK. How about now?
+
+[00:11:19] Participant_Dawn: That's good.
+
+[00:11:20] Interviewer: OK, perfect.
+
+[00:11:22] Participant_Dawn: And then can you add clouds?
+
+[00:11:28] Interviewer: Of course. Let's add clouds. And we do have a cloud shape. And then are the clouds in random places too?
+
+[00:11:40] Participant_Dawn: Yes, please.
+
+[00:11:42] Interviewer: How many?
+
+[00:11:43] Participant_Dawn: Three
+
+[00:11:45] Interviewer: Are they white, gray?
+
+[00:11:56] Participant_Dawn: White.
+
+[00:12:05] Interviewer: OK. Cloud shape. There it is. OK. So now we have these tiny clouds. Should they be bigger?
+
+[00:12:21] Participant_Dawn: Can you add a little bit more?
+
+[00:12:23] Interviewer: Yeah, how many more?
+
+[00:12:23] Participant_Dawn: Let's make it 20 instead. And then just make it a little bit bigger.
+
+[00:12:38] Interviewer: See. How about now?
+
+[00:12:39] Participant_Dawn: That's good.
+
+[00:12:41] Interviewer: Looks very nice. It's already coming together. We make sure that the houses also don't overlap with the volcano, right? OK. What do you think so far?
+
+[00:12:56] Participant_Dawn: That's good. Can you add trees, too?
+
+[00:13:02] Interviewer: Yeah, of course.
+
+[00:13:03] Participant_Dawn: On the ground.
+
+[00:13:04] Interviewer: How many trees?
+
+[00:13:20] SPEAKER_02: 50.
+
+[00:13:35] Interviewer: 50. OK. And are they green?
+
+[00:13:37] Participant_Dawn: Green, please.
+
+[00:13:40] Interviewer: OK, let's see how it looks. What do you think?
+
+[00:13:43] Participant_Dawn: That's good.
+
+[00:13:44] Interviewer: I guess their trunks are gray, so they, let me fix it.
+
+[00:13:47] Participant_Dawn: Oh, yeah.
+
+[00:13:49] Interviewer: So we can do that too, for example, three. So let's make it a bit more darker gray, I guess. Can I make it darker gray? _Red, red. Oh, it's really hard to make it darker gray this way. Okay, let me give you just one second. Let me make the._ I will fix this later on, but for now, let's make the tree's trunk purple so we can differentiate. But I will fix it later on.
+
+[00:14:26] Participant_Dawn: The purple looks good.
+
+[00:14:28] Interviewer: Yeah. If it's enough trees, do you want more trees, less trees?
+
+[00:14:32] Participant_Dawn: That's good.
+
+[00:14:33] Interviewer: Yeah. What's next?
+
+[00:14:38] Participant_Dawn: Can you put red lava?
+
+[00:14:44] Interviewer: Of course, yeah. _0.3. OK. _Should the lava be like a simple shape, for example, like a circle or something like that? Or should it be more like a fire shape? We have this fire shape, for example.
+
+[00:15:15] Participant_Dawn: That's good.
+
+[00:15:17] Interviewer: Is that good? OK. So let's make fire. I will create one of them and put them into the place, and then let's see how you How does it look?
+
+[00:15:56] Participant_Dawn: That's better.
+
+[00:16:00] Interviewer: Do you want more lava?
+
+[00:16:04] Participant_Dawn: Probably more going down.
+
+[00:16:06] Interviewer: Going down? Okay. Let's see. something like this? Even more like do you want it to like run down through the? _Okay. Uh let's do it this way in a very lazy way but. How about now? It went the wrong way. It went the wrong way._
+
+[00:17:30] Participant_Dawn: Can it get aligned? Oh, that's good.
+
+[00:17:38] Interviewer: That's good? Yeah, I was fixing the alignment.
+
+[00:17:42] Participant_Dawn: And then can you add a few people?
+
+[00:17:46] Interviewer: Mm-hmm. How many people?
+
+[00:17:58] Participant_Dawn: 13.
+
+[00:18:00] Interviewer: 13? Mm-hmm. They are random colors right now, the people. You see, some of them are green and blue, so it's kind of they're blending in a little bit. Do you want to give them a very specific like color or just let them be random colors?
+
+[00:18:24] Participant_Dawn: No, I like it the way it is. Yeah.
+
+[00:18:26] Interviewer: So we have some people around in the island right now.
+
+[00:18:29] Participant_Dawn: Mm hmm.
+
+[00:18:30] Interviewer: Are they too big, too small to people?
+
+[00:18:32] Participant_Dawn: Just right.
+
+[00:18:33] Interviewer: Just right. Perfect.
+
+[00:18:35] Participant_Dawn: And then can you make darker clouds around the?
+
+[00:18:39] Interviewer: The. yeah.
+
+[00:18:40] Participant_Dawn: The volcano?
+
+[00:18:47] Interviewer: Sorry. Let's create like five black clouds around the volcano? Okay maybe like let's see._ See how this looks. Oh, they are small right now. Sorry. Good make them size too, right?_ How about now?
+
+[00:19:22] Participant_Dawn: That's good.
+
+[00:19:23] Interviewer: OK. So we have some clouds. _Looks a little bit better. _So we have some dark clouds. We have a volcano. This is coming together almost like a scenery. Next. We can then start maybe programming what do each one of these things do.
+
+[00:19:55] Participant_Dawn: Oh, we can do that.
+
+[00:19:56] Participant_Dawn: Yeah. So just tell me what we imagine happening in this model.
+
+People running around.
+
+[00:20:05] Interviewer: Let's start there. They are going to just turn around randomly every single time, and then they will just walk in the island. Does this look good, how they walk? Do they walk too fast?
+
+[00:20:34] Participant_Dawn: It's too fast.
+
+[00:20:36] Interviewer: Too fast? Do they walk too weird?
+
+[00:20:40] Participant_Dawn: I think it's just too fast.
+
+[00:20:42] Interviewer: OK, how about now?
+
+[00:20:45] Participant_Dawn: A little bit more. That's good. And then, uh, can you make the all the boats go to the island?
+
+[00:20:57] Interviewer: Oh they turn to the island and then they go there? _Okay. and then let me fix it for a second. So let's see how this works. _Oh, they went too fast, right? It's too fast. Too fast? OK, let's make them again slow. What do you think?
+
+[00:21:47] Participant_Dawn: Still too fast.
+
+[00:21:49] Interviewer: Too fast? OK. They're slowly coming now.
+
+[00:21:59] Participant_Dawn: That's better.
+
+[00:21:59] Interviewer: OK.
+
+[00:21:59] Participant_Dawn: Can you change the size of it a little bit bigger?
+
+[00:22:03] Interviewer: The boats? Yes.
+
+[00:22:04] Participant_Dawn: Yes, please.
+
+[00:22:07] Interviewer: Here are our boats. How about now?
+
+[00:22:13] Participant_Dawn: That's good. And then can you add more lava everywhere now?
+
+[00:22:19] Interviewer: So the lava should start spreading around, right?
+
+[00:22:22] Participant_Dawn: Yep.
+
+[00:22:23] Interviewer: OK. OK. If I write the code this way, it will be too fast. So I will make it a little bit slow, and then you can tell me at what level to spread faster and slower.
+
+[00:22:55] Participant_Dawn: OK.
+
+[00:23:08] Interviewer: _I made an error. Oh, OK. They did go too fast._ What do you think?
+
+[00:23:27] Participant_Dawn: It's a bit faster than that.
+
+[00:23:40] Interviewer: You want it a bit faster? OK. _Okay, let me do it this way. Give me one second. Sorry, let me fix it. I need to fix one little thing here. how does this work?_ What do you think? Currently, we are not stuck.
+
+[00:24:35] Participant_Dawn: Just on the land.
+
+[00:24:37] Interviewer: They stay on the land?
+
+[00:24:39] Participant_Dawn: Uh-huh.
+
+[00:24:40] Interviewer: And then when they hit the edge of the land, do they just die off, like disappear? Or do they just stay there?
+
+[00:24:49] Participant_Dawn: Stay there. And then can you make all the houses and the trees go on fire?
+
+[00:24:55] Interviewer: Of course. So they will. _Do this. And then they will say, if any._ Oh. What does a house on fire look like? For example. Should we change its shape? Should we get like a burning shape? Should we change to red?
+
+[00:25:40] Participant_Dawn: Um, just burning shape.
+
+[00:25:42] Interviewer: Okay. _If this works and if not we will update it. How this works. Oh sorry_ I _definitely made the volcano catch fire too. Let's see now._ They are now burning everything. What did you think?
+
+[00:26:19] Participant_Dawn: Yep. Can you make all the people go to the boat?
+
+[00:26:23] Interviewer: Yes. So the people should turn to the closest boat and walk that direction.
+
+[00:26:29] Participant_Dawn: Uh-huh.
+
+[00:26:29] Interviewer: OK. _OK. Okay._ So they are turning to boats right now, but the boats did not come. So see, these ones went to the boat. So they hop on the boats. If they get close to the boat, what happens there?
+
+[00:27:55] Participant_Dawn: Can you make the boat a little bit faster so they can get in it?
+
+[00:28:00] Interviewer: Of course. _Here are the boats._ So we also did not define them to go on the boat. So they are right by the boat right now, these ones, for example. But we did not make them jump on the boats. Do you want them to, if they are right next to a boat, do you want them to hop on the boat?
+
+[00:28:24] Participant_Dawn: Yes, please.
+
+[00:28:36] Interviewer: And when they hop on the boat, do they disappear inside the boat or do they seem on top of the boat?
+
+[00:28:42] Participant_Dawn: Let's disappear.
+
+[00:29:15] Interviewer: OK. _Let's see._ We can then count how many people saved themselves. _We put this. So let's see. Oh, what happened? Oh, the boat disappeared. Give me one second. Why did the boat disappear? Okay, I wrote the code in the wrong place. It has to be here. There we go._ So the boat is coming. Oh, some people saved themselves. Only three people saved themselves in the end. What do you think?
+
+[00:30:05] Participant_Dawn: The boat is a little bit faster.
+
+[00:30:07] Interviewer: Yes.
+
+[00:30:09] Participant_Dawn: And then once everyone gets in the boat, they just get out of there right away.
+
+[00:30:15] Interviewer: Okay, so let's see if they get on the boat fast enough. Okay, now we have nine people saved so that the boats got there faster enough.
+
+[00:30:26] Participant_Dawn: That's good.
+
+[00:30:27] Interviewer: And then now if everyone got on the boat, the boat needs to return to the sea. _Okay, so then I need boats. I'm going to. Create a boat. And here, where are my boats? Okay. Okay. Then_ _the next is, who are red screen, red screen._ They will get away when there is a fire. When there's a fire nearby, right? The fire gets too close. Does it make sense? OK.
+
+[00:31:43] Participant_Dawn: Uh-huh.
+
+[00:31:44] Interviewer: _ We have this work._ This is a little bit of a hacky version of it. They will just quickly get back. OK, give me one second. Something is not working.
+
+[00:32:08] Interviewer: _Are they going to go away? No, those bots got stuck._ There's a tiny bit of a bug. Because some boats, for some reason, seem to be getting stuck. They are getting the people, right? We sometimes don't turn and go. Let me see. What am I doing wrong? Oh, of course. I left a little bit of a code from the copy and paste. _So, oh, OK. There's an error over there, of course. Rescuing. in radius. And let's see._ So currently, they just jump. I will make them go back. But currently, they just jump away. This person got stuck there. Let's see again. Yeah, they catch people and when the lava comes too close, they get to the outside, to the perimeter, always far away. Does it seem similar to or close to what you had in mind?
+
+[00:33:40] Participant_Dawn: Uh-huh.
+
+[00:33:40] Interviewer: Okay.
+
+[00:33:43] Participant_Dawn: And then can you make the island go under the water?
+
+[00:33:50] Interviewer: Oh! Okay. so when everything burns or when does it start going into the water?
+
+[00:33:58] Participant_Dawn: When everything is uh burned.
+
+[00:34:01] Interviewer: _Okay so Let me figure out how to tell NetLogo to do it. Yes._ _let's do it this way. I will do it again in a quicker way._ What I will do is I will count the number of lava on the island. So currently you see there are 200 of them. When it is above 200, I will assume that everything burned. It's not perfect. There may be one tree left and one tree left, but that would be better. So then it will say, So this will happen suddenly again. And you tell me how you exactly want it to be after seeing how it works. Because I will always, oh. It disappeared all of a sudden. Did you want it to slowly disappear on the side? How did you want it to disappear?
+
+[00:36:59] Participant_Dawn: Slowly disappear.
+
+[00:37:00] Interviewer: Okay.
+
+[00:37:01] Participant_Dawn: And the volcano and the lava will disappear too?
+
+[00:37:09] Interviewer: Yeah, of course. Once the water comes nearby, right?
+
+[00:37:12] Participant_Dawn: Mm-hmm.
+
+[00:37:15] Interviewer: _Yes. see this one how this works._ Oh it happened really quickly again._ And then um and then it should be let's see how this works. So, oh, why did that not? Ask. oh, what are these? Cloud, the clouds caught fire._ I'm sorry, there's a little bug there._ Set shape fire. OK. _OK, and then currently, it happens rather fast, but we will. OK, what did you say?
+
+[00:39:04] Participant_Dawn: Add more dark clouds?
+
+[00:39:05] Interviewer: Add more dark clouds? Yes, let's do that. Like twice, three times?
+
+[00:39:15] Participant_Dawn: Yeah, like 50?
+
+[00:39:19] Interviewer: 50. How about now?
+
+[00:39:23] Participant_Dawn: Mm-hmm.
+
+[00:39:23] Interviewer: OK, perfect. And then there's still a bit of a, like a little bit of a, it happens too fast. But we will fix that. _And what are these?_ _That's not supposed to be worse._ Oh, _I am so sorry. Let us it._ as I said, as I'm writing it very quickly. I mean, sometimes there may be a tiny error. So what did you think? Did it go too quickly?
+
+[00:40:16] Participant_Dawn: I think it's good.
+
+[00:40:17] Interviewer: The island?
+
+[00:40:18] Participant_Dawn: Uh-huh.
+
+[00:40:19] Interviewer: Would you like me to slow it down?
+
+[00:40:21] Participant_Dawn: No, it's good.
+
+[00:40:22] Interviewer: OK. So we have the fire burning from the volcano. Then the sea is reclaiming this island.
+
+[00:40:33] Participant_Dawn: Uh-huh.
+
+[00:40:34] Interviewer: _And then let's save the . Let's tell us how many people have survived._ So now we have nine people survived. _Why are they on the map like that? Weird. Oh, because it gets like. OK. Sorry._ So what do you think?
+
+[00:41:26] Participant_Dawn: I think it's good.
+
+[00:41:29] Interviewer: Great. This is a very fun, very interesting model. I think this is a good place to stop, too. What we will do next is let me stop sharing my screen as well. But it's still recording, and I will tell you when we stop recording. What we will do next is I will send a link to this model for you to run it yourself. If you feel interested, you don't have to. That's not mandatory. But basically, you will click Setup, and then you will click Go, and the model will run itself. And then you can just tinker with it. The next meeting, we will work on this model a little bit more if you want to add ideas, if you want to change things. If you want to improve with it, if you want to make any changes you feel like making, or even just play with minor things. What happens if you add more people? What happens if you add less people? What happens if you make the island less or bigger? But you can also add more ideas, more things into the model.
+
+[00:42:28] Participant_Dawn: OK.
+
+[00:42:29] Interviewer: And then there will be one final meeting where we will just discuss about the process of .. Sorry. Do you have anything else to say before I start recording?
+
+[00:42:41] Participant_Dawn: I think I'm good.
+
+[00:42:42] Interviewer: Okay, so let me stop recording._ Oh yeah. I got. Stop recording._
