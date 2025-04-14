@@ -2,17 +2,15 @@ name: mode-catcher-main
 channels:
   - conda-forge
 dependencies:
-  - python=3.11
-  - pip=24.2
-  - dash=2.18
-  - dash-bootstrap-components=1.6
-  - dash-auth=2.3
-  - networkx=3.3
-  - numpy=1.26
-  - pandas=2.2
-  - spacy=3.7
+  - python=3.12.10
+  - pip=25.0.1
+  - dash=3.0.2
+  - dash-bootstrap-components=2.0.1
+  - dash-ag-grid=31.3.1
+  - networkx=3.4.2
+  - numpy=2.2.4
+  - spacy=3.8.5
   - pip:
-      - dash-ag-grid==31.2
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

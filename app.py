@@ -1,44 +1,31 @@
 import pickle
 import re
-import os
 from collections import Counter
 from pathlib import Path
 import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
-#from fastcoref import spacy_component
-import dash_auth
-from itertools import chain, combinations
-#from markdown_it.rules_core import inline
+from itertools import combinations
 from plotly.subplots import make_subplots
 import dash_ag_grid as dag
-from datetime import datetime, time
+from datetime import datetime
 import tomllib
 
-# --- HEROKU SIMPLE AUTH PASSWORD ---
-
-heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
-
-
-# ---- PLATFORM SETUP ----
+# ---- GLOBAL VARIABLES ----
 
 nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
 G = nx.Graph()
 
-
-# ---- GLOBAL VARIABLES ----
-
 active_data = list()
 assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
 deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
 excluded_rows = set()
-graph_button_clicked = False ## TODO: find out what "has generated?" means :)
+graph_button_clicked = False
 graphed_tokens_changed: bool = False  ## TODO: problematic global because once it's set to True, it remains True.
 lemmas_excluded_from_lines = dict()
 stopped_lemmas = set()
@@ -102,7 +89,7 @@ def get_model_path(mode_name, spacy_model, is_sentencized):
 
     return model_path
 
-def pickle_model(mode_name, active_rows, spacy_model, is_sentencized):
+def pickle_model(mode_name, spacy_model, is_sentencized):
     global nlp
     global lemmas_excluded_from_lines
     global excluded_rows
@@ -188,16 +175,19 @@ def parse_raw_text(txt: str,
                    timestamp=False,
                    is_interviewer=False,
                    in_sentences=True,
-                   excluded_rows = [],
                    use_nlp_tags=False,
                    # resolve_corefs=False
                    ):
 
+    global excluded_rows
     global lemmas_excluded_from_lines
     global nlp
     global graphed_tokens_changed
 
     first_parse = True if len(lemmas_excluded_from_lines) == 0 else False
+
+    if excluded_rows is None:
+        excluded_rows = list()
 
     data = list()
 
@@ -209,7 +199,7 @@ def parse_raw_text(txt: str,
     ]
 
     # to parse the text line by line
-    re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\])")
+    re_time_splitter = re.compile(r"(\[[0-9][0-9]:[0-9][0-9]:[0-9][0-9]])")
 
     if not is_interviewer:
         input_lines = [
@@ -278,6 +268,11 @@ def parse_raw_text(txt: str,
                 # print("++sentence spans: ", s.start_char, s.end_char, " >> ", s.text_with_ws)
 
                 utterance = s.text
+
+
+                ## Umit deactivated coreference resolution on 04/14/2025
+                ##      to avoid accidentally leaving it on
+                ##      because it slows down the algorithm quite a bit
 
                 # if resolve_corefs:
                 #     for c in doc._.coref_clusters:
@@ -415,11 +410,6 @@ def has_excluded_nlp_tag(token):
     # acomp (398) = "adjectival complement"
     # parataxis (436)
 
-    # TODO -> Use combinations of tag and dep to isolate tokens that are not meaningful
-    #   for example an interjection such as "no" may be userful in some interviews, but not in all
-    # TODO -> Design the final list of tag + dep combinations that should be excluded
-    #      if the list of things to exclude is too large, we can instead focus on what to include
-
     return (token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423 
         or token.dep == 398 or token.dep == 436)
 
@@ -431,14 +421,6 @@ def process_utterance(raw_text, row):
     global lemmas_excluded_from_lines
 
     doc = nlp(raw_text.strip().lower())
-
-    all_tokens = [
-        token.lemma_
-        for token in doc
-        if not nlp.vocab[token.lemma].is_stop
-           and not token.is_punct
-           and token not in lemmas_excluded_from_lines.get(row, [])
-    ]
 
     buttons_for_text = html.Div(
         [
@@ -461,36 +443,6 @@ def process_utterance(raw_text, row):
             for token in doc
         ]
     )
-
-
-    ## Umit commented out the following lines on 02/24/2025 to deactivate
-    ##      the treemap visualization of token counts
-
-    # token_counts = Counter(all_tokens)
-    #
-    # data_dict = {
-    #     "token": list(token_counts.keys()),
-    #     "count": list(token_counts.values()),
-    # }
-    #
-    # df = pd.DataFrame.from_dict(data_dict)
-    #
-    # # why a treemap?
-    # fig = px.treemap(
-    #     df,
-    #     path=[px.Constant("tokens"), "token"],
-    #     values="count",
-    #     color="count",
-    #     hover_data="token",
-    #     color_continuous_scale="RdBu",
-    #     color_continuous_midpoint=df["count"].mean(),
-    # )
-    #
-    # fig.update_layout(margin=dict(t=0, l=0, r=0, b=0))
-    #
-    # fig.update_coloraxes(showscale=False)
-    #
-    # token_treemap = dcc.Graph(figure=fig, responsive=True, style={"height": "200px"})
 
     return buttons_for_text #, token_treemap
 
@@ -830,7 +782,7 @@ def draw_token_graph_plotly_object(
         ),
     )
 
-    subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | CO: (min={min_co_occurrence}, strong>={min_strong_co_occurrence}) | Layout: {layout_title if layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: <{spacy_model}> | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes the Interviewer' if show_interviewer else ''} "
+    subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | CO: (min={min_co_occurrence}, strong>={min_strong_co_occurrence}) | Layout: {layout_title if layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: <{spacy_model}> | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes Deductive Codes' if with_codes else ''}{' | Includes the Interviewer' if show_interviewer else ''} | {datetime.today().replace(microsecond=0)} "
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
@@ -861,12 +813,12 @@ def draw_token_graph_plotly_object(
 
     graph_network = dcc.Graph(figure=fig_graph, config={"displayModeBar": True})
 
-    # metrics plots
 
-    # graph_metrics = "This section is temporarily disabled!"
 
-    node_labels = dict([(token, nlp.vocab.strings[token]) for token in G.nodes])
-    node_degrees = [G.degree[token] for token in G.nodes]
+    ## Graph Metrics PLOTS
+
+    graph_metrics = html.P("No metrics to display yet because there are no connected tokens.",className="lead",)
+
     node_clustering = nx.clustering(G)
     ave_clustering = nx.average_clustering(G) if len(node_clustering) > 0 else 0
 
@@ -945,9 +897,6 @@ def draw_token_graph_plotly_object(
             margin = dict(l=0, r=0, t=80, b=40),
         )
 
-    else:
-        graph_metrics = html.P("No metrics to display yet because there are no connected tokens.",className="lead",)
-
     return graph_network, graph_metrics
 
 
@@ -991,7 +940,7 @@ model_selection_dropdown = dbc.Select(
     options=[
         {"label": "Small", "value": "en_core_web_sm"},
         {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
+        {"label": "Large", "value": "en_core_web_lg"},
     ],
     persistence=True,
     value="en_core_web_lg"
@@ -1145,7 +1094,7 @@ generate_div = html.Div([
         [
             dbc.Col(
                 dbc.Checkbox(id="use-deductive-codes", label="Include deductive codes", value=False, persistence=True),
-                width=2
+                width=3
             ),
             dbc.Col(
                 dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True, persistence=True),
@@ -1173,7 +1122,7 @@ generate_div = html.Div([
 # -- user changes log section
 
 # based on generate_utterance_table function
-def generate_log_table(data, display_options, in_sents=False):
+def generate_log_table(data, display_options):
 
     return dag.AgGrid(
         id='log-data-table',
@@ -1210,7 +1159,7 @@ user_log_accordion = dbc.Accordion(
         [
             html.Div(
                 [
-                    generate_log_table(empty_log_table_data, (0, 1, 2), False)
+                    generate_log_table(empty_log_table_data, (0, 1, 2))
                 ],
                 id="log-div",
             )
@@ -1523,7 +1472,7 @@ def enable_parse_button_callback(name: str, text: str):
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
-def reset_model_button_callback(nclicks, name, sentencized, model):
+def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
 
     if ctx.triggered_id == "reset-button":
 
@@ -1581,7 +1530,7 @@ def reset_model_button_callback(nclicks, name, sentencized, model):
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def parse_button_callback(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, revised_row_id, existing_row_data):
+def parse_button_callback(n_parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, revised_row_id, existing_row_data):
     global active_data
     global assigned_deductive_codes
     global user_actions
@@ -1619,21 +1568,17 @@ def parse_button_callback(parse_clicks, revision_modal_is_open, display_options,
         for word in unstopped_lemmas:
             nlp.vocab[word].is_stop = False
 
-        # tokens that are excluded from a specific line, but not the entire analysis
 
+        # tokens that are excluded from a specific line, but not the entire analysis
         time = True
-        speaker = True
         interviewer = True
-        highlight = True if 3 in display_options else False
 
         # here in possible changes
         parsed_data = parse_raw_text(
             txt, timestamp=time,
             is_interviewer=interviewer,
             in_sentences = sentencized,
-            excluded_rows = excluded_rows,
             use_nlp_tags = use_nlp_tags,
-            # resolve_corefs=resolve_corefs
         )
 
         active_data = parsed_data
@@ -1807,7 +1752,7 @@ def generate_graph_button_callback(
     spring_k,
     node_size_multiplier,
     toggled_token,
-    inclusion_options,
+    selected_inclusion_options,
     use_deductive_codes,
     graph_button_disabled,
     mode_name,
@@ -1832,7 +1777,7 @@ def generate_graph_button_callback(
         graphed_tokens_changed = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(mode_name, active_row_data, spacy_model, is_sentencized)
+        pickle_model(mode_name, spacy_model, is_sentencized)
 
     if ctx.triggered_id == "graph-slider":
         graphed_tokens_changed = True
@@ -1889,7 +1834,7 @@ def generate_graph_button_callback(
         min_co_occurrence=min_co_occurrence,
         min_strong_co_occurrence=min_strong_co_occurrence,
         size_multiplier=node_size_multiplier,
-        show_interviewer =2 not in inclusion_options,
+        show_interviewer =2 not in selected_inclusion_options,
         show_all_labels=display_all_labels,
         show_weak_links = display_weak_links,
         combine_by_similarity=combine_by_similarity,
@@ -1929,7 +1874,6 @@ def update_included_lines_callback(changed):
         active_data[i]['in?'] = cell_incl
         graphed_tokens_changed = True
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        text = ''
         if cell_incl:
             text = f'The line is turned ON.'
         else:
@@ -1944,14 +1888,6 @@ def update_included_lines_callback(changed):
 )
 def toggle_min_similarity_input_callback(combine_by_similarity):
     return not combine_by_similarity
-
-# --- HEROKU SIMPLE AUTH CHECK ---
-
-heroku_access_pwd = os.environ.get("CCL_ACCESS_PWD")
-
-if heroku_access_pwd:
-    credentials_list = {"ccl" : heroku_access_pwd}
-    auth = dash_auth.BasicAuth(app, credentials_list)
 
 # --- RUN THE APP ---
 

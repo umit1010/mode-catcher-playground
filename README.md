@@ -24,27 +24,22 @@ You can read the following three short papers to get started with the underlying
 
 I recommend using a conda-based setup to get the current version of the playground up and running on your computer. I prepared a list of instructions below that should work fine on Mac or Linux, but if you use a Windows computer or run into any issues, let me know, and we can troubleshoot via a Zoom meeting:
 
-* Install miniconda following the tutorial here: 
- * https://docs.anaconda.com/free/miniconda/miniconda-install/ 
-* Once conda is installed and active, open a new terminal window, and you should see the prompt change to `(base) ~`
-* Open a new terminal window.
-* Create a new virtual environment using the following command in the terminal:
-  * `conda create -n modecatcher python=3.11`
-* Once the new environment is created, activate it:
-  * `conda activate modecatcher`
-* Install the necessary Python libraries:
-  * `conda install -c conda-forge numpy`
-  * `conda install -c conda-forge pandas` 
-  * `conda install -c conda-forge networkx`
-  * `conda install -c conda-forge spacy=3.5.2` 
-  * `conda install -c conda-forge dash` 
-  * `conda install -c conda-forge dash-bootstrap-components`
-* Download the spacy language models:
-  * `python -m spacy download en_core_web_sm`
-  * `python -m spacy download en_core_web_md`
-  * `python -m spacy download en_core_web_lg`
 * Navigate to a folder of your choosing and clone the git repository:
   * `git clone -b optimize  https://github.com/umit1010/mode-catcher-playground.git`
+
+
+* Install miniconda following the tutorial here: 
+  * https://docs.anaconda.com/free/miniconda/miniconda-install/ 
+  * Once conda is installed, open a new terminal window, and you should see the prompt change to `(base) ~`
+
+
+* Create a new virtual environment using the following command in the terminal:
+  * `conda env create -f environment.yml`
+
+
+* Once the new environment is created, activate it:
+  * `conda activate mode-catcher-main`
+
 * Navigate to the newly created `mode-catcher-playground` directory and run the server:
   * `cd mode-catcher-playground`
   * `python app.py`
