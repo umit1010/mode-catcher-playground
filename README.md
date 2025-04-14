@@ -32,16 +32,16 @@ I recommend using a conda-based setup to get the current version of the playgrou
   * https://docs.anaconda.com/free/miniconda/miniconda-install/ 
   * Once conda is installed, open a new terminal window, and you should see the prompt change to `(base) ~`
 
+* Navigate to the newly created `mode-catcher-playground` directory
+  * `cd mode-catcher-playground`
 
 * Create a new virtual environment using the following command in the terminal:
   * `conda env create -f environment.yml`
 
-
 * Once the new environment is created, activate it:
   * `conda activate mode-catcher-main`
 
-* Navigate to the newly created `mode-catcher-playground` directory and run the server:
-  * `cd mode-catcher-playground`
+* Run the server:
   * `python app.py`
 
 If everything went as expected, you should see the message “Dash is running on http://127.0.0.1:8050/.” 
