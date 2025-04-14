@@ -1,4 +1,3 @@
-@ -0,0 +1,464 @@
 [00:00:00] Interviewer: ...on in your site either. This helps with the transcription again of the interaction but you can probably turn it off on your side if you don't need to.
 
 [00:00:09] Participant_Dawn: Okay.

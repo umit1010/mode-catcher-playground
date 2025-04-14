@@ -1,20 +1,18 @@
-name: mode-catcher
+name: mode-catcher-main
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.11.9
+  - python=3.11
   - pip=24.2
-  - dash=2.17.1
-  - dash-bootstrap-components=1.6.0
-  - dash-auth=2.3.0
+  - dash=2.18
+  - dash-bootstrap-components=1.6
+  - dash-auth=2.3
   - networkx=3.3
-  - numpy=1.26.4
-  - pandas=2.2.2
-  - spacy=3.7.5
+  - numpy=1.26
+  - pandas=2.2
+  - spacy=3.7
   - pip:
-      - dash-ag-grid==31.2.0
-      - fastcoref==2.1.6
-      - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl
-      - https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
-      - https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+      - dash-ag-grid==31.2
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

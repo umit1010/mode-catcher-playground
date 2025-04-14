@@ -6,7 +6,6 @@ from pathlib import Path
 import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import spacy
@@ -191,7 +190,8 @@ def parse_raw_text(txt: str,
                    in_sentences=True,
                    excluded_rows = [],
                    use_nlp_tags=False,
-                   resolve_corefs=False):
+                   # resolve_corefs=False
+                   ):
 
     global lemmas_excluded_from_lines
     global nlp
@@ -239,7 +239,8 @@ def parse_raw_text(txt: str,
         if speaker:
             row['speaker'] = speaker
 
-        doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}}) if resolve_corefs else nlp(utterance.strip())
+        # doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}}) if resolve_corefs else nlp(utterance.strip())
+        doc = nlp(utterance.strip())
         # print("--coref spans: ", doc._.coref_clusters)
 
         ## TODO -> Move resolved text in a separate table grid column
@@ -278,24 +279,24 @@ def parse_raw_text(txt: str,
 
                 utterance = s.text
 
-                if resolve_corefs:
-                    for c in doc._.coref_clusters:
-                        print("checking cluster: ", c[1])
-                        if s.start_char <= c[1][0] <= s.end_char:
-                            # print("!!! this sentence has a coref !!!")
-
-                            reference = doc.char_span(c[0][0], c[0][1]).text
-                            pronoun = doc.char_span(c[1][0], c[1][1]).text
-
-                            # very terrible coding in the line below :)
-                            # TODO -> fix this replace algorithm because it may replace the wrong pronoun
-                            utterance = utterance.replace(pronoun, reference)
-
-                            # print(" >> new sentence >>", utterance)
+                # if resolve_corefs:
+                #     for c in doc._.coref_clusters:
+                #         print("checking cluster: ", c[1])
+                #         if s.start_char <= c[1][0] <= s.end_char:
+                #             # print("!!! this sentence has a coref !!!")
+                #
+                #             reference = doc.char_span(c[0][0], c[0][1]).text
+                #             pronoun = doc.char_span(c[1][0], c[1][1]).text
+                #
+                #             # very terrible coding in the line below :)
+                #             # TODO -> fix this replace algorithm because it may replace the wrong pronoun
+                #             utterance = utterance.replace(pronoun, reference)
+                #
+                #             # print(" >> new sentence >>", utterance)
 
                 sent_row['utterance'] = utterance
-
                 data.append(sent_row)
+
         else:
         # here would I go through and make each token bold using markdown?
             i += 1
@@ -550,7 +551,7 @@ def generate_utterance_table(data, display_options, in_sents=False):
 
 # ---- NETWORK ANALYSIS
 
-def generate_token_graph_object(start, end, use_similarity=True, similarity_cutoff=0.8, with_interviewer=False):
+def generate_token_graph_object(start, end, use_similarity=True, similarity_cutoff=0.8, use_deductive_codes=False, with_interviewer=False):
     global nlp
     global active_data
     global lemmas_excluded_from_lines
@@ -562,11 +563,20 @@ def generate_token_graph_object(start, end, use_similarity=True, similarity_cuto
     data_dict_list = active_data[start:end]
 
     for line in data_dict_list:
-        if ((with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer"))
-            and line['in?']):
-            doc_line = nlp(line["utterance"].strip().lower()) # cleans
+
+        if (with_interviewer or (not with_interviewer and line["speaker"].lower() != "interviewer")) and line['in?']:
 
             row = line["line"] - 1
+
+            raw_utterance = line["utterance"].strip().lower()
+
+            ##  if the user wants to include deductive codes in the anlysis,
+            ##      append them as tokens at the end of the utterance
+            if use_deductive_codes:
+                if row in assigned_deductive_codes.keys():
+                    raw_utterance = f"{raw_utterance} {' ' .join([' '.join(v) for v in assigned_deductive_codes[row].values() if v != ''])}"
+
+            doc_line = nlp(raw_utterance) # cleans
 
             # exclude the following tokens from the graph:
             #   - punctuations
@@ -578,6 +588,8 @@ def generate_token_graph_object(start, end, use_similarity=True, similarity_cuto
                                                     and not nlp.vocab[t.lemma_].is_stop
                                                     and not t.lemma_ in lemmas_excluded_from_lines.get(row, [])
                       ]
+
+            # incorporate deductive codes into the graph
 
             token_counts = Counter(tokens)
             unique_tokens = list(token_counts.keys())
@@ -658,6 +670,7 @@ def draw_token_graph_plotly_object(
             start=start_line, end=end_line,
             use_similarity=combine_by_similarity,
             similarity_cutoff=min_similarity,
+            use_deductive_codes=with_codes,
             with_interviewer=show_interviewer,
         )
         graphed_tokens_changed = False
@@ -824,10 +837,10 @@ def draw_token_graph_plotly_object(
         layout=go.Layout(
             title=dict(
                 text=mode_name,
-                font=dict(size=24, weight="bold"),
+                font=dict(size=20, weight="bold"),
                 subtitle=dict(
                     text = subtitle_user_choices,
-                    font = dict(size=16, color="gray")
+                    font = dict(size=12, color="gray")
                 ),
                 x=0.5,
                 y=1,
@@ -918,14 +931,14 @@ def draw_token_graph_plotly_object(
         fig_metrics.update_layout(
             showlegend=False,
             title=dict(
-                text=f"Metrics for {mode_name}",
-                font=dict(size=24, weight="bold"),
+                text=mode_name,
+                font=dict(size=18, weight="bold"),
                 subtitle=dict(
                     text=f"density = {nx.density(G):.3f} | {subtitle_user_choices}",
                     font=dict(size=10, color="gray")
                 ),
                 x=0.5,
-                y=0.95,
+                y=0.99,
                 xanchor="center",
                 yanchor="top"
             ),
@@ -958,7 +971,7 @@ if input_folder_path.is_dir():
         file_list.extend(text_files)
 
 input_file_dropdown = dbc.Select(
-    file_list, id="input-file-dropdown", value="_demo_cory1_abc.txt"
+    file_list, id="input-file-dropdown", value="_demo_cory1_abc.txt", persistence=True,
 )
 
 model_name_input = dbc.Input(id="mode-name", value="", placeholder="Enter model name ...")
@@ -969,9 +982,9 @@ raw_text_input = dbc.Textarea(
 
 parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
 
-sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True)
-apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True)
-corefs_checkbox = dbc.Checkbox(label="Resolve coreferences", id="resolve-corefs", value=False, disabled=False if heroku_access_pwd is None else True)
+sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True, persistence=True)
+apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True, persistence=True)
+#corefs_checkbox = dbc.Checkbox(label="Resolve coreferences", id="resolve-corefs", value=False, disabled=False if heroku_access_pwd is None else True)
 
 model_selection_dropdown = dbc.Select(
     id="model-selection-dropdown",
@@ -980,6 +993,7 @@ model_selection_dropdown = dbc.Select(
         {"label": "Medium", "value": "en_core_web_md"},
         {"label": "Large", "value": "en_core_web_lg", "disabled": False if heroku_access_pwd is None else True},
     ],
+    persistence=True,
     value="en_core_web_lg"
 )
 
@@ -1003,6 +1017,7 @@ inclusion_options = dbc.Checklist(
     inline=True,
     class_name="mb-4",
     id="inclusion-options",
+    persistence=True,
 )
 
 input_accordion = dbc.Accordion(
@@ -1046,7 +1061,7 @@ input_accordion = dbc.Accordion(
                 dbc.Row([
                     dbc.Col(sentencize_checkbox, xl=2),
                     dbc.Col(apply_tags_checkbox, xl=3),
-                    dbc.Col(corefs_checkbox, xl=2),
+                    # dbc.Col(corefs_checkbox, xl=2),
                     dbc.Col(width=2),
                     dbc.Col(
                         dbc.InputGroup([
@@ -1128,14 +1143,22 @@ utterances_accordion = dbc.Accordion(
 generate_div = html.Div([
     dbc.Row(
         [
-            dbc.Col(dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True), width=2),
+            dbc.Col(
+                dbc.Checkbox(id="use-deductive-codes", label="Include deductive codes", value=False, persistence=True),
+                width=2
+            ),
+            dbc.Col(
+                dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True, persistence=True),
+                width=2
+            ),
             dbc.Col(
                 dbc.InputGroup([
                     dbc.InputGroupText("Min similarity"),
-                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.1, value=0.8),
+                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.1, value=0.8, disabled=False, persistence=True),
                 ]), width=3
-            )
+            ),
         ],
+        align="center",
         class_name="mb-4"
     ),
     dbc.Row(
@@ -1209,11 +1232,6 @@ grap_layout_options_div = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    dbc.Checkbox(label="Include Deductive Codes", id="include-codes", value=False, disabled=True),
-                    class_name="mt-2",
-                    md=12, lg=3, xl=2,
-                ),
-                dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Weak min co-occurrence"),
                         dbc.Input(
@@ -1222,7 +1240,8 @@ grap_layout_options_div = html.Div(
                             min=1,
                             max=10,
                             step=1,
-                            value=1
+                            value=1,
+                            persistence=True
                         ),
                     ]),
                     class_name="mt-2",
@@ -1238,6 +1257,7 @@ grap_layout_options_div = html.Div(
                             max=10,
                             step=1,
                             value=2,
+                            persistence=True
                         )]
                     ),
                     class_name="mt-2",
@@ -1260,6 +1280,7 @@ grap_layout_options_div = html.Div(
                             max=40,
                             step=1,
                             value=5,
+                            persistence=True
                         ),
                     ]),
                     lg=3,
@@ -1277,6 +1298,7 @@ grap_layout_options_div = html.Div(
                                     {"label": "Spring", "value": "1"},
                                 ],
                                 value="1",
+                                persistence=True
                             ),
                         ]),
                     ],
@@ -1286,14 +1308,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Spring iterations"),
-                        dbc.Input(
-                            id="layout-iterations",
-                            type="number",
-                            min=0,
-                            max=500,
-                            step=1,
-                            value=10,
-                        ),
+                        dbc.Input(id="layout-iterations", type="number", min=0, max=500, step=1, value=10, persistence=True),
                     ]),
                     lg=4,
                     xl=3,
@@ -1301,14 +1316,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Spring k"),
-                        dbc.Input(
-                            id="layout-k",
-                            type="number",
-                            min=0,
-                            max=100,
-                            step=0.05,
-                            value=0.5,
-                        ),
+                        dbc.Input(id="layout-k", type="number", min=0, max=100, step=0.05, value=0.5, persistence=True),
                     ]),
                     lg=3,
                     xl=2,
@@ -1319,14 +1327,14 @@ grap_layout_options_div = html.Div(
         dbc.Row([
                 dbc.Col(
                     [
-                        dbc.Checkbox(label="Display weak links?", id="weak-links", value=True),
+                        dbc.Checkbox(label="Display weak links", id="weak-links", value=True, persistence=True),
                     ],
                     lg=3,
                     xl=2,
                 ),
                 dbc.Col(
                     [
-                        dbc.Checkbox(label="Show all node labels?", id="all-labels", value=True),
+                        dbc.Checkbox(label="Display all node labels", id="all-labels", value=True, persistence=True),
                     ],
                     lg=4,
                     xl=3,
@@ -1346,7 +1354,7 @@ graph_view_options_div = html.Div(
         html.Div(
             "The token graph will be displayed once you generate it.",
             id="graph-div",
-            className="text-center",
+            className="text-center border p-4",
         ),
         dcc.RangeSlider(
             id="graph-slider",
@@ -1363,7 +1371,7 @@ graph_view_options_div = html.Div(
 
 metrics_viewer_wrapper_div = html.Div(
     [
-        html.H3("Metrics", className="mb-4"),
+        html.H3("", className="mb-4"),
         html.P(" "),
         html.Div("This view will be updated once the graph is generated.", className="lead", id="metrics-div"),
     ],
@@ -1568,12 +1576,12 @@ def reset_model_button_callback(nclicks, name, sentencized, model):
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
-    State("resolve-corefs", "value"),
+    # State("resolve-corefs", "value"),
     State("modal-row-id", "data"),
     State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def parse_button_callback(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, resolve_corefs, revised_row_id, existing_row_data):
+def parse_button_callback(parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, revised_row_id, existing_row_data):
     global active_data
     global assigned_deductive_codes
     global user_actions
@@ -1597,11 +1605,11 @@ def parse_button_callback(parse_clicks, revision_modal_is_open, display_options,
         # reload the model because it only pulls default stopwords if loaded from the beginning
         nlp = spacy.load(spacy_model, exclude=["ner"])
 
-        if resolve_corefs:
-            nlp.add_pipe("fastcoref", config={  'device': 'cpu',
-                                                        # 'model_architecture': 'LingMessCoref', # this model runs slower
-                                                        # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
-                                                     })
+        # if resolve_corefs:
+        #     nlp.add_pipe("fastcoref", config={  'device': 'cpu',
+        #                                                 # 'model_architecture': 'LingMessCoref', # this model runs slower
+        #                                                 # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
+        #                                              })
 
         # update stop_words of the small model
         #   I have to do it this y because spacy's to_disk method doesn't save stopwords
@@ -1625,7 +1633,7 @@ def parse_button_callback(parse_clicks, revision_modal_is_open, display_options,
             in_sentences = sentencized,
             excluded_rows = excluded_rows,
             use_nlp_tags = use_nlp_tags,
-            resolve_corefs=resolve_corefs
+            # resolve_corefs=resolve_corefs
         )
 
         active_data = parsed_data
@@ -1761,11 +1769,10 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     Output("graph-slider", "value"),
     Output("metrics-div", "children"),
     Output("min-strong-co", "value"),
-    # Output("changes-div", "children"),
     Output("log-data-table", "rowData"),
+
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
-    Input("include-codes", "value"),
     Input("min-co", "value"),
     Input("min-strong-co", "value"),
     Input("all-labels", "value"),
@@ -1774,8 +1781,10 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     Input("layout-iterations", "value"),
     Input("layout-k", "value"),
     Input("node-size", "value"),
-    Input("inclusion-options", "value"), # this has been added
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
+
+    State("inclusion-options", "value"),
+    State("use-deductive-codes", "value"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
     State("combine-by-similarity", "value"),
@@ -1783,24 +1792,25 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     State('data-table', 'virtualRowData'),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
+
     prevent_initial_call=True,
 )
 def generate_graph_button_callback(
-    n_clicks,
-    line_range,
-    code_pref,
-    minimum_co_occurrence,
-    minimum_strong_co_occurrence,
-    all_labels,
-    weak_links,
-    layout,
-    iterations,
-    k,
-    multiplier,
-    options,
-    changed_stop,
-    disabled,
-    name,
+    n_graph_button_clicks,
+    selected_range,
+    min_co_occurrence,
+    min_strong_co_occurrence,
+    display_all_labels,
+    display_weak_links,
+    graph_layout,
+    spring_iterations,
+    spring_k,
+    node_size_multiplier,
+    toggled_token,
+    inclusion_options,
+    use_deductive_codes,
+    graph_button_disabled,
+    mode_name,
     combine_by_similarity,
     min_similarity,
     active_row_data,
@@ -1812,9 +1822,9 @@ def generate_graph_button_callback(
     global graph_button_clicked
     global user_actions
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", minimum_co_occurrence, user_actions]
+    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", min_co_occurrence, user_actions]
 
-    if disabled:
+    if graph_button_disabled:
         return empty_return
 
     if ctx.triggered_id == "graph-button":
@@ -1822,7 +1832,7 @@ def generate_graph_button_callback(
         graphed_tokens_changed = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(name, active_row_data, spacy_model, is_sentencized)
+        pickle_model(mode_name, active_row_data, spacy_model, is_sentencized)
 
     if ctx.triggered_id == "graph-slider":
         graphed_tokens_changed = True
@@ -1840,11 +1850,11 @@ def generate_graph_button_callback(
         return empty_return
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
-    if minimum_co_occurrence is None: minimum_co_occurrence = 1
-    if minimum_strong_co_occurrence is None: minimum_strong_co_occurrence = 2
+    if min_co_occurrence is None: min_co_occurrence = 1
+    if min_strong_co_occurrence is None: min_strong_co_occurrence = 2
 
     # make sure min co-occurrence is not larger than min strong co-occurrence
-    minimum_strong_co_occurrence = minimum_co_occurrence + 1 if minimum_co_occurrence > minimum_strong_co_occurrence - 1 else minimum_strong_co_occurrence
+    min_strong_co_occurrence = min_co_occurrence + 1 if min_co_occurrence > min_strong_co_occurrence - 1 else min_strong_co_occurrence
 
     # make the slider's tickers match the data at hand (has to be a dict)
     #   dictionary format is {line_num: 'label'}
@@ -1856,11 +1866,11 @@ def generate_graph_button_callback(
     slider_marks = {r: '' for r in list_of_marks}
 
     # determine the start and end of the range that the user picked
-    start = line_range[0]
-    end = line_range[1]
+    start = selected_range[0]
+    end = selected_range[1]
     if ctx.triggered_id == "graph-button":
         last_line = list(slider_marks.keys())[-1]
-        end = line_range[1] if line_range[1] != 0 and line_range[1] <= last_line else last_line
+        end = selected_range[1] if selected_range[1] != 0 and selected_range[1] <= last_line else last_line
 
     end = end if end < len(active_data) else len(active_data)
 
@@ -1869,24 +1879,24 @@ def generate_graph_button_callback(
     graph, stats = draw_token_graph_plotly_object(
         start_line=start,
         end_line=end,
-        mode_name=name,
+        mode_name=mode_name,
         sentencized=is_sentencized,
         spacy_model=spacy_model,
-        with_codes=code_pref,
-        layout=layout,
-        spring_iterations=iterations,
-        spring_k=k,
-        min_co_occurrence=minimum_co_occurrence,
-        min_strong_co_occurrence=minimum_strong_co_occurrence,
-        size_multiplier=multiplier,
-        show_interviewer = 2 not in options,
-        show_all_labels=all_labels,
-        show_weak_links = weak_links,
+        with_codes=use_deductive_codes,
+        layout=graph_layout,
+        spring_iterations=spring_iterations,
+        spring_k=spring_k,
+        min_co_occurrence=min_co_occurrence,
+        min_strong_co_occurrence=min_strong_co_occurrence,
+        size_multiplier=node_size_multiplier,
+        show_interviewer =2 not in inclusion_options,
+        show_all_labels=display_all_labels,
+        show_weak_links = display_weak_links,
         combine_by_similarity=combine_by_similarity,
         min_similarity=min_similarity,
     )
     # change_log = [{'dict a': 'test a'}, {'dict b': 'test b'}, {'dict c': 'test c'}]
-    return graph, slider_marks, selected_range, stats, minimum_strong_co_occurrence, user_actions
+    return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions
     # need to update change_log
 
 
@@ -1926,7 +1936,14 @@ def update_included_lines_callback(changed):
             text = f'The line is turned OFF.'
         user_actions.append({'time': curr_time, 'line': i + 1, 'change': text})
     return user_actions
-        
+
+
+@app.callback(
+    Output("min-similarity", "disabled"),
+    Input("combine-by-similarity", "value")
+)
+def toggle_min_similarity_input_callback(combine_by_similarity):
+    return not combine_by_similarity
 
 # --- HEROKU SIMPLE AUTH CHECK ---
 
