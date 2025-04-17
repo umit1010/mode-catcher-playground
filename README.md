@@ -48,6 +48,13 @@ If everything went as expected, you should see the message “Dash is running on
 To use the app, navigate to the link http://127.0.0.1:8050/.
 
 
+## Known issues
+
+* The code only recognizes transcripts formatted as `[hh:mm:ss] Speaker_Name: Utterance`. It also only recognizes an interviewer if the speaker name is `Interviewer` (not case-sensitive).
+* Highlighted tokens on the table are not updated after they are modified by the user.
+* 
+
+
 ## The team
 
 * Umit Aslan
