@@ -26,7 +26,7 @@ assigned_deductive_codes = dict()  ## keeps the labels selected by the user for 
 deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
 excluded_rows = set()
 graph_button_clicked = False
-graphed_tokens_changed: bool = False  ## TODO: problematic global because once it's set to True, it remains True.
+graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
 lemmas_excluded_from_lines = dict()
 stopped_lemmas = set()
 unstopped_lemmas = set()
@@ -52,23 +52,40 @@ server = app.server
 # ---- UTILITY FUNCTIONS ----
 
 def flush_globals():
+
     global active_data
     global assigned_deductive_codes
-    global user_actions
     global deductive_code_definitions
-    global lemmas_excluded_from_lines
-    global nlp
-    global stopped_lemmas
+    global excluded_rows
+    global graph_button_clicked
     global graphed_tokens_changed
+    global lemmas_excluded_from_lines
+    global stopped_lemmas
     global unstopped_lemmas
+    global user_actions
+
+    active_data = None
+    assigned_deductive_codes = None
+    deductive_code_definitions = None
+    excluded_rows = None
+    graph_button_clicked = None
+    graphed_tokens_changed = None
+    lemmas_excluded_from_lines = None
+    stopped_lemmas = None
+    unstopped_lemmas = None
+    user_actions = None
 
     active_data = list()
-    assigned_deductive_codes = dict()
-    user_actions = list()
+    assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
+    deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
+    excluded_rows = set()
+    graph_button_clicked = False
+    graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
     lemmas_excluded_from_lines = dict()
     stopped_lemmas = set()
-    graphed_tokens_changed = True
     unstopped_lemmas = set()
+    user_actions = list()
+
 
 
 def get_model_path(mode_name, spacy_model, is_sentencized):
@@ -88,6 +105,8 @@ def get_model_path(mode_name, spacy_model, is_sentencized):
         model_path.mkdir(exist_ok=True)
 
     return model_path
+
+
 
 def pickle_model(mode_name, spacy_model, is_sentencized):
     global nlp
@@ -109,6 +128,8 @@ def pickle_model(mode_name, spacy_model, is_sentencized):
     with open(model_path / "excluded_rows.pickle", "wb") as f:
         pickle.dump(excluded_rows, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    print(f"saved as: {excluded_rows}")
+
     # pickle the user selected deductive codes
     with open(model_path / "assigned_deductive_codes.pickle", "wb") as f:
         pickle.dump(assigned_deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -118,7 +139,11 @@ def pickle_model(mode_name, spacy_model, is_sentencized):
         pickle.dump(user_actions, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+
 def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
+
+    flush_globals()
+
     global assigned_deductive_codes
     global deductive_code_definitions
     global excluded_rows
@@ -154,6 +179,8 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     if excluded_rows_file.is_file():
         with open(excluded_rows_file, "rb") as f:
             excluded_rows = pickle.load(f)
+
+    print(f"loaded as: {excluded_rows}")
 
     # load the deductive codes selected by the user
     assigned_deductive_codes_file = model_path / "assigned_deductive_codes.pickle"
@@ -1875,8 +1902,10 @@ def update_included_lines_callback(changed):
         graphed_tokens_changed = True
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if cell_incl:
+            excluded_rows.discard(i)
             text = f'The line is turned ON.'
         else:
+            excluded_rows.add(i)
             text = f'The line is turned OFF.'
         user_actions.append({'time': curr_time, 'line': i + 1, 'change': text})
     return user_actions
