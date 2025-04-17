@@ -813,17 +813,17 @@ def draw_token_graph_plotly_object(
 
     subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | weak={min_co_occurrence}; strong={min_strong_co_occurrence}+ | {layout_title if layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: {spacy_model.lstrip('en_core_web_')} | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes Deductive Codes' if with_codes else ''}{' | Includes the Interviewer' if show_interviewer else ''} | {timestamp}"
 
-    config_options = {
-        "displaylogo": False,
-        "displayModeBar": True,
-        "doubleClick": "reset+autosize",
-        "modeBarButtonsToRemove": ["select2d","lasso2d"],
-        "toImageButtonOptions": {
-            "filename": f"{mode_name}-{timestamp}",
-            "format": "jpeg",
-            "scale": 2,
-        }
-    }
+    graph_config_options = dict(
+        displaylogo=False,
+        displayModeBar=True,
+        doubleClick="reset+autosize",
+        modeBarButtonsToRemove=["select2d", "lasso2d"],
+        toImageButtonOptions=dict(
+            filename=f"{mode_name}-{timestamp}",
+            format="jpeg",
+            scale=2,
+        ),
+    )
 
     fig_graph = go.Figure(
         data=[light_edge_trace, edge_trace, node_trace],
@@ -852,7 +852,13 @@ def draw_token_graph_plotly_object(
     fig_graph.update_xaxes(showticklabels=False)
     fig_graph.update_yaxes(showticklabels=False)
 
-    graph_network = dcc.Graph(id="graph-figure", figure=fig_graph, animate=True, config=config_options)
+    graph_network = dcc.Graph(
+        id="graph-figure",
+        figure=fig_graph,
+        config=graph_config_options,
+        animate=True,
+        animation_options= dict(redraw=True, duration=100),
+    )
 
 
     ## Graph Metrics PLOTS
@@ -895,7 +901,7 @@ def draw_token_graph_plotly_object(
                 row=1, col=1
             )
     
-            graph_metrics = dcc.Graph(figure=fig_metrics, config=config_options)
+            graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options)
     
         # now let's get clustering coefficients for nodes if it's > 0
     
@@ -1932,7 +1938,19 @@ def toggle_min_similarity_input_callback(combine_by_similarity):
     return not combine_by_similarity
 
 
+## Umit: I commented out the following callback on 04/17/2025 to not cause any troubles
+##      but I'll work on implementing this `click-to-remove-node-from-graph` feature in May
+##      but I'll work on implementing this `click-to-remove-node-from-graph` feature in May
 
+# @app.callback(
+#     Input("graph-figure", "clickData")
+# )
+# def test_graphobject_callback(click_data):
+#
+#     global nlp
+#
+#     if "points" in click_data.keys():
+#         print(click_data["points"][0]["customdata"])
 
 # --- RUN THE APP ---
 
