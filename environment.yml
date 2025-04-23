@@ -9,6 +9,7 @@ dependencies:
   - dash-ag-grid=31.3.1
   - networkx=3.4.2
   - numpy=2.2.4
+  - orjson=3.10.16
   - spacy=3.8.5
   - pip:
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl

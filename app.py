@@ -15,14 +15,15 @@ import dash_ag_grid as dag
 from datetime import datetime
 import tomllib
 
+# ---- INTERNAL MODULES
+import nlp_functions as nlf
+
 # ---- GLOBAL VARIABLES ----
 
 nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
 G = nx.Graph()
 
-active_data = list()
-assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
 deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
 excluded_rows = set()
 graph_button_clicked = False
@@ -53,8 +54,6 @@ server = app.server
 
 def flush_globals():
 
-    global active_data
-    global assigned_deductive_codes
     global deductive_code_definitions
     global excluded_rows
     global graph_button_clicked
@@ -64,8 +63,6 @@ def flush_globals():
     global unstopped_lemmas
     global user_actions
 
-    active_data = None
-    assigned_deductive_codes = None
     deductive_code_definitions = None
     excluded_rows = None
     graph_button_clicked = None
@@ -75,8 +72,6 @@ def flush_globals():
     unstopped_lemmas = None
     user_actions = None
 
-    active_data = list()
-    assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
     deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
     excluded_rows = set()
     graph_button_clicked = False
@@ -108,11 +103,10 @@ def get_model_path(mode_name, spacy_model, is_sentencized):
 
 
 
-def pickle_model(mode_name, spacy_model, is_sentencized):
+def pickle_model(mode_name, spacy_model, is_sentencized, deductive_codes):
     global nlp
     global lemmas_excluded_from_lines
     global excluded_rows
-    global assigned_deductive_codes
 
     model_path = get_model_path(mode_name, spacy_model, is_sentencized)
 
@@ -130,7 +124,7 @@ def pickle_model(mode_name, spacy_model, is_sentencized):
 
     # pickle the user selected deductive codes
     with open(model_path / "assigned_deductive_codes.pickle", "wb") as f:
-        pickle.dump(assigned_deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the user actions log
     with open(model_path / "user_actions.pickle", "wb") as f:
@@ -142,7 +136,6 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
 
     flush_globals()
 
-    global assigned_deductive_codes
     global deductive_code_definitions
     global excluded_rows
     global lemmas_excluded_from_lines
@@ -179,10 +172,10 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
             excluded_rows = pickle.load(f)
 
     # load the deductive codes selected by the user
-    assigned_deductive_codes_file = model_path / "assigned_deductive_codes.pickle"
-    if assigned_deductive_codes_file.is_file():
-        with open(assigned_deductive_codes_file, "rb") as f:
-            assigned_deductive_codes = pickle.load(f)
+    assigned_codes_file = model_path / "assigned_deductive_codes.pickle"
+    if assigned_codes_file.is_file():
+        with open(assigned_codes_file, "rb") as f:
+            deductive_codes = pickle.load(f)
 
     # load the user actions log
     user_actions_log_file = model_path / "user_actions.pickle"
@@ -190,6 +183,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         with open(user_actions_log_file, "rb") as f:
             user_actions = pickle.load(f)
 
+    return deductive_codes
 
 
 # ---- NLP FUNCTIONS ----
@@ -268,7 +262,7 @@ def parse_raw_text(txt: str,
                 #    but only if this transcript is being loaded for the first time
                 #    otherwise, don't overwrite user-made changes
                 if use_nlp_tags and first_parse:
-                    excluded_in_row.extend([ t.lemma_ for t in s if has_excluded_nlp_tag(t) and not t.is_stop ])
+                    excluded_in_row.extend([ t.lemma_ for t in s if nlf.has_excluded_nlp_tag(t) and not t.is_stop ])
 
                 # add the tokens excluded by the algorithm to the rest of exclusions
                 if i in lemmas_excluded_from_lines.keys():
@@ -328,14 +322,15 @@ def parse_raw_text(txt: str,
     return data
 
 
-def generate_code_checkboxes(line_num):
+def generate_code_checkboxes(line_num, assigned_codes):
 
     global deductive_code_definitions
-    global assigned_deductive_codes
+
+    line = str(line_num) ## Umit's note: I noticed that the saved deductive codes loaded with str indexes (04/22/2025)
 
     ## Create an empty list of values if the user did not select any values for this line
-    if line_num not in assigned_deductive_codes.keys():
-        assigned_deductive_codes[line_num] = dict(
+    if line not in assigned_codes.keys():
+        assigned_codes[line] = dict(
             (category, "") for category in deductive_code_definitions.keys()
         )
 
@@ -356,11 +351,11 @@ def generate_code_checkboxes(line_num):
                         dbc.Checklist(
                             id={
                                 "type": "code-checklist",
-                                "index": f"{line_num}-{category}"
+                                "index": f"{line}-{category}"
                             },
                             options=[{"label": code, "value": code} for code in deductive_code_definitions[category].keys()],
                             label_checked_class_name="text-success",
-                            value = assigned_deductive_codes[line_num][category],
+                            value = assigned_codes[line][category],
                             inline=True,
                         ),
                         dbc.Popover(
@@ -404,7 +399,7 @@ def generate_code_checkboxes(line_num):
                             ],
                             target={
                                 "type": "code-checklist",
-                                "index": f"{line_num}{category}"
+                                "index": f"{line}{category}"
                             },
                             placement="left",
                             trigger="hover",
@@ -418,24 +413,6 @@ def generate_code_checkboxes(line_num):
     )
 
     return checkboxes_container
-
-# editable tag applications
-def has_excluded_nlp_tag(token):
-
-    # Parts of speech tags that should be automatically excluded
-    # UH (3252815442139690129) == Interjection
-    # IN (1292078113972184607) == Preposition
-
-    # Dependency tags that should be automatically excluded
-    # intj (421) == interjection
-    # prep (443) == preposition
-    # mark (423) == marker
-    # acomp (398) = "adjectival complement"
-    # parataxis (436)
-
-    return (token.tag == 3252815442139690129 or token.tag == 1292078113972184607 or token.dep == 421 or token.dep == 423 
-        or token.dep == 398 or token.dep == 436)
-
 
 # mapping use of certain "tokens" --> words?
 def process_utterance(raw_text, row):
@@ -526,16 +503,26 @@ def generate_utterance_table(data, display_options, in_sents=False):
 
 # ---- NETWORK ANALYSIS
 
-def generate_token_graph_object(start, end, use_similarity=True, similarity_cutoff=0.8, use_deductive_codes=False, with_interviewer=False):
+def generate_token_graph_object(
+        data,
+        start,
+        end,
+        assigned_codes,
+        use_similarity=True,
+        similarity_cutoff=0.8,
+        use_deductive_codes=False,
+        with_interviewer=False
+):
+
     global nlp
-    global active_data
     global lemmas_excluded_from_lines
 
     new_G = nx.Graph()
 
     # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
-    data_dict_list = active_data[start:end]
+
+    data_dict_list = data[start:end]     # TODO -> Using the ag_grid's rowData property and filtering start to end instead of refiltering entire dataset over and over again
 
     for line in data_dict_list:
 
@@ -548,8 +535,9 @@ def generate_token_graph_object(start, end, use_similarity=True, similarity_cuto
             ##  if the user wants to include deductive codes in the anlysis,
             ##      append them as tokens at the end of the utterance
             if use_deductive_codes:
-                if row in assigned_deductive_codes.keys():
-                    raw_utterance = f"{raw_utterance} {' ' .join([' '.join(v) for v in assigned_deductive_codes[row].values() if v != ''])}"
+                row_str = str(row)
+                if row_str in assigned_codes.keys():
+                    raw_utterance = f"{raw_utterance} {' ' .join([' '.join(v) for v in assigned_codes[row_str].values() if v != ''])}"
 
             doc_line = nlp(raw_utterance) # cleans
 
@@ -615,23 +603,25 @@ def generate_token_graph_object(start, end, use_similarity=True, similarity_cuto
 
 
 def draw_token_graph_plotly_object(
-    start_line=0,  # if > 0, range mode is activated
-    end_line=1,
-    mode_name="",
-    sentencized=False,
-    spacy_model="en_core_web_sm",
-    with_codes=False,
-    layout=1,
-    spring_iterations=30,
-    spring_k=0.2,
-    min_co_occurrence=1,
-    min_strong_co_occurrence=2,
-    size_multiplier=2,
-    show_interviewer=False,
-    show_all_labels=True,
-    show_weak_links=True,
-    combine_by_similarity=True,
-    min_similarity=0.8
+        data,
+        assigned_codes,
+        start_line=0,  # if > 0, range mode is activated
+        end_line=1,
+        mode_name="",
+        sentencized=False,
+        spacy_model="en_core_web_sm",
+        with_codes=False,
+        layout=1,
+        spring_iterations=30,
+        spring_k=0.2,
+        min_co_occurrence=1,
+        min_strong_co_occurrence=2,
+        size_multiplier=2,
+        show_interviewer=False,
+        show_all_labels=True,
+        show_weak_links=True,
+        combine_by_similarity=True,
+        min_similarity=0.8
 ):
     global nlp
     global G
@@ -642,10 +632,13 @@ def draw_token_graph_plotly_object(
     if graphed_tokens_changed:
         # now let's generate the knowledge graph
         G = generate_token_graph_object(
-            start=start_line, end=end_line,
+            data= data,
+            start=start_line,
+            end=end_line,
             use_similarity=combine_by_similarity,
             similarity_cutoff=min_similarity,
             use_deductive_codes=with_codes,
+            assigned_codes=assigned_codes,
             with_interviewer=show_interviewer,
         )
         graphed_tokens_changed = False
@@ -944,6 +937,8 @@ def draw_token_graph_plotly_object(
         )
 
     return graph_network, graph_metrics
+
+
 
 
 # ---- INTERFACE ----
@@ -1373,16 +1368,6 @@ metrics_viewer_wrapper_div = html.Div(
     className="border rounded p-4 my-4",
 )
 
-# replaced by user_log_accordion in code
-'''change_log_viewer_wrapper_div = html.Div(
-    [
-        html.H3("User Actions", className="mb-4"),
-        html.P(" "),
-        html.Div(html.P("This view will be updated when the user toggles tokens.", className="lead"), id="changes-div"),
-    ],
-    className="border rounded p-4 my-4",
-) '''
-
 # -- coding modal view --
 
 coding_modal = dbc.Modal(
@@ -1440,6 +1425,17 @@ coding_modal = dbc.Modal(
     centered=True,
 )
 
+
+# assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
+# deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
+# excluded_rows = set()
+# graph_button_clicked = False
+# graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
+# lemmas_excluded_from_lines = dict()
+# stopped_lemmas = set()
+# unstopped_lemmas = set()
+# user_actions = list()
+
 app.layout = dbc.Container(
     [
         dbc.Row(
@@ -1454,6 +1450,8 @@ app.layout = dbc.Container(
             )
         ),
         dcc.Store(id="modal-row-id"), # to keep track of the id of the row that is being revised in the modal view
+        dcc.Store(id="parsed-data"),
+        dcc.Store(id="assigned-deductive-codes", data=dict()),
         dbc.Row(dbc.Col(utterances_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
@@ -1559,26 +1557,38 @@ def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
         return ""
 
 
+
 @app.callback(
     Output("data-table", "rowData"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
+    Output("parsed-data", "data"),
+    Output("assigned-deductive-codes", "data", allow_duplicate=True),
+
     Input("parse-button", "n_clicks"),
-    Input("coding-modal", "is_open"),
-    State("inclusion-options", "value"),
+
     State("mode-name", "value"),
     State("raw-text", "value"),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
-    # State("resolve-corefs", "value"),
     State("modal-row-id", "data"),
     State("data-table", "rowData"),
+    # State("resolve-corefs", "value"),
+
     prevent_initial_call=True,
 )
-def parse_button_callback(n_parse_clicks, revision_modal_is_open, display_options, name, txt, sentencized, spacy_model, use_nlp_tags, revised_row_id, existing_row_data):
-    global active_data
-    global assigned_deductive_codes
+def parse_button_callback(
+        n_parse_button_clicks,
+        name,
+        txt,
+        sentencized,
+        spacy_model,
+        use_nlp_tags,
+        revised_row_id,
+        existing_row_data,
+        # resolve_corefs,
+):
     global user_actions
     global deductive_code_definitions
     global excluded_rows
@@ -1588,63 +1598,45 @@ def parse_button_callback(n_parse_clicks, revision_modal_is_open, display_option
     global graphed_tokens_changed
     global unstopped_lemmas
 
-    if ctx.triggered_id == "parse-button":
 
-        # first, reset all the globals
-        #   to make sure that switching between transcripts doesn't mess things up
-        flush_globals()
-        excluded_rows = []
+    # first, reset all the globals
+    #   to make sure that switching between transcripts doesn't mess things up
+    flush_globals()
+    excluded_rows = []
 
-        unpickle_defaults_and_model(name, spacy_model, sentencized)
+    deductive_codes = unpickle_defaults_and_model(name, spacy_model, sentencized)
 
-        # reload the model because it only pulls default stopwords if loaded from the beginning
-        nlp = spacy.load(spacy_model, exclude=["ner"])
+    # reload the model because it only pulls default stopwords if loaded from the beginning
+    nlp = spacy.load(spacy_model, exclude=["ner"])
 
-        # if resolve_corefs:
-        #     nlp.add_pipe("fastcoref", config={  'device': 'cpu',
-        #                                                 # 'model_architecture': 'LingMessCoref', # this model runs slower
-        #                                                 # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
-        #                                              })
+    # if resolve_corefs:
+    #     nlp.add_pipe("fastcoref", config={  'device': 'cpu',
+    #                                                 # 'model_architecture': 'LingMessCoref', # this model runs slower
+    #                                                 # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
+    #                                              })
 
-        # update stop_words of the small model
-        #   I have to do it this y because spacy's to_disk method doesn't save stopwords
-        for word in stopped_lemmas:
-            nlp.vocab[word].is_stop = True
+    # update stop_words of the small model
+    #   I have to do it this y because spacy's to_disk method doesn't save stopwords
+    for word in stopped_lemmas:
+        nlp.vocab[word].is_stop = True
 
-        for word in unstopped_lemmas:
-            nlp.vocab[word].is_stop = False
+    for word in unstopped_lemmas:
+        nlp.vocab[word].is_stop = False
 
 
-        # tokens that are excluded from a specific line, but not the entire analysis
-        time = True
-        interviewer = True
+    # tokens that are excluded from a specific line, but not the entire analysis
+    time = True
+    interviewer = True
 
-        # here in possible changes
-        parsed_data = parse_raw_text(
-            txt, timestamp=time,
-            is_interviewer=interviewer,
-            in_sentences = sentencized,
-            use_nlp_tags = use_nlp_tags,
-        )
+    # here in possible changes
+    parsed_data = parse_raw_text(
+        txt, timestamp=time,
+        is_interviewer=interviewer,
+        in_sentences = sentencized,
+        use_nlp_tags = use_nlp_tags,
+    )
 
-        active_data = parsed_data
-
-        return generate_highlighted_utterances(parsed_data), "1", False
-
-    elif ctx.triggered_id == "coding-modal":
-        # update the highlighted tokens in the table after the user makes changes
-        if not revision_modal_is_open and revised_row_id != -1:
-            # and only if the user makes changes
-            if graphed_tokens_changed:
-                graphed_tokens_changed = False # reset the flag
-                return generate_highlighted_utterances(existing_row_data), "1", False
-            else:
-                # otherwise, don't update the row data
-                raise PreventUpdate
-        else:
-            raise PreventUpdate
-    else:
-        raise PreventUpdate
+    return generate_highlighted_utterances(parsed_data), "1", False, parsed_data, deductive_codes
 
 
 # needs to filter out interviewers as third option
@@ -1652,22 +1644,24 @@ def parse_button_callback(n_parse_clicks, revision_modal_is_open, display_option
     Output('data-table', 'columnState'),
     Output('data-table', 'dashGridOptions'),
     Input("inclusion-options", "value"),
+    Input("coding-modal", "is_open"),   # TODO -> separate this input into a new callback and have it update the parsed data
+    State("parsed-data", "data")
 )
-def apply_table_layout_filters_callback(options):
+def apply_table_layout_filters_callback(table_display_options, coding_modal_was_open, parsed_data):
 
     new_state = [
         {'colId': 'line'},
-        {'colId': 'time', 'hide': 0 not in options},
-        {'colId': 'speaker', 'hide': 1 not in options},
-        {'colId': 'utterance', 'hide': 3 in options, 'flex':1},
-        {'colId': 'highlighted utterance', 'hide': 3 not in options, 'flex':1},
+        {'colId': 'time', 'hide': 0 not in table_display_options},
+        {'colId': 'speaker', 'hide': 1 not in table_display_options},
+        {'colId': 'utterance', 'hide': 3 in table_display_options, 'flex':1},
+        {'colId': 'highlighted utterance', 'hide': 3 not in table_display_options, 'flex':1},
         {'colId': 'in?'},
     ]
 
     new_filter = {
         'isExternalFilterPresent': {'function': 'false'}
     }
-    if 2 in options:
+    if 2 in table_display_options:
         new_filter = {
             'isExternalFilterPresent': {'function': 'true'},
             'doesExternalFilterPass': 
@@ -1686,10 +1680,10 @@ def apply_table_layout_filters_callback(options):
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     State("data-table", "rowData"),
+    State("assigned-deductive-codes", "data"),
     prevent_initial_call=True,
 )
-def revise_tokens_view_callback(cell, toggle_clicks, row_data):
-    global active_data
+def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
     global graphed_tokens_changed
     global lemmas_excluded_from_lines
     global user_actions
@@ -1747,11 +1741,11 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
-        codes = generate_code_checkboxes(row)
+        codes = generate_code_checkboxes(row, assigned_codes)
 
         return token_buttons, codes, True, row
     else:
-        return "Something", "wrong", False, -1
+        return "Something", "went wrong", False, -1
 
 
 @app.callback(
@@ -1772,10 +1766,12 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     Input("layout-iterations", "value"),
     Input("layout-k", "value"),
     Input("node-size", "value"),
-    Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
+    # Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
 
+    State("parsed-data", "data"),
     State("inclusion-options", "value"),
     State("use-deductive-codes", "value"),
+    State("assigned-deductive-codes", "data"),
     State("graph-button", "disabled"),
     State("mode-name", "value"),
     State("combine-by-similarity", "value"),
@@ -1787,28 +1783,30 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data):
     prevent_initial_call=True,
 )
 def generate_graph_button_callback(
-    n_graph_button_clicks,
-    selected_range,
-    min_co_occurrence,
-    min_strong_co_occurrence,
-    display_all_labels,
-    display_weak_links,
-    graph_layout,
-    spring_iterations,
-    spring_k,
-    node_size_multiplier,
-    toggled_token,
-    selected_inclusion_options,
-    use_deductive_codes,
-    graph_button_disabled,
-    mode_name,
-    combine_by_similarity,
-    min_similarity,
-    active_row_data,
-    is_sentencized,
-    spacy_model
+        n_graph_button_clicks,
+        selected_range,
+        min_co_occurrence,
+        min_strong_co_occurrence,
+        display_all_labels,
+        display_weak_links,
+        graph_layout,
+        spring_iterations,
+        spring_k,
+        node_size_multiplier,
+        # toggled_token,
+        parsed_data,
+        selected_inclusion_options,
+        use_deductive_codes,
+        assigned_codes,
+        graph_button_disabled,
+        mode_name,
+        combine_by_similarity,
+        min_similarity,
+        active_row_data,
+        is_sentencized,
+        spacy_model
 ):
-    global active_data
+
     global graphed_tokens_changed
     global graph_button_clicked
     global user_actions
@@ -1823,7 +1821,7 @@ def generate_graph_button_callback(
         graphed_tokens_changed = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(mode_name, spacy_model, is_sentencized)
+        pickle_model(mode_name, spacy_model, is_sentencized, assigned_codes)
 
     if ctx.triggered_id == "graph-slider":
         graphed_tokens_changed = True
@@ -1863,17 +1861,19 @@ def generate_graph_button_callback(
         last_line = list(slider_marks.keys())[-1]
         end = selected_range[1] if selected_range[1] != 0 and selected_range[1] <= last_line else last_line
 
-    end = end if end < len(active_data) else len(active_data)
+    end = end if end < len(parsed_data) else len(parsed_data)
 
     selected_range = list([start, end])
 
     graph, stats = draw_token_graph_plotly_object(
+        data=parsed_data,
         start_line=start,
         end_line=end,
         mode_name=mode_name,
         sentencized=is_sentencized,
         spacy_model=spacy_model,
         with_codes=use_deductive_codes,
+        assigned_codes=assigned_codes,
         layout=graph_layout,
         spring_iterations=spring_iterations,
         spring_k=spring_k,
@@ -1892,32 +1892,37 @@ def generate_graph_button_callback(
 
 
 @app.callback(
+    Output("assigned-deductive-codes", "data", allow_duplicate=True),
     Input({"type": "code-checklist", "index": ALL}, "value"),
-    prevent_initial_call=True,
+    State("assigned-deductive-codes", "data"),
+    prevent_initial_call=True
 )
-def save_user_assigned_deductive_codes_callback(val):
-
-    global assigned_deductive_codes
+def update_user_assigned_deductive_codes_callback(clicked_checkboxes, assigned_codes):
 
     line_num, category = ctx.triggered_id["index"].split("-")
-    line_num = int(line_num)
+    line_num = line_num.strip()
 
-    assigned_deductive_codes[line_num][category] = ctx.triggered[0]["value"]
+    if line_num not in assigned_codes: assigned_codes[line_num] = dict()
+
+    assigned_codes[line_num][category] = ctx.triggered[0]["value"]
+
+    return assigned_codes
 
 
 @app.callback(
     Output("log-data-table", "rowData", allow_duplicate=True),
     Input("data-table", "cellValueChanged"),
+    State("parsed_data", "data"),
     prevent_initial_call=True,
 )
-def update_included_lines_callback(changed):
+def update_included_lines_callback(changed, parsed_data):
     global graphed_tokens_changed
     global user_actions
 
     if changed:
         i = int(changed[0]["rowId"])
         cell_incl = changed[0]['data']['in?']
-        active_data[i]['in?'] = cell_incl
+        parsed_data[i]['in?'] = cell_incl
         graphed_tokens_changed = True
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if cell_incl:
