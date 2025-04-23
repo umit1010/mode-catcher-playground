@@ -24,13 +24,10 @@ nlp = spacy.blank("en")  # loading a blank model because we'll load the actual m
 
 G = nx.Graph()
 
-deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
 excluded_rows = set()
 graph_button_clicked = False
 graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
 lemmas_excluded_from_lines = dict()
-stopped_lemmas = set()
-unstopped_lemmas = set()
 user_actions = list()
 
 # constants
@@ -54,31 +51,22 @@ server = app.server
 
 def flush_globals():
 
-    global deductive_code_definitions
     global excluded_rows
     global graph_button_clicked
     global graphed_tokens_changed
     global lemmas_excluded_from_lines
-    global stopped_lemmas
-    global unstopped_lemmas
     global user_actions
 
-    deductive_code_definitions = None
     excluded_rows = None
     graph_button_clicked = None
     graphed_tokens_changed = None
     lemmas_excluded_from_lines = None
-    stopped_lemmas = None
-    unstopped_lemmas = None
     user_actions = None
 
-    deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
     excluded_rows = set()
     graph_button_clicked = False
     graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
     lemmas_excluded_from_lines = dict()
-    stopped_lemmas = set()
-    unstopped_lemmas = set()
     user_actions = list()
 
 
@@ -103,7 +91,7 @@ def get_model_path(mode_name, spacy_model, is_sentencized):
 
 
 
-def pickle_model(mode_name, spacy_model, is_sentencized, deductive_codes):
+def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
     global nlp
     global lemmas_excluded_from_lines
     global excluded_rows
@@ -111,8 +99,12 @@ def pickle_model(mode_name, spacy_model, is_sentencized, deductive_codes):
     model_path = get_model_path(mode_name, spacy_model, is_sentencized)
 
     # pickle the stop words changed by the user
+    with open(model_path / "parsed_data.pickle", "wb") as f:
+        pickle.dump(parsed_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the stop words changed by the user
     with open(model_path / "stopwords.pickle", "wb") as f:
-        pickle.dump((stopped_lemmas, unstopped_lemmas), f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump((stopped_tokens, unstopped_tokens), f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the tokens that are excluded in individual lines by the user
     with open(model_path / "excluded_tokens.pickle", "wb") as f:
@@ -136,28 +128,35 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
 
     flush_globals()
 
-    global deductive_code_definitions
     global excluded_rows
     global lemmas_excluded_from_lines
-    global stopped_lemmas
-    global unstopped_lemmas
     global user_actions
 
     model_path = get_model_path(mode_name, spacy_model, is_sentencized)
 
     # load deductive code definitions
     with open(CONFIG_FOLDER / "deductive_label_definitions.toml", "rb") as f:
-        deductive_code_definitions = tomllib.load(f)
+        code_definitions = tomllib.load(f)
 
     # load the default stopwords list
     with open(CONFIG_FOLDER / "default_stopwords.pickle", "rb") as f:
-        stopped_lemmas = pickle.load(f)
+        stopped_tokens = pickle.load(f)
+
+    # load previously parsed data (if it exists)
+    parsed_data_file = model_path / "parsed_data.pickle"
+    if parsed_data_file.is_file():
+        with open(parsed_data_file, "rb") as f:
+            parsed_data = pickle.load(f)
+    else:
+        parsed_data = list()
 
     # load the user-made changes to the stopwords (if they exist)
     stopwords_file = model_path / "stopwords.pickle"
     if stopwords_file.is_file():
         with open(stopwords_file, "rb") as f:
-            stopped_lemmas, unstopped_lemmas = pickle.load(f)
+            stopped_tokens, unstopped_tokens = pickle.load(f)
+    else:
+        stopped_tokens = list()
 
     # load the tokens that were excluded on specific lines by the user
     excluded_tokens_file = model_path / "excluded_tokens.pickle"
@@ -175,7 +174,9 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     assigned_codes_file = model_path / "assigned_deductive_codes.pickle"
     if assigned_codes_file.is_file():
         with open(assigned_codes_file, "rb") as f:
-            deductive_codes = pickle.load(f)
+            assigned_codes = pickle.load(f)
+    else:
+        assigned_codes = list()
 
     # load the user actions log
     user_actions_log_file = model_path / "user_actions.pickle"
@@ -183,7 +184,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         with open(user_actions_log_file, "rb") as f:
             user_actions = pickle.load(f)
 
-    return deductive_codes
+    return parsed_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens
 
 
 # ---- NLP FUNCTIONS ----
@@ -322,16 +323,14 @@ def parse_raw_text(txt: str,
     return data
 
 
-def generate_code_checkboxes(line_num, assigned_codes):
-
-    global deductive_code_definitions
+def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
 
     line = str(line_num) ## Umit's note: I noticed that the saved deductive codes loaded with str indexes (04/22/2025)
 
     ## Create an empty list of values if the user did not select any values for this line
     if line not in assigned_codes.keys():
         assigned_codes[line] = dict(
-            (category, "") for category in deductive_code_definitions.keys()
+            (category, "") for category in code_definitions.keys()
         )
 
     ## Umit's note on 03/19/2025:
@@ -353,7 +352,7 @@ def generate_code_checkboxes(line_num, assigned_codes):
                                 "type": "code-checklist",
                                 "index": f"{line}-{category}"
                             },
-                            options=[{"label": code, "value": code} for code in deductive_code_definitions[category].keys()],
+                            options=[{"label": code, "value": code} for code in code_definitions[category].keys()],
                             label_checked_class_name="text-success",
                             value = assigned_codes[line][category],
                             inline=True,
@@ -375,31 +374,31 @@ def generate_code_checkboxes(line_num, assigned_codes):
                                                 ),
                                                 html.P(
                                                     html.Small(
-                                                        html.Code(deductive_code_definitions[category][code]['keywords'])
+                                                        html.Code(code_definitions[category][code]['keywords'])
                                                     ), className="ms-2",
                                                 ),
                                                 html.P([
                                                         html.Span("Conceptual Example: ", className="fw-medium"),
                                                         html.Br(),
-                                                        html.Em(deductive_code_definitions[category][code]['conceptual_example'])
+                                                        html.Em(code_definitions[category][code]['conceptual_example'])
                                                     ], className="ms-2",
                                                 ),
 
                                                 html.P([
                                                         html.Span("Verbatim Excerpt: ", className="fw-medium"),
                                                         html.Br(),
-                                                        html.Em(f"\"{deductive_code_definitions[category][code]['verbatim_excerpt']}\"")
+                                                        html.Em(f"\"{code_definitions[category][code]['verbatim_excerpt']}\"")
                                                     ], className="ms-2",
                                                 ),
                                             ],
-                                        ) for code in deductive_code_definitions[category].keys()
+                                        ) for code in code_definitions[category].keys()
                                     ],
                                     className="mb-4"
                                 )
                             ],
                             target={
                                 "type": "code-checklist",
-                                "index": f"{line}{category}"
+                                "index": f"{line}-{category}"
                             },
                             placement="left",
                             trigger="hover",
@@ -407,7 +406,7 @@ def generate_code_checkboxes(line_num, assigned_codes):
                         )
                     ], width=12
                 ),
-            ], class_name="my-3") for category in deductive_code_definitions.keys()
+            ], class_name="my-3") for category in code_definitions.keys()
         ],
         id="code-checkboxes-container",
     )
@@ -970,7 +969,8 @@ raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.", value="", rows=10, id="raw-text"
 )
 
-parse_button = dbc.Button("Parse", id="parse-button", size="lg", n_clicks=0)
+parse_button = dbc.Button("Parse Transcript", id="parse-button", size="lg", class_name="mx-2")
+load_cached_button = dbc.Button("Reload", id="load-cached-button", outline=True, size="lg", color="primary", disabled=True, class_name="mx-2")
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True, persistence=True)
 apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True, persistence=True)
@@ -1065,7 +1065,8 @@ input_accordion = dbc.Accordion(
                 dbc.Row(
                     dbc.Col(
                         [
-                            parse_button
+                            parse_button,
+                            load_cached_button
                         ],
                         class_name="mt-4",
                     ),
@@ -1425,15 +1426,10 @@ coding_modal = dbc.Modal(
     centered=True,
 )
 
-
-# assigned_deductive_codes = dict()  ## keeps the labels selected by the user for each line
-# deductive_code_definitions = dict()  ## Keeps the info about the labels, not user selections
 # excluded_rows = set()
 # graph_button_clicked = False
 # graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
 # lemmas_excluded_from_lines = dict()
-# stopped_lemmas = set()
-# unstopped_lemmas = set()
 # user_actions = list()
 
 app.layout = dbc.Container(
@@ -1452,6 +1448,9 @@ app.layout = dbc.Container(
         dcc.Store(id="modal-row-id"), # to keep track of the id of the row that is being revised in the modal view
         dcc.Store(id="parsed-data"),
         dcc.Store(id="assigned-deductive-codes", data=dict()),
+        dcc.Store(id="deductive-code-definitions", data=dict()),
+        dcc.Store(id="stopped-tokens", data=list()),
+        dcc.Store(id="unstopped-tokens", data=list()),
         dbc.Row(dbc.Col(utterances_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
@@ -1472,19 +1471,23 @@ app.layout = dbc.Container(
 @app.callback(
     Output("raw-text", "value"),
     Output("mode-name", "value"),
+    Output("load-cached-button", "disabled"),
+    Output("load-cached-button", "color"),
     Input("input-file-dropdown", "value"),
+    State("by-sent", "value"),
+    State("model-selection-dropdown", "value")
 )
-def load_input_file_callback(file_name: str):
+def load_input_file_callback(file_name, is_sentencized, spacy_model):
     if file_name == "__manual entry__":
-        return "", ""
+        return "", "", True
 
     # gets path to file and removed .txt from the file's name
     file_path = Path(INPUT_FOLDER) / file_name
-    model_name = file_name.removesuffix(".txt")
+    mode_name = file_name.removesuffix(".txt")
 
     # checks file existence
     if not file_path.is_file():
-        return "It doesn't seem like that file exists anymore.", model_name
+        return "It doesn't seem like that file exists anymore.", mode_name, True, "secondary"
 
     # opens file and reads the file 
     # puts the text in one string instead of a list of lines
@@ -1493,9 +1496,15 @@ def load_input_file_callback(file_name: str):
 
     # checks if there is actually text (rather than empty file/string)
     if len(file_text) > 0:
-        return file_text, model_name
 
-    return "File was there, but it had no text.", model_name
+        model_folder = get_model_path(mode_name, spacy_model, is_sentencized)
+        cached_parsed_data_file_name = model_folder / "parsed_data.pickle"
+        if cached_parsed_data_file_name.is_file():
+            return file_text, mode_name, False, "primary"
+        else:
+            return file_text, mode_name, True, "secondary"
+
+    return "File was there, but it had no text.", mode_name, True, "secondary"
 
 
 @app.callback(
@@ -1505,7 +1514,6 @@ def load_input_file_callback(file_name: str):
 )
 def enable_parse_button_callback(name: str, text: str):
     return False if len(name.strip()) > 0 and len(text.strip()) > 0 else True
-
 
 
 @app.callback(
@@ -1563,9 +1571,13 @@ def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Output("parsed-data", "data"),
+    Output("deductive-code-definitions", "data"),
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
+    Output("stopped-tokens", "data", allow_duplicate=True),
+    Output("unstopped-tokens", "data", allow_duplicate=True),
 
     Input("parse-button", "n_clicks"),
+    Input("load-cached-button", "n_clicks"),
 
     State("mode-name", "value"),
     State("raw-text", "value"),
@@ -1580,6 +1592,7 @@ def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
 )
 def parse_button_callback(
         n_parse_button_clicks,
+        n_load_cached_button_clicks,
         name,
         txt,
         sentencized,
@@ -1590,23 +1603,19 @@ def parse_button_callback(
         # resolve_corefs,
 ):
     global user_actions
-    global deductive_code_definitions
     global excluded_rows
     global lemmas_excluded_from_lines
     global nlp
-    global stopped_lemmas
     global graphed_tokens_changed
-    global unstopped_lemmas
-
 
     # first, reset all the globals
     #   to make sure that switching between transcripts doesn't mess things up
     flush_globals()
     excluded_rows = []
 
-    deductive_codes = unpickle_defaults_and_model(name, spacy_model, sentencized)
+    cached_parsed_data, deductive_codes, code_definitions, stopped_tokens, unstopped_tokens = unpickle_defaults_and_model(name, spacy_model, sentencized)
 
-    # reload the model because it only pulls default stopwords if loaded from the beginning
+    # load the model selected by the user
     nlp = spacy.load(spacy_model, exclude=["ner"])
 
     # if resolve_corefs:
@@ -1615,28 +1624,31 @@ def parse_button_callback(
     #                                                 # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
     #                                              })
 
+
     # update stop_words of the small model
     #   I have to do it this y because spacy's to_disk method doesn't save stopwords
-    for word in stopped_lemmas:
+    for word in stopped_tokens:
         nlp.vocab[word].is_stop = True
 
-    for word in unstopped_lemmas:
+    for word in unstopped_tokens:
         nlp.vocab[word].is_stop = False
-
 
     # tokens that are excluded from a specific line, but not the entire analysis
     time = True
     interviewer = True
 
-    # here in possible changes
-    parsed_data = parse_raw_text(
-        txt, timestamp=time,
-        is_interviewer=interviewer,
-        in_sentences = sentencized,
-        use_nlp_tags = use_nlp_tags,
-    )
+    if ctx.triggered_id == "parse-button":
+        # here in possible changes
+        parsed_data = parse_raw_text(
+            txt, timestamp=time,
+            is_interviewer=interviewer,
+            in_sentences = sentencized,
+            use_nlp_tags = use_nlp_tags,
+        )
+    else:
+        parsed_data = cached_parsed_data
 
-    return generate_highlighted_utterances(parsed_data), "1", False, parsed_data, deductive_codes
+    return generate_highlighted_utterances(parsed_data), "1", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
 
 
 # needs to filter out interviewers as third option
@@ -1677,17 +1689,28 @@ def apply_table_layout_filters_callback(table_display_options, coding_modal_was_
     Output("code-checkboxes-container", "children"),
     Output("coding-modal", "is_open"),
     Output("modal-row-id", "data"),
+    Output("stopped-tokens", "data", allow_duplicate=True),
+    Output("unstopped-tokens", "data", allow_duplicate=True),
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
     State("data-table", "rowData"),
     State("assigned-deductive-codes", "data"),
+    State("deductive-code-definitions", "data"),
+    State("stopped-tokens", "data"),
+    State("unstopped-tokens", "data"),
     prevent_initial_call=True,
 )
-def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
+def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens):
+
     global graphed_tokens_changed
     global lemmas_excluded_from_lines
     global user_actions
-    # create global table 
+
+    # Umit's note on 04/22/2025: dcc.Store component does not support sets, so we have to convert them from lists, and vice versa
+    stopped_tokens_set = set(stopped_tokens)
+    unstopped_tokens_set = set(unstopped_tokens)
+
+    # create global table
     if cell is not None:
 
         row = int(cell["rowId"])
@@ -1706,8 +1729,8 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
                 if was_stop:
 
                     nlp.vocab[toggled_token].is_stop = False
-                    stopped_lemmas.discard(toggled_token)
-                    unstopped_lemmas.add(toggled_token)
+                    stopped_tokens_set.discard(toggled_token)
+                    unstopped_tokens_set.add(toggled_token)
                     user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
                     # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
 
@@ -1719,8 +1742,8 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
                         # and remove it from the exluded tokens list
 
                         nlp.vocab[toggled_token].is_stop = True
-                        stopped_lemmas.add(toggled_token)
-                        unstopped_lemmas.discard(toggled_token)
+                        stopped_tokens_set.add(toggled_token)
+                        unstopped_tokens_set.discard(toggled_token)
                         lemmas_excluded_from_lines[row].remove(toggled_token)
                         user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
                         # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
@@ -1741,11 +1764,11 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
-        codes = generate_code_checkboxes(row, assigned_codes)
+        codes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
-        return token_buttons, codes, True, row
+        return token_buttons, codes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set)
     else:
-        return "Something", "went wrong", False, -1
+        return "Something", "went wrong", False, -1, stopped_tokens, unstopped_tokens
 
 
 @app.callback(
@@ -1779,6 +1802,8 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes):
     State('data-table', 'virtualRowData'),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
+    State("stopped-tokens", "data"),
+    State("unstopped-tokens", "data"),
 
     prevent_initial_call=True,
 )
@@ -1804,7 +1829,9 @@ def generate_graph_button_callback(
         min_similarity,
         active_row_data,
         is_sentencized,
-        spacy_model
+        spacy_model,
+        stopped_tokens,
+        unstopped_tokens
 ):
 
     global graphed_tokens_changed
@@ -1821,7 +1848,7 @@ def generate_graph_button_callback(
         graphed_tokens_changed = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(mode_name, spacy_model, is_sentencized, assigned_codes)
+        pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens)
 
     if ctx.triggered_id == "graph-slider":
         graphed_tokens_changed = True
