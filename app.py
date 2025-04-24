@@ -26,7 +26,6 @@ G = nx.Graph()
 
 excluded_rows = set()
 graph_button_clicked = False
-graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
 tokens_excluded_from_lines = dict()
 user_actions = list()
 
@@ -63,19 +62,15 @@ def flush_globals():
 
     global excluded_rows
     global graph_button_clicked
-    global graphed_tokens_changed
     global tokens_excluded_from_lines
     global user_actions
 
     excluded_rows = None
-    graph_button_clicked = None
-    graphed_tokens_changed = None
     tokens_excluded_from_lines = None
     user_actions = None
 
     excluded_rows = set()
     graph_button_clicked = False
-    graphed_tokens_changed = False
     tokens_excluded_from_lines = dict()
     user_actions = list()
 
@@ -212,7 +207,6 @@ def parse_raw_text(txt: str,
     global excluded_rows
     global tokens_excluded_from_lines
     global nlp
-    global graphed_tokens_changed
 
     first_parse = True if len(tokens_excluded_from_lines) == 0 else False
 
@@ -259,12 +253,12 @@ def parse_raw_text(txt: str,
         if speaker:
             row['speaker'] = speaker
 
+        # TODO: moving coref resolution to a separate button in the input section that modifies the existing text file
+
         # doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}}) if resolve_corefs else nlp(utterance.strip())
-        doc = nlp(utterance.strip())
         # print("--coref spans: ", doc._.coref_clusters)
 
-        ## TODO -> Move resolved text in a separate table grid column
-        ##          Currently, it replaces the existing text (for the sake of quick implementation)
+        doc = nlp(utterance.strip())
 
         if in_sentences:
             for s in doc.sents:
@@ -326,8 +320,6 @@ def parse_raw_text(txt: str,
             row["utterance"] = utterance.strip()
             row['in?'] = False if i in excluded_rows else True
             data.append(row)
-
-    graphed_tokens_changed = True
 
     return data
 
@@ -531,7 +523,12 @@ def generate_token_graph_object(
     # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
 
-    data_dict_list = data[start:end]     # TODO -> Using the ag_grid's rowData property and filtering start to end instead of refiltering entire dataset over and over again
+    # TODO: phasing out the active_data object altogether and using ag_grid's rowData property
+    #       embedding the parsed doc object as a hidden column so that we don't have to reparse it over and over again
+    #           filtering start to end instead of refiltering entire dataset over and over again
+    #       pickling the rowData of the ag_grid instead of the active data object so that it loads even faster
+
+    data_dict_list = data[start:end]
 
     for line in data_dict_list:
 
@@ -634,23 +631,18 @@ def draw_token_graph_plotly_object(
 ):
     global nlp
     global G
-    global graphed_tokens_changed
 
-    # UA > if any edits were made in the utterance table or line number, regenerate the graph (nodes and the edge matrix)
-    #       otherwise use the same graph for visualization changes
-    if graphed_tokens_changed:
-        # now let's generate the knowledge graph
-        G = generate_token_graph_object(
-            data= data,
-            start=start_line,
-            end=end_line,
-            use_similarity=combine_by_similarity,
-            similarity_cutoff=min_similarity,
-            use_deductive_codes=with_codes,
-            assigned_codes=assigned_codes,
-            with_interviewer=show_interviewer,
-        )
-        graphed_tokens_changed = False
+    # first, let's generate the token graph
+    G = generate_token_graph_object(
+        data= data,
+        start=start_line,
+        end=end_line,
+        use_similarity=combine_by_similarity,
+        similarity_cutoff=min_similarity,
+        use_deductive_codes=with_codes,
+        assigned_codes=assigned_codes,
+        with_interviewer=show_interviewer,
+    )
 
     # first, remove edges that are below the degree offset value (like less than min degrees)
     edges_to_drop = [
@@ -1236,15 +1228,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Weak min co-occurrence"),
-                        dbc.Input(
-                            id="min-co",
-                            type="number",
-                            min=1,
-                            max=10,
-                            step=1,
-                            value=1,
-                            persistence=True
-                        ),
+                        dbc.Input(id="min-co", type="number", min=1, max=10, step=1, value=1, persistence=True, debounce=500),
                     ]),
                     class_name="mt-2",
                     md=6, lg=4, xl=3,
@@ -1252,16 +1236,8 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Strong min co-occurrence"),
-                        dbc.Input(
-                            id="min-strong-co",
-                            type="number",
-                            min=1,
-                            max=10,
-                            step=1,
-                            value=2,
-                            persistence=True
-                        )]
-                    ),
+                        dbc.Input(id="min-strong-co", type="number", min=1, max=10, step=1, value=2, persistence=True, debounce=500)
+                    ]),
                     class_name="mt-2",
                     md=6, lg=4, xl=3,
                 ),
@@ -1275,15 +1251,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Node Size"),
-                        dbc.Input(
-                            id="node-size",
-                            type="number",
-                            min=1,
-                            max=40,
-                            step=1,
-                            value=5,
-                            persistence=True
-                        ),
+                        dbc.Input(id="node-size", type="number", min=1, max=40, step=1, value=5, persistence=True, debounce=500),
                     ]),
                     lg=3,
                     xl=2,
@@ -1310,7 +1278,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Spring iterations"),
-                        dbc.Input(id="layout-iterations", type="number", min=0, max=500, step=1, value=10, persistence=True),
+                        dbc.Input(id="layout-iterations", type="number", min=0, max=500, step=1, value=10, persistence=True, debounce=500),
                     ]),
                     lg=4,
                     xl=3,
@@ -1318,7 +1286,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Spring k"),
-                        dbc.Input(id="layout-k", type="number", min=0, max=100, step=0.05, value=0.5, persistence=True),
+                        dbc.Input(id="layout-k", type="number", min=0, max=100, step=0.05, value=0.5, persistence=True, debounce=500),
                     ]),
                     lg=3,
                     xl=2,
@@ -1442,7 +1410,6 @@ coding_modal = dbc.Modal(
 
 # excluded_rows = set()
 # graph_button_clicked = False
-# graphed_tokens_changed = False
 # lemmas_excluded_from_lines = dict()
 # user_actions = list()
 
@@ -1621,7 +1588,6 @@ def parse_button_callback(
     global excluded_rows
     global tokens_excluded_from_lines
     global nlp
-    global graphed_tokens_changed
 
     # first, reset all the globals
     #   to make sure that switching between transcripts doesn't mess things up
@@ -1674,10 +1640,8 @@ def parse_button_callback(
     Output('data-table', 'columnState'),
     Output('data-table', 'dashGridOptions'),
     Input("inclusion-options", "value"),
-    Input("coding-modal", "is_open"),   # TODO -> separate this input into a new callback and have it update the parsed data
-    State("parsed-data", "data")
 )
-def apply_table_layout_filters_callback(table_display_options, coding_modal_was_open, parsed_data):
+def apply_table_layout_filters_callback(table_display_options):
 
     new_state = [
         {'colId': 'line'},
@@ -1720,7 +1684,6 @@ def apply_table_layout_filters_callback(table_display_options, coding_modal_was_
 )
 def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens):
 
-    global graphed_tokens_changed
     global tokens_excluded_from_lines
     global user_actions
 
@@ -1732,7 +1695,6 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     if cell is not None:
 
         row = int(cell["rowId"])
-        graphed_tokens_changed = False   # TODO -> this global will be removed & replaced with dcc.Store object's timestampchanged callback
 
         if type(ctx.triggered_id) != str:
 
@@ -1774,8 +1736,6 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 
                     user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
                     # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
-
-                graphed_tokens_changed = True
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
@@ -1849,7 +1809,6 @@ def generate_graph_button_callback(
         unstopped_tokens
 ):
 
-    global graphed_tokens_changed
     global graph_button_clicked
     global user_actions
 
@@ -1860,22 +1819,9 @@ def generate_graph_button_callback(
 
     if ctx.triggered_id == "graph-button":
         graph_button_clicked = True
-        graphed_tokens_changed = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
         pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens)
-
-    if ctx.triggered_id == "graph-slider":
-        graphed_tokens_changed = True
-
-    if ctx.triggered_id == "min-co":
-        graphed_tokens_changed = True
-
-    if ctx.triggered_id == "min-strong-co":
-        graphed_tokens_changed = True
-
-    if ctx.triggered_id == "inclusion-options":
-        graphed_tokens_changed = True
     
     if not graph_button_clicked:
         return empty_return
@@ -1982,14 +1928,12 @@ def revise_modal_closed_callback(
     prevent_initial_call=True,
 )
 def update_included_lines_callback(changed, parsed_data):
-    global graphed_tokens_changed
     global user_actions
 
     if changed:
         i = int(changed[0]["rowId"])
         cell_incl = changed[0]['data']['in?']
         parsed_data[i]['in?'] = cell_incl
-        graphed_tokens_changed = True
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if cell_incl:
             excluded_rows.discard(i)
