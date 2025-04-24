@@ -1,0 +1,278 @@
+[00:00:00] Interviewer: I am. Okay. Everything should be fine. And. Okay. We are waiting for the recording to start. Let me share my screen as well. Oh, sorry. It hasn't started recording yet for some reason. Do you hear me?
+
+[00:00:21] Participant_Dawn: Yes, I can hear you, but it says recording here.
+
+[00:00:24] Interviewer: Okay, perfect. Maybe there's something with my side of the. Well, let's share my screen. And. Okay, perfect. Before I show you your model. Actually, sorry, I shouldn't have shown your model. Do you remember last week's meeting? This is just a general question to make sure. Yeah, make sure that you know, like I start from, where we left. Can you tell me a bit about the model we created?
+
+[00:00:54] Participant_Dawn: So it's about an island and a volcano in it. That's exploding. And few people there that survived.
+
+[00:01:10] Interviewer: So did you, did you get a chance to think about the model in between meetings?
+
+[00:01:18] Participant_Dawn: I was thinking about it, and then I told you that I want it to. How do you say it? To go under the water after it explode. 
+
+[00:01:31] Interviewer: Yeah.
+
+[00:01:31] Participant_Dawn: But I changed my mind.
+
+[00:01:34] Interviewer: You did? Okay, So currently, it runs this way. Let's, let's try it one more time. And you wanted to stay like it just disappears. So you wanted to modify.
+
+[00:01:44] Participant_Dawn: Well.I want like some part of it going under the ocean, but some stay there. 
+
+[00:01:54] Interviewer: Okay. 
+
+[00:01:55] Participant_Dawn: And split up.
+
+[00:01:58] Interviewer: Hmm. Tell me more about what do you mean by split up?
+
+[00:02:02] Participant_Dawn: Like, maybe half of it stayed. And then when the volcano erupt, if the land like broke in half.
+
+[00:02:21] Interviewer: Perfect. Let's do this. Okay, let's implement it. Do you have any other ideas before I start implementing these, these codes?
+
+[00:02:35] Participant_Dawn: A few close islands? Small?
+
+[00:02:43] Interviewer: Like nearby? 
+
+[00:02:45] Participant_Dawn: Yes. 
+
+[00:02:46] Interviewer: Okay. So, what I will do is. So this first piece of code I will write will try to stop the. Sorry. Wrong place. We'll try to stop the model from burning the, like, burying the whole island. Let's see how it works. Is this enough? Or do you want to go. Sorry, that's too much. Let's see again. Also slow down how, how much it goes. So here you see it got this small. Do you want it slightly bigger?
+
+[00:03:48] Participant_Dawn: Please.
+
+[00:03:49] Interviewer: Okay, let's make it maybe 200. It was good enough. Okay. Do you want these lavas around it disappear when they, when they are on the blue patch? Okay. Okay, let's see. Okay, they will now disappear. And island start, like island continues, like the volcano continues spewing stuff. So now here you want the island to be divided in half, right? 
+
+[00:04:30] Participant_Dawn: Please. 
+
+[00:04:31] Interviewer: Yeah. Okay. Let's do that. For example, let's try this. For example, let's try how this works. Let's see how this works and then you will tell me how to modify it. So it did divide on top of here. Did it divide too small? Do you want it like, do you want it right in the middle like I divided it on the top. Let me show you again.
+
+[00:05:23] Participant_Dawn: In the middle.
+
+[00:05:24] Interviewer: In the middle? Okay. So is this too small of a gap or is this a good gap? 
+
+[00:05:40] Participant_Dawn: That's good.
+
+[00:05:42] Interviewer: Okay perfect. And then the next thing is we need to add like a tiny island right? 
+
+[00:05:59] Participant_Dawn: Yes, please. 
+
+[00:06:01] Interviewer: Top right? Top left? Bottom left? Bottom right? Where should it go?
+
+[00:06:14] Participant_Dawn: Just three islands spread out.
+
+[00:06:18] Interviewer: Three island? Okay. Let's make that. Okay. So far. Let's try this one and then I will adjust it again as usual. So I kind of put four little dots for you to see where the islands will go. Are they too close to the main island?
+
+[00:06:49] Participant_Dawn: Just make it a little bit bigger. Yep. 
+
+[00:06:51] Interviewer: Okay. Let's see how this works. How about now? I made four of them. Let me get rid of one of them. Okay. Oh, oh, sorry. Oops. Oh no. I p y core. Not too close to NPS score. I made. I messed it up. Let me leave it, four of them right now. I will turn it into three of them afterwards. I don't want to slow your thinking down. Let's leave three of them for now. So four of them. But I will make three nearby slides. Okay, so what's next? And also if you notice, by the virtue of us creating islands like this. It started placing trees on those islands, those new small islands as well and some people even and some houses by just random chance. Is that fine? Or would you like those islands to be completely empty? 
+
+[00:08:44] Participant_Dawn: Just trees. 
+
+[00:08:47] Interviewer: Just trees. Okay. Let's actually make them slightly different color. So. Now, let's put some trees on them, right? Trees. Okay, now they only have just trees and pretty much nothing else. And as I said there will be three islands but it's kind of like, I don't want to take too much time making it three. So I kept this at four because the symmetry makes it easier to program, but in between meetings I will take out that one island. So what's next?
+
+[00:09:52] Participant_Dawn: Can you? Oh, the islands disappear.
+
+[00:09:55] Interviewer: Okay, they should not disappear. Give me one second. Island disappear and this is here, here. Okay. Here you go. So that should fix it. See again some people are being rescued. What happened? Oh, this is not working. Oh, okay, okay. To call into place. That has to be here. There we go. Those islands stayed there. It's. Perfect. Okay, what's next? 
+
+[00:10:54] Participant_Dawn: Let's put a bridge.
+
+[00:10:55] Interviewer: Like a bridge in between?
+
+[00:11:03] Participant_Dawn: Yes. Just one of the island. The small island.
+
+[00:11:08] Interviewer: Oh from small island to the main island. 
+
+[00:11:10] Participant_Dawn: Yes. 
+
+[00:11:11] Interviewer: Okay. Go. There it is and then, okay. The easiest way to do it is. Let's see how this works. Make it simpler. Oh, that's an error. Almost done with this. Okay, there you go. Does this look like a bridge? 
+
+[00:13:04] Participant_Dawn: That's good. 
+
+[00:13:06] Interviewer: The trees get on that bridge. If it's not a good look. I can take it out. Should I take out the trees? Yeah, I should take out the trees, right? Let's see. So we have a bridge there. And do you want the people to be able to walk through the bridge to the, to that island? Okay. Let's make people. Oh, with distance boats. Okay, let's see if they will be able to go, walk through the bridge. Pair mostly. Okay. Okay, they are not really. Let me see. So people's intention is to. Okay, so they should either. Okay. Now I understand what's my code. They should either face. They should either go to the boat or go to that island, right? Am I understanding correctly? Dan? 
+
+[00:14:37] Participant_Dawn: Oh, can you hear me? 
+
+[00:14:40] Interviewer: Yes, yes. Sometimes it cuts. Today, there's the connection, my connection is not great today. Sorry about that. So the idea is that sometimes they, some of them should go to the boats, or some of them should go to the island, right? Okay. So, okay. Oh, Okay. I will make them. Call. Let's see if this will work. So these ones walk to the boats. Yep, that one is going. Now some of them are saving themselves from the. Yep. These one save themselves. Is this working the way you want it to work? So if they are like closer to the boat, they will just go to the boat. And if they are near this bridge, they will go to the bridge. Is this working the way you wanted it to work? Perfect. What's next? My connection is really unstable. Do you hear me right now? 
+
+[00:16:40] Participant_Dawn: Hello? 
+
+[00:16:41] Interviewer: Yeah, let me turn off my camera to see if it will make a difference. Do you hear me now?
+
+[00:16:47] Participant_Dawn: Yes, I can hear you better.
+
+[00:16:48] Interviewer: Okay, maybe the, I should have turned off the video. How does it work? 
+
+[00:16:54] Participant_Dawn: Yeah, it's great. 
+
+[00:16:55] Interviewer: Yeah. Do you have anything else to add? You can add as much stuff as you want.
+
+[00:17:05] Participant_Dawn: That's probably good. I just want the. Probably add more dark clouds.
+
+[00:17:14] Interviewer: Yeah. Okay, dark clouds. Do we add those clouds as the, as the. What's the word? The volcanoes exploding? Or are they there from the beginning?
+
+[00:17:26] Participant_Dawn: As the volcano is exploding.
+
+[00:17:31] Interviewer: Okay. Great. So when we are making new lava, every time we make a new lava, we should probably make dark clouds as well. Where's that. Here it is. Yeah, more clouds are being made. Do you like it this way? Or do you want them to be spreading out more? 
+
+[00:18:10] Participant_Dawn: Spread out.
+
+[00:18:11] Interviewer: Okay. How about now? 
+
+[00:18:19] Participant_Dawn: That's better. 
+
+[00:18:21] Interviewer: So it's really like creating a tick. Small, clear. 
+
+[00:18:26] Participant_Dawn: That's a lot though.
+
+[00:18:30] Interviewer: That's a lot? Way too much? Okay.
+
+[00:18:32] Participant_Dawn: You can't see what's happening anymore.
+
+[00:18:35] Interviewer: How about now?
+
+[00:18:43] Participant_Dawn: That's good.
+
+[00:18:47] Interviewer: What's next? 
+
+[00:18:47] Participant_Dawn: That's good. 
+
+[00:18:53] Interviewer: That's good? Great. So this interview, as I said, goes on, as long as you want to add new things. And when you are happy with your model, the final version of your model, we stop right there. And then we do this reflection discussion. You know, it's just we just talked about the process, you know? So you are happy with the final version of your model?
+
+[00:19:26] Participant_Dawn: Yes, it's good. 
+
+[00:19:28] Interviewer: Perfect. Well, this is a really interesting model. And it's just super cool. I think you created a very cool model and it was a lot of fun to work on the model together. And we still have about 40 minutes so we can do actually the final session. Just talk about the model. Talk about how you think, what do you think about the model and your reflections about the whole process that we did? So the very first question is, can you tell me a bit more about like how did you come up with this model idea?
+
+[00:20:01] Participant_Dawn: Yeah, like what I told you. I was thinking about the model, but that the model that I was thinking about that didn't work. So I just, I just remembered the movie that I watched long time ago, might be a good idea for this research. 
+
+[00:20:20] Interviewer: Mm hmm. 
+
+[00:20:24] Participant_Dawn: And there you go.
+
+[00:20:27] Interviewer: Yeah. And do you remember the name of the movie?
+
+[00:20:29] Participant_Dawn: Pompeii, I think?
+
+[00:20:33] Interviewer: Pompeii. Yes.
+
+[00:20:35] Participant_Dawn: Yeah, it's a movie about, it's, I think it's a love story. 
+
+[00:20:42] Interviewer: Hmm. 
+
+[00:20:42] Participant_Dawn: I'm not sure. It's long time ago. But everyone there, they're like a statue now? I think? Because of the lava. 
+
+[00:20:54] Interviewer: Mm hmm. 
+
+[00:20:56] Participant_Dawn: And everything. And nobody survived. 
+
+[00:20:59] Interviewer: It was like, like an ancient explosion, right? 
+
+[00:21:05] Participant_Dawn: Yeah.
+
+[00:21:05] Interviewer: That's, that's pretty fascinating. So did you think about the movie as you were creating this model? Or the movie just gave you the idea? Okay.
+
+[00:21:14] Participant_Dawn: I was thinking about the movie.
+
+[00:21:17] Interviewer: Like, I know, it's very hard to really like, remember what exactly we're thinking. But what were some of the ideas that you were thinking about the movie and you implemented here?
+
+[00:21:27] Participant_Dawn: Well, it's the same thing. The, the island went under the sea. I think half of it too? I'm not sure. It's long time ago. But at least this one, some of it survive. Not like in Pompeii. That's the difference about it, and there's nobody there to rescue anyone.
+
+[00:21:53] Interviewer: Oh wow. Why did you want to add that survival factor? Like rescue?
+
+[00:21:58] Participant_Dawn: Well. To give it a happy ending? Yeah, I guess that movie is just terrifying.
+
+[00:22:09] Interviewer: It's a bit tragic. And it's very interesting, because you did really create this piece by piece, right? Like you wanted the island in the middle. A volcano? And how about these little small islands that you just recently added?
+
+[00:22:29] Participant_Dawn: Well, it's easier for them to run there or swim there. So there's more people that will be saved or something. 
+
+[00:22:38] Interviewer: Mm hmm. And are you familiar with islands? Like, have you? Like, I don't, like. The area you live are nearby islands, or?
+
+[00:22:47] Participant_Dawn: I live in the Philippines. So. 
+
+[00:22:50] Interviewer: Oh.
+
+[00:22:51] Participant_Dawn: I'm kind of familiar with it. There's like.
+
+[00:22:54] Interviewer: That's pretty cool. 
+
+[00:22:55] Participant_Dawn: Yeah, it's island everywhere.
+
+[00:23:00] Interviewer: And is it common in Philippines to have volcanic explosions? 
+
+[00:23:04] Participant_Dawn: Not really. It's once in a while. We are close to a volcano. And we've been there for a while, and it hasn't erupted. Well, It kind of did, I think? Last year? I'm not sure. I heard the news. But everyone's safe. Just like this one.
+
+[00:23:27] Interviewer: That's cool. That's very cool. Yeah, that's terrifying. The volcano. I think there was one in Spain recently. Right? That went off. Did you hear about that? 
+
+[00:23:38] Participant_Dawn: No. 
+
+[00:23:39] Interviewer: I think there was one in Spain that just recently went off and really burned off a whole area. It's very interesting.
+
+[00:23:47] Participant_Dawn: This volcano in our country? Almost did, but it didn't. Lucky. It's because, it's before the virus. So everyone is ready for the mask. Everyone has mask because of that volcano.
+
+[00:24:06] Interviewer: Oh, wow. That's. 
+
+[00:24:07] Participant_Dawn: Yeah.
+
+[00:24:08] Interviewer: That's a happy coincidence, I guess. Yeah, just. And. What was it? Oh, yeah. So this is another great point, like this connection. I do ask my parts, I don't ask my participants, like I didn't with you too much personal information, because that's not central to my research at all. But as much as you're comfortable, personally disclosing, you know, like, you don't have to say anything that you're not comfortable disclosing or you just don't have to disclose anything. But can you tell me a bit about yourself, it really helps to situate in these findings. You know, like, when I'm presenting some data, I'm saying this participant, I usually pick a random name. I don't use your real name ever. This participant was from Philippines, and then she created this kind of model. Can you tell me a bit about yourself?
+
+[00:24:55] Participant_Dawn: Yes. What about myself? I have a lot. Well, I am from Philippines. I live in US now, which is great. We just, we moved here 10 years ago, I think. Yeah, I'm not sure. Yeah, 10 years ago, and I haven't been in the Philippines for a while, but I miss everything. I mean, the food. I'm used to living here now. Just looking for the food. And I am not, I'm freelancing right now. This is what I do. Because of the, everything changed. I used to work in a restaurant. But the restaurant, the restaurant that I was working in closed, so.
+
+[00:25:48] Interviewer: Oh, that sucks. I'm sorry about that. 
+
+[00:25:50] Participant_Dawn: It did good because I can work at home, taking care of my daughter.
+
+[00:25:56] Interviewer: Yeah. Yeah, the restaurant business sounds pretty, like I have been listening to some podcasts and you know, like about the recent people just not going back to restaurant work. And it sounds a very brutal work, but a lot of work.
+
+[00:26:12] Participant_Dawn: There's a lot of restaurants closed because of pandemic. They weren't really making money because nobody did wanted to go out. But there you go.
+
+[00:26:27] Interviewer: And the question that I had in mind. And what is your what is the age range you belong to? You don't need to give exact age. You can give 20 to 30, 30 to 40, 40 to 50, etc, or even larger range?
+
+[00:26:43] Participant_Dawn: 20 to 30.
+
+[00:26:45] Interviewer: Okay, perfect. Yeah, again, it helps, you know, like situating. Like, what's like, I didn't know you were from Philippines. Exactly. And you just recently, like, just 10 years ago, moved to the US. And you are still very familiar with the, with the environment. And this environment really looks like Philippines, right? Like, which has all the islands.
+
+[00:27:05] Participant_Dawn: Well, I grew up there.
+
+[00:27:10] Interviewer: Did you. So you mentioned also that you were thinking about the Pompeii movie when modeling. 
+
+[00:27:15] Participant_Dawn: Yes. 
+
+[00:27:15] Interviewer: Did you? Did you find yourself thinking about Philippines when creating this model?
+
+[00:27:20] Participant_Dawn: Not really. Maybe it's just in me. 
+
+[00:27:24] Interviewer: Okay. Yeah. And do you think this model is similar to what happens in real life when the volcanoes explode?
+
+[00:27:36] Participant_Dawn: Ah, right now? Well, that's a long time ago, but right now, we receive warnings and stuff so people will have time to get out of the place if they need to. So probably, there's probably some people there that wanted to stay because that's their home. But I'm not sure. I don't think so.
+
+[00:28:04] Interviewer: Yeah, most people will get out, right? Like there will be way more transportation. And the government will help. Yeah. How about the nature, the fire, the lava spreads. You know, like the people will get out, but will the underlying thing like the volcano will spread and sink the island a little bit would be the same? 
+
+[00:28:31] Participant_Dawn: Yeah, I think so. Yeah, it's possible. 
+
+[00:28:31] Interviewer: Yeah. And what does this model make you think? For example, if we had some more time, and you know, this, we stopped here because you think you're happy with the model you created? Would you, like would you, would you just be curious about adding more things to the model in the future?
+
+[00:28:49] Participant_Dawn: Probably. I'll probably want to change it. But I'm not. Yeah, not right now.
+
+[00:28:56] Interviewer: Not right now.
+
+[00:29:01] Participant_Dawn: Yeah, I don't have any more ideas right now.
+
+[00:29:05] Interviewer: Were there any ideas earlier that you think you thought about implementing and then decided, nah that's not a good idea? Were there any of those thoughts?
+
+[00:29:16] Participant_Dawn: No, I think it's good.
+
+[00:29:20] Interviewer: It's pretty, pretty cool. Because you did really come with a very specific idea. And you had like, I guess, thanks to the movie, you had a very clear image of what you wanted to create.
+
+[00:29:30] Participant_Dawn: I would watch that again.
+
+[00:29:34] Interviewer: Yeah, I will watch that, too. Now that. I didn't want to watch it because I was creating the model with you. And I didn't want to wanted to influence how I create the model. But now that we are done, I will definitely watch the movie. What did you think about this process in general, like you described your ideas, I created the model, like what did you think about the process?
+
+[00:29:54] Participant_Dawn: It's really easy. It's just all the ideas in my head becoming right there, in the screen.
+
+[00:30:02] Interviewer: Yeah, yeah. That's very cool. Well, let me stop screen sharing, for a second, and stop presenting. So do you have any like, we are almost done. Do you have any closing thoughts that you would like to share about this general process?
+
+[00:30:25] Participant_Dawn: Like what?
+
+[00:30:27] Interviewer: Just in general. Any thoughts you have that. You don't have to. 
+
+[00:30:34] Participant_Dawn: I don't think so. 
+
+[00:30:39] Interviewer: Okay, perfect. Yeah. I just want to give you, you know, like an opportunity if you had any thoughts to share with me. So pretty much it. I will stop recording now. If you. Yes. Okay.
+

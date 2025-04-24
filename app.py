@@ -27,13 +27,22 @@ G = nx.Graph()
 excluded_rows = set()
 graph_button_clicked = False
 graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
-lemmas_excluded_from_lines = dict()
+tokens_excluded_from_lines = dict()
 user_actions = list()
 
 # constants
 MODELS_FOLDER = Path("./models/")
 CONFIG_FOLDER = Path("./config/")
 
+DEDUCTIVE_LABEL_DEFINITIONS_FILENAME = "deductive_label_definitions.toml"
+DEFAULT_STOPWORDS_FILENAME = "default_stopwords.pickle"
+
+PARSED_DATA_FILENAME = "parsed_data.pickle"
+STOPWORDS_FILENAME = "stopwords.pickle"
+EXCLUDED_TOKENS_FILENAME = "excluded_tokens.pickle"
+EXCLUDED_ROWS_FILENAME = "excluded_rows.pickle"
+ASSIGNED_CODES_FILENAME = "assigned_deductive_codes.pickle"
+USER_ACTIONS_FILENAME = "user_actions.pickle"
 
 # ----- DASH APP CONFIGURATION -----
 
@@ -42,6 +51,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
+app.title = "mode-catcher-playground | internal dev build"
 
 # needed to be able to publish the script on Heroku
 server = app.server
@@ -54,19 +64,19 @@ def flush_globals():
     global excluded_rows
     global graph_button_clicked
     global graphed_tokens_changed
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global user_actions
 
     excluded_rows = None
     graph_button_clicked = None
     graphed_tokens_changed = None
-    lemmas_excluded_from_lines = None
+    tokens_excluded_from_lines = None
     user_actions = None
 
     excluded_rows = set()
     graph_button_clicked = False
-    graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
-    lemmas_excluded_from_lines = dict()
+    graphed_tokens_changed = False
+    tokens_excluded_from_lines = dict()
     user_actions = list()
 
 
@@ -92,34 +102,35 @@ def get_model_path(mode_name, spacy_model, is_sentencized):
 
 
 def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
+
     global nlp
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global excluded_rows
 
     model_path = get_model_path(mode_name, spacy_model, is_sentencized)
 
     # pickle the stop words changed by the user
-    with open(model_path / "parsed_data.pickle", "wb") as f:
+    with open(model_path / PARSED_DATA_FILENAME, "wb") as f:
         pickle.dump(parsed_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the stop words changed by the user
-    with open(model_path / "stopwords.pickle", "wb") as f:
+    with open(model_path / STOPWORDS_FILENAME, "wb") as f:
         pickle.dump((stopped_tokens, unstopped_tokens), f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the tokens that are excluded in individual lines by the user
-    with open(model_path / "excluded_tokens.pickle", "wb") as f:
-        pickle.dump(lemmas_excluded_from_lines, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(model_path / EXCLUDED_TOKENS_FILENAME, "wb") as f:
+        pickle.dump(tokens_excluded_from_lines, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the rows that are completely excluded by the user
-    with open(model_path / "excluded_rows.pickle", "wb") as f:
+    with open(model_path / EXCLUDED_ROWS_FILENAME, "wb") as f:
         pickle.dump(excluded_rows, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the user selected deductive codes
-    with open(model_path / "assigned_deductive_codes.pickle", "wb") as f:
+    with open(model_path / ASSIGNED_CODES_FILENAME, "wb") as f:
         pickle.dump(deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the user actions log
-    with open(model_path / "user_actions.pickle", "wb") as f:
+    with open(model_path / USER_ACTIONS_FILENAME, "wb") as f:
         pickle.dump(user_actions, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -129,21 +140,21 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     flush_globals()
 
     global excluded_rows
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global user_actions
 
     model_path = get_model_path(mode_name, spacy_model, is_sentencized)
 
     # load deductive code definitions
-    with open(CONFIG_FOLDER / "deductive_label_definitions.toml", "rb") as f:
+    with open(CONFIG_FOLDER / DEDUCTIVE_LABEL_DEFINITIONS_FILENAME, "rb") as f:
         code_definitions = tomllib.load(f)
 
     # load the default stopwords list
-    with open(CONFIG_FOLDER / "default_stopwords.pickle", "rb") as f:
+    with open(CONFIG_FOLDER / DEFAULT_STOPWORDS_FILENAME, "rb") as f:
         stopped_tokens = pickle.load(f)
 
     # load previously parsed data (if it exists)
-    parsed_data_file = model_path / "parsed_data.pickle"
+    parsed_data_file = model_path / PARSED_DATA_FILENAME
     if parsed_data_file.is_file():
         with open(parsed_data_file, "rb") as f:
             parsed_data = pickle.load(f)
@@ -151,35 +162,36 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         parsed_data = list()
 
     # load the user-made changes to the stopwords (if they exist)
-    stopwords_file = model_path / "stopwords.pickle"
+    stopwords_file = model_path / STOPWORDS_FILENAME
     if stopwords_file.is_file():
         with open(stopwords_file, "rb") as f:
             stopped_tokens, unstopped_tokens = pickle.load(f)
     else:
         stopped_tokens = list()
+        unstopped_tokens = list()
 
     # load the tokens that were excluded on specific lines by the user
-    excluded_tokens_file = model_path / "excluded_tokens.pickle"
+    excluded_tokens_file = model_path / EXCLUDED_TOKENS_FILENAME
     if excluded_tokens_file.is_file():
         with open(excluded_tokens_file, "rb") as f:
-            lemmas_excluded_from_lines = pickle.load(f)
+            tokens_excluded_from_lines = pickle.load(f)
 
     # load the lines that were completely excluded by the user
-    excluded_rows_file = model_path / "excluded_rows.pickle"
+    excluded_rows_file = model_path / EXCLUDED_ROWS_FILENAME
     if excluded_rows_file.is_file():
         with open(excluded_rows_file, "rb") as f:
             excluded_rows = pickle.load(f)
 
     # load the deductive codes selected by the user
-    assigned_codes_file = model_path / "assigned_deductive_codes.pickle"
+    assigned_codes_file = model_path / ASSIGNED_CODES_FILENAME
     if assigned_codes_file.is_file():
         with open(assigned_codes_file, "rb") as f:
             assigned_codes = pickle.load(f)
     else:
-        assigned_codes = list()
+        assigned_codes = dict()
 
     # load the user actions log
-    user_actions_log_file = model_path / "user_actions.pickle"
+    user_actions_log_file = model_path / USER_ACTIONS_FILENAME
     if user_actions_log_file.is_file():
         with open(user_actions_log_file, "rb") as f:
             user_actions = pickle.load(f)
@@ -198,11 +210,11 @@ def parse_raw_text(txt: str,
                    ):
 
     global excluded_rows
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global nlp
     global graphed_tokens_changed
 
-    first_parse = True if len(lemmas_excluded_from_lines) == 0 else False
+    first_parse = True if len(tokens_excluded_from_lines) == 0 else False
 
     if excluded_rows is None:
         excluded_rows = list()
@@ -257,7 +269,7 @@ def parse_raw_text(txt: str,
         if in_sentences:
             for s in doc.sents:
 
-                excluded_in_row = lemmas_excluded_from_lines.get(i, [])
+                excluded_in_row = tokens_excluded_from_lines.get(i, [])
 
                 # if the user wants to filter out tokens based on NLP tags
                 #    but only if this transcript is being loaded for the first time
@@ -266,13 +278,13 @@ def parse_raw_text(txt: str,
                     excluded_in_row.extend([ t.lemma_ for t in s if nlf.has_excluded_nlp_tag(t) and not t.is_stop ])
 
                 # add the tokens excluded by the algorithm to the rest of exclusions
-                if i in lemmas_excluded_from_lines.keys():
-                    lemmas_excluded_from_lines[i].extend(excluded_in_row)
+                if i in tokens_excluded_from_lines.keys():
+                    tokens_excluded_from_lines[i].extend(excluded_in_row)
                 else:
-                    lemmas_excluded_from_lines[i] = excluded_in_row
+                    tokens_excluded_from_lines[i] = excluded_in_row
 
                 # remove duplicate elements
-                lemmas_excluded_from_lines[i] = list(set(lemmas_excluded_from_lines[i]))
+                tokens_excluded_from_lines[i] = list(set(tokens_excluded_from_lines[i]))
 
                 # create the row data to pass to the ag-grid
                 sent_row = row.copy()
@@ -280,17 +292,14 @@ def parse_raw_text(txt: str,
                 sent_row['line'] = i
                 sent_row['in?'] = False if i in excluded_rows else True
 
-                # check if this sentence contains any resolved coreferences
-                # and replace the resolved string (for now)
-
-                # print("++sentence spans: ", s.start_char, s.end_char, " >> ", s.text_with_ws)
-
                 utterance = s.text
-
 
                 ## Umit deactivated coreference resolution on 04/14/2025
                 ##      to avoid accidentally leaving it on
                 ##      because it slows down the algorithm quite a bit
+
+                # check if this sentence contains any resolved coreferences
+                # and replace the resolved string (for now)
 
                 # if resolve_corefs:
                 #     for c in doc._.coref_clusters:
@@ -302,7 +311,7 @@ def parse_raw_text(txt: str,
                 #             pronoun = doc.char_span(c[1][0], c[1][1]).text
                 #
                 #             # very terrible coding in the line below :)
-                #             # TODO -> fix this replace algorithm because it may replace the wrong pronoun
+                #             # TODO -> we got to fix this replace algorithm because it may replace the wrong pronoun
                 #             utterance = utterance.replace(pronoun, reference)
                 #
                 #             # print(" >> new sentence >>", utterance)
@@ -327,11 +336,12 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
 
     line = str(line_num) ## Umit's note: I noticed that the saved deductive codes loaded with str indexes (04/22/2025)
 
+    if assigned_codes is None:
+        assigned_codes = dict()
+
     ## Create an empty list of values if the user did not select any values for this line
     if line not in assigned_codes.keys():
-        assigned_codes[line] = dict(
-            (category, "") for category in code_definitions.keys()
-        )
+        assigned_codes[line] = dict()
 
     ## Umit's note on 03/19/2025:
     ##  I know the following nested list comprehension is a bit hard to read
@@ -350,11 +360,11 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
                         dbc.Checklist(
                             id={
                                 "type": "code-checklist",
-                                "index": f"{line}-{category}"
+                                "index": f"{category}"
                             },
                             options=[{"label": code, "value": code} for code in code_definitions[category].keys()],
                             label_checked_class_name="text-success",
-                            value = assigned_codes[line][category],
+                            value = assigned_codes[line][category] if category in assigned_codes[line].keys() else "",
                             inline=True,
                         ),
                         dbc.Popover(
@@ -398,7 +408,7 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
                             ],
                             target={
                                 "type": "code-checklist",
-                                "index": f"{line}-{category}"
+                                "index": f"{category}"
                             },
                             placement="left",
                             trigger="hover",
@@ -417,7 +427,7 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
 def process_utterance(raw_text, row):
 
     global nlp
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
 
     doc = nlp(raw_text.strip().lower())
 
@@ -432,7 +442,7 @@ def process_utterance(raw_text, row):
                         "stop": True if nlp.vocab[token.lemma_].is_stop else False
                     },
                     n_clicks=0,
-                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in lemmas_excluded_from_lines.get(row, []) else "success",
+                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in tokens_excluded_from_lines.get(row, []) else "success",
                     class_name="m-1",
                     size="sm",
                 )
@@ -453,12 +463,12 @@ def process_utterance(raw_text, row):
 # create a highlighted version of any given utterance using the html <mark> tag
 def highlight_utterance(line):
     global nlp
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
 
     row = line["line"] - 1
     doc = nlp(line["utterance"])
     line["highlighted utterance"] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop
-                                                              or t.lemma_ in lemmas_excluded_from_lines.get(row, [])
+                                                              or t.lemma_ in tokens_excluded_from_lines.get(row, [])
                                                               or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
                                                             for t in doc)
     return line
@@ -514,7 +524,7 @@ def generate_token_graph_object(
 ):
 
     global nlp
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
 
     new_G = nx.Graph()
 
@@ -548,7 +558,7 @@ def generate_token_graph_object(
             tokens = [t.lemma for t in doc_line if not t.is_punct
                                                     and not t.is_stop
                                                     and not nlp.vocab[t.lemma_].is_stop
-                                                    and not t.lemma_ in lemmas_excluded_from_lines.get(row, [])
+                                                    and not t.lemma_ in tokens_excluded_from_lines.get(row, [])
                       ]
 
             # incorporate deductive codes into the graph
@@ -1097,10 +1107,10 @@ input_accordion = dbc.Accordion(
                 ),
             ],
             title="Input",
-            item_id="0",
+            item_id="input",
         )
     ],
-    active_item="0",
+    active_item="input",
     id="input-accordion",
     className="my-4",
 )
@@ -1125,10 +1135,11 @@ utterances_accordion = dbc.Accordion(
                 id="utterances-div",
             )
         ],
-        id="revise",
-        title="Revise and Code",
+        item_id="revise",
+        title="Revise Tokens",
     ),
-    # active_item="1",  # collapsed by default
+    id="utterances-accordion",
+    active_item="nil",  # collapsed by default
 )
 
 generate_div = html.Div([
@@ -1426,9 +1437,12 @@ coding_modal = dbc.Modal(
     centered=True,
 )
 
+
+## TODO: Remaining globals to convert to dcc.Store objects
+
 # excluded_rows = set()
 # graph_button_clicked = False
-# graphed_tokens_changed = False  ## TODO: problematic global because once it's set to True, it remains True.
+# graphed_tokens_changed = False
 # lemmas_excluded_from_lines = dict()
 # user_actions = list()
 
@@ -1524,24 +1538,24 @@ def enable_parse_button_callback(name: str, text: str):
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
-def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
+def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy_model):
 
     if ctx.triggered_id == "reset-button":
 
         # first, let's get rid of the existing user generated model files
 
         ## path of current model folder
-        model_path = Path(f"./models/{str(name).strip()}-{model}-sent_{sentencized}/")
+        model_folder = get_model_path(mode_name, spacy_model, is_sentencized)
 
         ## checks whether a model folder exists
-        if model_path.is_dir():
+        if model_folder.is_dir():
 
             # first, delete all the files in the folder (unlink == delete)
-            for pickle_file in model_path.iterdir():
+            for pickle_file in model_folder.iterdir():
                 pickle_file.unlink()
 
             ## then, remove the folder itself
-            model_path.rmdir()
+            model_folder.rmdir()
 
         flush_globals()
 
@@ -1551,7 +1565,7 @@ def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
             [
                 html.I(className="bi bi-info-circle-fill me-2"),
                 dbc.Badge(
-                    f"<{str(name).strip()}-{model}-sent_{sentencized}>",
+                    f'{mode_name} / {model_folder.name}',
                     color="light",
                     text_color="danger",
                     class_name="p-2"
@@ -1568,6 +1582,7 @@ def reset_model_button_callback(n_reset_clicks, name, sentencized, model):
 
 @app.callback(
     Output("data-table", "rowData"),
+    Output("utterances-accordion", "active_item"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Output("parsed-data", "data"),
@@ -1604,7 +1619,7 @@ def parse_button_callback(
 ):
     global user_actions
     global excluded_rows
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global nlp
     global graphed_tokens_changed
 
@@ -1648,7 +1663,10 @@ def parse_button_callback(
     else:
         parsed_data = cached_parsed_data
 
-    return generate_highlighted_utterances(parsed_data), "1", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
+    ### populate assigned codes dictionary if it is empty
+
+
+    return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
 
 
 # needs to filter out interviewers as third option
@@ -1703,7 +1721,7 @@ def apply_table_layout_filters_callback(table_display_options, coding_modal_was_
 def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens):
 
     global graphed_tokens_changed
-    global lemmas_excluded_from_lines
+    global tokens_excluded_from_lines
     global user_actions
 
     # Umit's note on 04/22/2025: dcc.Store component does not support sets, so we have to convert them from lists, and vice versa
@@ -1714,59 +1732,56 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     if cell is not None:
 
         row = int(cell["rowId"])
-        graphed_tokens_changed = False
+        graphed_tokens_changed = False   # TODO -> this global will be removed & replaced with dcc.Store object's timestampchanged callback
 
-        if len(toggle_clicks) > 0:
+        if type(ctx.triggered_id) != str:
 
-            if 1 in toggle_clicks:
+            toggled_token = ctx.triggered_id["index"]
+            was_stop = ctx.triggered_id["stop"]
 
-                toggled_token = ctx.triggered_id["index"]
-                was_stop = ctx.triggered_id["stop"]
+            # to log the time this token was toggled
+            curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                # to log the time this token was toggled
-                curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if was_stop:
 
-                if was_stop:
+                nlp.vocab[toggled_token].is_stop = False
+                stopped_tokens_set.discard(toggled_token)
+                unstopped_tokens_set.add(toggled_token)
+                user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
 
-                    nlp.vocab[toggled_token].is_stop = False
-                    stopped_tokens_set.discard(toggled_token)
-                    unstopped_tokens_set.add(toggled_token)
-                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
-                    # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled ON.\n'))
+            else:
+
+                # if a token was not a stop word, first check if it is in the excluded tokens list
+
+                if toggled_token in tokens_excluded_from_lines.get(row, []):
+                    # if it was an excluded token, turn it into a stop word
+                    # and remove it from the exluded tokens list
+
+                    nlp.vocab[toggled_token].is_stop = True
+                    stopped_tokens_set.add(toggled_token)
+                    unstopped_tokens_set.discard(toggled_token)
+                    tokens_excluded_from_lines[row].remove(toggled_token)
+                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
 
                 else:
-                    # if a token was not a stop word, first check if it is in the excluded tokens list
 
-                    if toggled_token in lemmas_excluded_from_lines.get(row, []):
-                        # if it was an excluded token, turn it into a stop word
-                        # and remove it from the exluded tokens list
+                    # if it was not in excluded tokens list, turn it into an excluded token
 
-                        nlp.vocab[toggled_token].is_stop = True
-                        stopped_tokens_set.add(toggled_token)
-                        unstopped_tokens_set.discard(toggled_token)
-                        lemmas_excluded_from_lines[row].remove(toggled_token)
-                        user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
-                        # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was toggled OFF.'))
-
+                    if len(tokens_excluded_from_lines.get(row, [])) == 0:
+                        tokens_excluded_from_lines[row] = [toggled_token]
                     else:
+                        tokens_excluded_from_lines[row].append(toggled_token)
 
-                        # if it was not in excluded tokens list, turn it into an excluded token
-
-                        if len(lemmas_excluded_from_lines.get(row, [])) == 0:
-                            lemmas_excluded_from_lines[row] = [toggled_token]
-                        else:
-                            lemmas_excluded_from_lines[row].append(toggled_token)
-
-                        user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
-                        # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
+                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
+                    # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
 
                 graphed_tokens_changed = True
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
-        codes = generate_code_checkboxes(row, assigned_codes, code_definitions)
+        code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
-        return token_buttons, codes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set)
+        return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set)
     else:
         return "Something", "went wrong", False, -1, stopped_tokens, unstopped_tokens
 
@@ -1918,28 +1933,52 @@ def generate_graph_button_callback(
     # need to update change_log
 
 
+# TODO: updating the datatable's highlighted tokens column once the user exits the revise modal
+
+# Callback that happens after the revise modal view is closed
+#   So that we an save the user selected deductive codes
 @app.callback(
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
-    Input({"type": "code-checklist", "index": ALL}, "value"),
+    Input("coding-modal", "is_open"),
+    State({"type": "code-checklist", "index": ALL}, "value"),
+    State("modal-row-id", "data"),
+    State("deductive-code-definitions", "data"),
     State("assigned-deductive-codes", "data"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
-def update_user_assigned_deductive_codes_callback(clicked_checkboxes, assigned_codes):
+def revise_modal_closed_callback(
+        is_open,
+        new_code_checkbox_values,
+        row_id,
+        deductive_code_definitions,
+        previously_assigned_deductive_codes
+):
+    if is_open:
+        # nothing to do if the modal was opened
+        raise PreventUpdate
+    else:
 
-    line_num, category = ctx.triggered_id["index"].split("-")
-    line_num = line_num.strip()
+        # update the assigned deductive codes list once the modal is closed
 
-    if line_num not in assigned_codes: assigned_codes[line_num] = dict()
+        row_str = str(row_id)  # TODO: figure out why I need to convert this to string :)
+        updated_codes = previously_assigned_deductive_codes
+        new_values = ctx.states_list[0]
 
-    assigned_codes[line_num][category] = ctx.triggered[0]["value"]
+        if row_str not in updated_codes.keys():
+            updated_codes[row_str] = dict()
 
-    return assigned_codes
+        for cat in new_values:
+            cat_name = cat["id"]["index"]
+            cat_vals = cat["value"]
+            updated_codes[row_str][cat_name] = cat_vals
+
+        return updated_codes
 
 
 @app.callback(
     Output("log-data-table", "rowData", allow_duplicate=True),
     Input("data-table", "cellValueChanged"),
-    State("parsed_data", "data"),
+    State("parsed-data", "data"),
     prevent_initial_call=True,
 )
 def update_included_lines_callback(changed, parsed_data):
