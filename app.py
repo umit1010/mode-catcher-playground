@@ -1853,6 +1853,8 @@ def generate_graph_button_callback(
 
     selected_range = list([start, end])
 
+    if spring_k == 0: spring_k = 0.05 # otherwise, networkx throws a `division by zero` error :)
+
     graph, stats = draw_token_graph_plotly_object(
         data=parsed_data,
         start_line=start,
@@ -1906,7 +1908,7 @@ def revise_modal_closed_callback(
 
         # update the assigned deductive codes list once the modal is closed
 
-        row_str = str(row_id)  # TODO: figure out why I need to convert this to string :)
+        row_str = str(row_id)  # TODO: figure out why we have to convert this index to string :)
         updated_codes = previously_assigned_deductive_codes
         new_values = ctx.states_list[0]
 
