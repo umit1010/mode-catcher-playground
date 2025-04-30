@@ -1444,7 +1444,7 @@ app.layout = dbc.Container(
 )
 def load_input_file_callback(file_name, is_sentencized, spacy_model):
     if file_name == "__manual entry__":
-        return "", "", True
+        return "", "", True, "secondary"
 
     # gets path to file and removed .txt from the file's name
     file_path = INPUT_FOLDER / file_name
@@ -1618,7 +1618,13 @@ def parse_button_callback(
 
     # TODO: Implement a new button that recovers the original text file
 
-    input_file = INPUT_FOLDER / filename
+    # If the user manually typed a transcript, save it as a new txt file
+    # otherwise, use the txt filename chosen on the dropdown
+    if filename == "__manual entry__":
+        input_file = INPUT_FOLDER / f'{filename}.txt'
+    else:
+        input_file = INPUT_FOLDER / filename
+
     backup_file = INPUT_FOLDER / f'{filename}backup'
 
     if not backup_file.is_file():
