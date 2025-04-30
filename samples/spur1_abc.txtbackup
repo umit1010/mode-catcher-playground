@@ -1,0 +1,201 @@
+﻿[00:00:00] Interviewer: Okay, so and whenever you have a question or something that you want to say off the record you can tell me that.
+[00:00:14] Participant_Spur: Okay.
+[00:00:14] Interviewer: Off the record, you know!
+[00:00:16] Participant_Spur: Okay, cool.
+[00:00:17] Interviewer: I can stop recording. The cool thing about this recording is like it also transcribes immediately.
+[00:00:24] Participant_Spur: Oh, nice.
+[00:00:25] Interviewer: Yeah, so I like it. So, I will quickly put these two buttons here before I forget, but we should start with you telling me about your idea again. Just let's talk about that first. Yeah.
+[00:00:41] Participant_Spur: OK. So, the idea, there's basically, umm, it started, the inspiration for the idea was something that I actually experienced, which was a group of volunteers had came. They had, they had gone. We'd gone to a church to help unload a truck filled with water and bring it into the church. So, there was, there were these different ways that we were moving the water. Well, we would first take out, take the water off of the truck and put them in these big piles and then we, some of us were working in an assembly line just passing it. So, we would be, you know, maybe three feet away from each other and every person is passing the water bottles to each other. And then the other way was each person would go and grab the pack of waters individually and then carry them into the church. And the question for me was, what is, what's? One, is what's more, what's more effective and efficient? And two what's, what's, what's safer in and minimizes? What are the, what are the the health risks from Corona, from a Corona lens?
+[00:02:00] Interviewer: This was during like when coronavirus was really raging in Detroit or past that time?
+[00:02:06] Participant_Spur: Yeah, yeah, it was, it was basically when it was the first time that I had really left lockdown.
+[00:02:11] Interviewer: Okay
+[00:02:12] Participant_Spur: Quarantine for myself and it was "Oh, to go help out with this", you know, it's, "this is a worthy cause to go help". But then I was just wondering what that, you know, what's the risk level?
+[00:02:23] Interviewer: Yeah, we can try that. So we can create the create a very simple version of your model today, so it will give you more ideas to like maybe like for the next meeting. You will have time to think about. I will, create it, usually like we can keep talking about this forever, right? Like we can just talk about it like it's a very interesting thing to consider, but I usually like just creating a very basic version of the model right away so we are moving right like so.
+[00:02:50] Participant_Spur: Yeah, great.
+[00:02:51] Interviewer: Yeah, and I will just simply write my basic code, like the, you know, like the setup button again.
+[00:03:00] Participant_Spur: Yeah.
+[00:03:02] Interviewer: And resets the timer, the timer. Basically the computation time we call ticks.
+[00:03:08] Participant_Spur: Uh huh.
+[00:03:08] Interviewer: And the go button runs the model. So what would you, how do you imagine that like the world to look like? What, what are, what's in your model?
+[00:03:22] Participant_Spur: Well, umm I, I'm kind of envisioning in some ways a top down view.
+[00:03:28] Interviewer: Mm hmm.
+[00:03:29] Participant_Spur: So looking at it and plan and then there being basically being two points.
+[00:03:34] Interviewer: Mm hmm.
+[00:03:35] Participant_Spur: One is the one is like the water drop off.
+[00:03:39] Interviewer: Mm hmm.
+[00:03:40] Participant_Spur: And one is the water pickup. And then there was one kind of factor which is you have to there is one bottleneck, where you have to go through the door of the church. And I don't know if that's we did, we can maybe add that in later. But that.
+[00:03:58] Interviewer: Yeah. We can.
+[00:04:01] Participant_Spur: Yeah so. But yeah, and then I envisioned some either, you know, we have the turtles are the people and then you can have an empty handed person. And then you have a person that has that's carrying water and then you might also have the variable of here's someone who's carrying a virus.
+[00:04:23] Interviewer: Oh! Okay.
+[00:04:24] Participant_Spur: You know, so you could have maybe that's another. I don't know. Can you have a? Can you apply two variables to a single turtle?
+[00:04:33] Interviewer: Yes, you can. So the first one is the virus. What's the other one?
+[00:04:42] Participant_Spur: The water bottle, like having a water.
+[00:04:46] Interviewer: Yeah, ... .
+[00:04:47] Participant_Spur: Which is maybe less the water the water carrying the water is maybe less important. You know? It's because it's less about the moving of the water, even though that's the kind of side factor is like what's actually
+[00:04:59] Interviewer: Yeah.
+[00:05:00] Participant_Spur: You know, efficient efficiency of moving this pile of water, but maybe then the movement.
+[00:05:07] Interviewer: Would you prefer seeing the water moving to like help you think about the situation better?
+[00:05:14] Participant_Spur: It's maybe not as important just okay maybe getting the understanding of the paths is more important.
+[00:05:26] Interviewer: Okay, so you you imagine a specific path people walk through?
+[00:05:31] Participant_Spur: Yep.
+[00:05:32] Interviewer: Okay. So let's, let's try! So I'm gonna, I just jot down these things so that like you can see, too. You know, look on. It sometimes like rather hard to. What's the word? Say, all these things and then remember like "what did I say?". So I was like.
+[00:05:54] Participant_Spur: Okay, no, it's perfect.
+[00:05:56] Interviewer: And and I made it, I made the world a little bit like rectangular instead of the things for us to follow easier. And so, where do you imagine the water to be picked up?
+[00:06:08] Participant_Spur: I am imagining on the left, like the left side of the screen?
+[00:06:11] Interviewer: Right here? Okay, so it should be like an image like a truck or something, or she'll be just a point?
+[00:06:20] Participant_Spur: If there was some kind of land mark. For me it doesn't it doesn't really matter what, you know.
+[00:06:29] Interviewer: Yeah, I usually like bringing this shapes editor, so that i mean also like again like generates more ideas, maybe are going to be shapes editor. So I will scroll through and maybe you can tell like "that, that is better". You know, like "that that shape is nice". Oh, we have a bottle shape.
+[00:06:48] Participant_Spur: Yeah. Yeah, that's good. The bottle also a truck. The truck at the top.
+[00:06:54] Interviewer: Oh give me a second. Where's that is the ambulance.
+[00:07:01] Participant_Spur: Yeah, sure.
+[00:07:02] Interviewer: Let me see if there was a truck. Train, truck. Truck is ...
+[00:07:10] Participant_Spur: Perfect!
+[00:07:11] Interviewer: There you have it, already is in there. Let's put the bottle. Okay, so we have the truck here already. It says, yes, there it is. And then they will take it from the back of the truck right? Let's horizontally. Flip it so that the bank is over there. So I put a truck here. Okay. Let's define it. I will not use the word turtles because if I use specific words for specific types of turtles, it's easier to program , to read the code. So I will actually define these words like, truck, right? And I will say in the setup, one, zero. So, this should put our truck squarely at the center. Oh, I didn't set the shape, obviously. Shape, truck. Yeah, right here, you see that? Too small?
+[00:08:20] Participant_Spur: No it looks, it looks good.
+[00:08:24] Interviewer: So what's next?
+[00:08:27] Participant_Spur: Well, I can see maybe making the drop off point.
+[00:08:32] Interviewer: Okay, so it says right here and that's a, that's a landmark, too? What should that one look like?
+[00:08:42] Participant_Spur: Is there a church?
+[00:08:43] Interviewer: Oh, I highly doubt so, but let's see just. No, there's no church unfortunately. We can try to bring in some of the different building styles; institution, store. There are these two building shapes. Okay. There's also a house shape like very, very basic house shape.
+[00:09:08] Participant_Spur: Maybe the house. The house is better.
+[00:09:11] Interviewer: Okay. And that, that one is on the right side?
+[00:09:15] Participant_Spur: Uh huh.
+[00:09:15] Interviewer: In the middle, where is that?
+[00:09:18] Participant_Spur: Well, it's on the it's on the right side, but I the scale is pretty big right now the scale of the world seems pretty big.
+[00:09:27] Interviewer: Ok Let's make it smaller
+[00:09:29] Participant_Spur: Yeah, actually the, I mean, the distance that we were carrying the water was probably you know 200 feet.
+[00:09:37] Interviewer: Okay.
+[00:09:38] Participant_Spur: So, it wasn't. There was the idea of congestion, you know?
+[00:09:44] Interviewer: Oh! I see. A lot of people, right? Like, okay.
+[00:09:47] Participant_Spur: A lot of people in a somewhat congested space.
+[00:09:51] Interviewer: How many people were there? Did you have an estimate?
+[00:09:54] Participant_Spur: Yeah, I would say probably, maybe 30?
+[00:10:00] Interviewer: Or 30 people. Okay, great. Just let's keep it in the notes so that I don't forget to ask about again. So let's put the church over there. Okay, let's create our churches. And this one does the same thing, but they go to the other side. And if you notice, every time I click setup. They are recreated and every time a turtle is created, like a church or a truck is created. I get the they get a different color. Is it fine for you or would you like to assign a specific color to them?
+[00:10:42] Participant_Spur: No, that's okay.
+[00:10:44] Interviewer: Okay, yeah. I just want to make sure that it doesn't become a distraction or it doesn't become something that makes it harder for you to, to, picture the scenario. You know what I mean? Or okay okay, cool. Yeah. Cuz sometimes color signify things, too. I just don't want it. Yeah, okay. So what's next?
+[00:11:05] Participant_Spur: Well, maybe we can. So, we have the we have the truck, which is the location where people will be picking up water.
+[00:11:14] Interviewer: Mm hmm.
+[00:11:16] Participant_Spur: Maybe we make the people?
+[00:11:19] Interviewer: Yeah. Let's do that.
+[00:11:20] Participant_Spur: What do you think?
+[00:11:21] Interviewer: Yeah, let's do that. And 30 of them?
+[00:11:25] Participant_Spur: Yep.
+[00:11:27] Interviewer: Okay, so churches, we will create people 30. And let me see. Turtle shapes editor. We have a very simple person shape. Where's that? Here! The very basic person shape. But in the library we also have a lot more variations of that.
+[00:11:54] Participant_Spur: Okay.
+[00:11:54] Interviewer: You see here? First, person construction, person farmer, person graduate, person lumberjack, and goes like that.
+[00:12:00] Participant_Spur: Yeah, yeah.
+[00:12:01] Interviewer: And you see this student has a little book like something like though, we can have in their hands if you want.
+[00:12:05] Participant_Spur: Okay.
+[00:12:07] Interviewer: But we can also use like nonperson shape style. So, I wouldn't like to like limit if you're thinking in that sense.
+[00:12:12] Participant_Spur: I think that person. I think the person is good because it's exactly what it's, what.
+[00:12:18] Interviewer: Okay. And, and where do these people start initially?
+[00:12:23] Participant_Spur: Yeah, so I think that if I mean everyone started just started in a kind of random social distance dispersion. So, where they were you know six feet at least between people. So everyone's kind of randomly waiting.
+[00:12:43] Interviewer: So, I will write this little really simple piece of code that's going to make things like simple, simple, simple, simple. Every time I click setup. Oh! They are really big though. These people let me make them a bit smaller. They shouldn't be bigger than truck right. Let's try 0.1. Oh! That's too small. Okay.
+[00:13:09] Participant_Spur: Can you make him a little can you make him a little, a little bigger?
+[00:13:13] Interviewer: A little bigger? Okay. Something like this?
+[00:13:21] Participant_Spur: Yeah, that seems good.
+[00:13:22] Interviewer: Okay, I just thought like they were too big than to compare. You don't you don't mind the size like the scale? You don't care about scale that much? You want to be there as points? Okay. So they are socially distance in the center like currently we are distributed in places. Like, you remember our world was made up of these patches like squares? Every time I place people out, I tell them to go to one of these squares. Almost think of it like there's the checkerboard on the ground. And they go to a square where there is nobody, that has not any other person, but still it is not super perfectly social distance. If you want, we can make it so that they can keep like two squares distance between each other and stuff like that.
+[00:14:03] Participant_Spur: Yeah, can you do two, actually yeah, can you do two squares? And then maybe make the size of the people a little bit smaller? You were right. They were a little too little too big.
+[00:14:11] Interviewer: Okay, okay. The turtles. Let's see if our people will fit here.
+[00:14:22] Participant_Spur: If there's enough.
+[00:14:24] Interviewer: Yeah. Oh, I should save this. Before we like.
+[00:14:26] Participant_Spur: Smart.
+[00:14:34] Interviewer: I gave it so that. Okay, so, I think I need to make my world slightly bigger. So, let me see if this will work. Okay, so now they are always like socially distanced.
+[00:14:51] Participant_Spur: Okay, cool.
+[00:14:52] Interviewer: They are like dispersed. They will always. Like, what, what they will do is every time I create people. And let me slow this down and show you how it works. Every time I say create 30 people, it will create those people, one by one, and these people will do this they will change their shape the person, they will get a bit smaller and they will move to one of the patches, one of those squares, where there is no other person.
+[00:15:17] Participant_Spur: Uh-uh
+[00:15:17] Interviewer: In a specific radius. A specific distance. Oh, still too hot, too fast. So you see? They will like distribute themselves into place. They will, they will pick a place where there's nobody else. So, let me see. So now we have these people, they are socially distanced, they're respectful people, they care about the coronavirus and.
+[00:15:44] Participant_Spur: Uh huh.
+[00:15:45] Interviewer: Do you want to add something else before we start programming the go part?
+[00:15:51] Participant_Spur: No, I don't think so.
+[00:15:54] Interviewer: Okay. So, we can now make the go. So we can make them do things. We can make them go pick up the water and drop off the water. So, and I know you have two scenarios. So for that I will put it simple switch, just to remember that again. Was it called single line? Was it called the production band?
+[00:16:15] Participant_Spur: One is, uh, I mean, they were they were calling it an assembly line.
+[00:16:20] Interviewer: Assembly line. So when assembly line is off, everybody will be like walking the whole time. Walking and when assembly line is on, we will make them so that they will create a line. But today, for the sake of time, let's start with no assembly line and let's make people move move because it's simple to create. And then in between two meetings, I will work on the actual algorithm. Actual code of the assembly line.
+[00:16:50] Participant_Spur: Okay, cool.
+[00:16:53] Interviewer: So you want to make these people pick up water and drop off to the church?
+[00:16:58] Participant_Spur: And then while they. Yep, yeah. And then while they're doing it, they're able to maintain distance.
+[00:17:04] Interviewer: Social distance of each other. Okay, yeah. So what they will do is people, people will know. I hate this keyword people own because I feel like they should be people know or something like that, right? Like, okay, carrying water. So they will know if they are carrying water and initially, they are not carrying water, right? Set carrying-water false. So people who are not carrying water, we ask them to start walking towards the, walking towards, what's the word? Walking towards the.
+[00:17:52] Participant_Spur: The truck?
+[00:17:53] Interviewer: The truck. Yes, and if they tried to go a little bit. And there's someone else nearby, they will back up. You know, they'll, they'll try to do that. And I will actually just reduce this much social distancing. I think this was too much social distancing. See. People with, keep forgetting some little. Because I feel like if I do it too social distanced, they will maybe not have enough space. Yeah, but we can grow and shrink the space. So, okay. So the first thing they do is heading towards, umm, this means like turn to the truck.
+[00:18:37] Participant_Spur: Uh huh.
+[00:18:38] Interviewer: So this means turn to the truck and then every time they like look at the truck right, like, and then they will go forward one. If any other. This is the code. If when they walk in. So this is going to be like a little checking thing. There are going to be mentally to like simulating. Yeah.
+[00:19:10] Participant_Spur: Hey, can?
+[00:19:11] Interviewer: Of course!
+[00:19:11] Participant_Spur: Yeah, I think so. Someone just came by. Can we just take five?
+[00:19:17] Interviewer: Yeah. Okay, let me stop the recording.
+[00:19:19] Participant_Spur: I'm sorry. Yeah.
+[00:19:20] Interviewer: I actually like perfected my little code here. So what do people do in my code right now let me run it for you, so that you know, if it's a good idea or not. They move to one of the other squares next to them. the squares. Around them that is closer to the truck.
+[00:19:38] Participant_Spur: Yeah,
+[00:19:38] Interviewer: and they try it. And if they are, if they get too close to someone they back to the origin spaces. They keep trying it until they get to the truck or they cannot go any further because the truck is full So when you start There an empty places I will slow it down a little bit for you to follow me. So they are like going to the truck and you see these two people. Grab water bottles.
+[00:20:04] Participant_Spur: Oh, great. Okay.
+[00:20:06] Interviewer: Maybe it's too small. Right now the water bottle, but they have the water bottle in there. Just to highlight difference and we can make people want specific color to see things easier if you want to.
+[00:20:17] Participant_Spur: Yeah.
+[00:20:18] Interviewer: So currently, these people have nowhere to go. So they knew how to go to the truck. And I could have programmed it but I didn't want it to be like I am programming it for you. I want you to tell me, like, so what do you think about this behavior would you like to change a little bit
+[00:20:37] Participant_Spur: No that seems very, it seems the starting point is very appropriate because everyone's kind of, you know, everyone was kind of standing around and then the truck opens up and then everyone kind of is going towards it and they're trying to so they're focused on this point, but they're also trying to maintain distance so that's, I feel like you've set up the
+[00:20:59] Interviewer: Okay, so this is what it looked Like in real world they came to the truck from every direction.
+[00:21:04] Participant_Spur: Yep, basically.
+[00:21:06] Interviewer: So, and once they take the bottle, they start going around and going to the place Okay, let's try that, too. So what now they know they are carrying water. So this one is for people, this, this piece of code is for people who are not carrying water.
+[00:21:25] Participant_Spur: Okay.
+[00:21:25] Interviewer: Empty handed. And this piece of code will be for those who just grabbed a water bottle. And they will do something similar. Again, they will do I will like repurpose the same code here. Yep, there you go. They will try to move to a patch that is close to the church. And if there any other turtles in that specific social distance radius It tried to go and there oh I'm too close to someone, they will move back I didn't implement them get into the thing yet. I just want to see how it works. Will they be able to like get around people. So that was my scare, they will be stuck in places. You know yeah because they have a lot of people around them at all times. See like that one.
+[00:22:28] Participant_Spur: Yeah. Here's here's something that everyone would give priority to someone who is carrying a bottle.
+[00:22:36] Interviewer: Oh they would open up?
+[00:22:38] Participant_Spur: You know, you're like, oh, excuse you know, this person's.
+[00:22:40] Interviewer: Oh I see. Okay.
+[00:22:41] Participant_Spur: When someone's doing the work there. They've got they've got a big box of like water bottle. Basket in their hands. So everybody will like move away from them.
+[00:22:51] Interviewer: Okay, I see. That's, that's, that's gonna be like tricky to implement for me. But let me see, I just want to make them like, Yeah, okay. So this person got the bottle. So this person should let the person go right
+[00:23:07] Participant_Spur: Yep so if It's a choice of moving people would move away from the people without people without would move away from
+[00:23:21] Interviewer: Okay, let me see. If any I will make it this way. Any other turtles in social distance with this should work. Let's try this. Let's see if it's gonna work. Oh. There you go. I'm gonna try to do a bit hack here.
+[00:23:55] Participant_Spur: Okay.
+[00:23:56] Interviewer: But now, okay, so this will be this is gonna be like a little bit like it. I will are they Moving back there. They are not moving back so yeah, I need to like or maybe I can make it so that they don't move into the center so that The person who grabs the water gets out the center like this.
+[00:24:33] Participant_Spur: Yeah.
+[00:24:33] Interviewer: To keep things simple
+[00:24:34] Participant_Spur: Yep. That sounds good.
+[00:24:36] Interviewer: Yeah, let's let's do it their way to, like, move on fast.
+[00:24:40] Participant_Spur: Sure.
+[00:24:41] Interviewer: But you see it a bit more chaotic. It's not like we just open up the center and they they were going around, but I will like keep that in mind. But I will make it simple right now.
+[00:24:51] Participant_Spur: Okay. Sounds good.
+[00:24:53] Interviewer: And zero. There we go. There you go. So now they shouldn't be blocking oh, there's too many ands So they shouldn't be blocking the center right now. But my person got stuck in there and my person. Should be like going to the center once they pick up the right yep oh, I didn't write this to one of Neighbors. with Let's try this one. Yeah, there you go there. They're going now. Oh, they got stuck. My little coding coding is like
+[00:26:08] Participant_Spur: This is cool. We're getting we're getting close.
+[00:26:10] Interviewer: Yeah, this, this, should I think any other turtles in social distance okay. It should still eventually work like they should let me see. I think I might need to do something like let's try this again. I'm trying to write the code as quickly and fast as possible.
+[00:26:52] Participant_Spur: There we go.
+[00:26:53] Interviewer: Yeah okay They are now they are bringing water to the church. Okay, it's happening and we will finish this code I mean, we don't want the coding artifacts to be like impacting the actual outcome. I will make it so that the people will back down.
+[00:27:08] Participant_Spur: Cool. Looks great.
+[00:27:09] Interviewer: Things. And now let's make them drop the water if any churches here. If I'm really close to the churches. I will go back to
+[00:27:37] Participant_Spur: Being a. Cool.
+[00:27:39] Interviewer: Being a carrying person again I will start going back to the so Oh What sometimes might be looking for you from like yours. Okay. Looks good. Oh no, I did change something to make it a bit smoother but it actually messed up. Okay. Yeah, make let's make it look them. So, this person is going the roads are opening for them. Oh, you didn't going enough because I didn't write the code correctly. Okay, there you go.
+[00:28:18] Participant_Spur: Oh That's beautiful.
+[00:28:21] Interviewer: Does this look Similar to what happened in real life.
+[00:28:23] Participant_Spur: Yeah, that's great. It's like a people. Yeah, the people. There's everyone makes space for the people carrying it and then once you drop it, then you kind of go back out into in your waiting and then you're kind of shuffling and you approach Yep.
+[00:28:37] Interviewer: Yeah, so here i do have, like, again, a bit of a, like a lockdown like my code needs to be updated to perfectly simulate what you had in mind.
+[00:28:47] Participant_Spur: Uh huh.
+[00:28:50] Interviewer: Because sometimes, like I sometimes make silly mistakes. Give me a second. in radius Stuff. Well, I keep making the same mistake. Like they do get stuck still in weird places. Okay, that's not cool. Yeah, I will. I will fix it. Oh my god. Let's see. I did make a weird mistake. Oh, closing parenthesis. I forget a parenthesis So like I will fix it For example, you see like my code makes it weird that these people cannot get to the center right now. They have the water. They don't know how to get this end and they are blocking the whole way So I will need to like write the code in a way that like, no, no, no. Don't be stuck there.
+[00:30:07] Participant_Spur: Okay, cool.
+[00:30:08] Interviewer: Yeah, but this is the basic like so this is the basic process that you're telling me your ideas I turn them into a model. We run it. We see if it works like the way you wanted it work. Or not, and then once the place comes that I feel like or you feel like this looks good. We take a break and then you give me a couple little things that, like for example in this version right now. I will make it so that their movement is smoother because they are not right now jumping plus sometimes model can get stuck. I will fix it. So they will always be like it's going to be moving. You know, like, and this is slow right now, we can really speed it up. So you see like it got stuck here right now because of the conditions. Yeah. Oh, it's really fast. I now And you know, we can we can, can't help and sometimes gives an error and stuff like that. So I will fix these and I will send you a web version of this model.
+[00:31:08] Participant_Spur: Cool.
+[00:31:09] Interviewer: Like you can just tinker with it. And then the next meeting. We will do the I will study how to efficiently do the assembly line code.
+[00:31:21] Participant_Spur: Okay, cool. So yeah, that's cool. I can see how this how basically you, we can still just build off of the scenario, you've already created. Yeah, or the world, you've already made, you know, and it's some element of, you know, starting with the same starting with the same pieces.
+[00:31:37] Interviewer: Yeah, they will need to find the assembly line. First, they will need to like, be like, Okay, I'm going I'm standing next to this person, this person standing next to me and stuff like that. Something like that. Probably. And then we can start counting like how many, how much water was delivered how effecient and stuff like,
+[00:31:55] Participant_Spur: Cool, yeah.
+[00:31:56] Interviewer: Great. This is fun
+[00:31:58] Participant_Spur: It is fun. Yeah, I'm finding it it seems just the cour like the choreography of people seem more interesting than what I expected to be the thing which would be like disease transmission. It seems like the interesting thing is like, oh, actually. It's just I don't know the questions of how do you choreograph all these people
+[00:32:19] Interviewer: Yeah.
+[00:32:20] Participant_Spur: How do you make a rule set for people to kind of act in unison with these different constraints. Yeah, it's, it's a, it's interesting.
+[00:32:29] Interviewer: I mean half of it is like you're describing, like how do you imagine it mentally right like
+[00:32:35] Participant_Spur: Uh huh.
+[00:32:35] Interviewer: What did you see people do or how did you perceive it, like what is in your mind. When you think about this, right. I like you told me that like people are coming from. They are in random places and they're coming from all directions, but they are trying to keep distance and then I turned it into a code And then, yeah, it's what it is you know like whatever shows up and then you tell me, like, no, it was like it was not like that. Unfortunately, you know, like this being a bit more like a complex behavior. Yeah, it'll have a couple like bugs, initially, but I will. smooth them out you know like yeah, there will be like, Okay, that's the this is synthetic choreography, like I want to make it as closer to what you had in mind as possible.
+[00:33:15] Participant_Spur: Yeah. Cool.
+[00:33:17] Interviewer: Yeah. Great. Go, um, any questions about this. Do you have any ideas that pops in your mind right now.
+[00:33:28] Participant_Spur: No. Nope. It looks cool. Good work.
+[00:33:31] Interviewer: Great. So I will stop sharing and recording right now. Let's stop with the recording.
+
+
+
+
+
+
+
+
+
+
+
+

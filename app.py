@@ -1,7 +1,12 @@
 import pickle
 import re
+import tomllib
 from collections import Counter
+from datetime import datetime
+from itertools import combinations
 from pathlib import Path
+
+import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
 import networkx as nx
 import numpy as np
@@ -9,11 +14,7 @@ import plotly.graph_objects as go
 import spacy
 from dash import Dash, ALL, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
-from itertools import combinations
 from plotly.subplots import make_subplots
-import dash_ag_grid as dag
-from datetime import datetime
-import tomllib
 
 # ---- INTERNAL MODULES
 import nlp_functions as nlf
@@ -50,7 +51,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
-app.title = "mode-catcher-playground | internal dev build"
+app.title = f"mode-catcher-playground | dev build ({datetime.today()})"
 
 # needed to be able to publish the script on Heroku
 server = app.server
@@ -201,7 +202,6 @@ def parse_raw_text(txt: str,
                    is_interviewer=False,
                    in_sentences=True,
                    use_nlp_tags=False,
-                   # resolve_corefs=False
                    ):
 
     global excluded_rows
@@ -253,11 +253,6 @@ def parse_raw_text(txt: str,
         if speaker:
             row['speaker'] = speaker
 
-        # TODO: moving coref resolution to a separate button in the input section that modifies the existing text file
-
-        # doc = nlp(utterance.strip(), component_cfg={"fastcoref": {'resolve_text': True}}) if resolve_corefs else nlp(utterance.strip())
-        # print("--coref spans: ", doc._.coref_clusters)
-
         doc = nlp(utterance.strip())
 
         if in_sentences:
@@ -288,37 +283,17 @@ def parse_raw_text(txt: str,
 
                 utterance = s.text
 
-                ## Umit deactivated coreference resolution on 04/14/2025
-                ##      to avoid accidentally leaving it on
-                ##      because it slows down the algorithm quite a bit
-
-                # check if this sentence contains any resolved coreferences
-                # and replace the resolved string (for now)
-
-                # if resolve_corefs:
-                #     for c in doc._.coref_clusters:
-                #         print("checking cluster: ", c[1])
-                #         if s.start_char <= c[1][0] <= s.end_char:
-                #             # print("!!! this sentence has a coref !!!")
-                #
-                #             reference = doc.char_span(c[0][0], c[0][1]).text
-                #             pronoun = doc.char_span(c[1][0], c[1][1]).text
-                #
-                #             # very terrible coding in the line below :)
-                #             # TODO -> we got to fix this replace algorithm because it may replace the wrong pronoun
-                #             utterance = utterance.replace(pronoun, reference)
-                #
-                #             # print(" >> new sentence >>", utterance)
-
                 sent_row['utterance'] = utterance
+                sent_row['tokens'] = s.as_doc().to_json()        # umit's addition onn 04/24 to avoid reparsing the sentences again and again
                 data.append(sent_row)
 
         else:
         # here would I go through and make each token bold using markdown?
             i += 1
             row['line'] = i
-            row["utterance"] = utterance.strip()
             row['in?'] = False if i in excluded_rows else True
+            row["utterance"] = utterance.strip()
+            row['tokens'] = doc.to_json()             # umit's addition onn 04/24 to avoid reparsing the sentences again and again
             data.append(row)
 
     return data
@@ -458,7 +433,7 @@ def highlight_utterance(line):
     global tokens_excluded_from_lines
 
     row = line["line"] - 1
-    doc = nlp(line["utterance"])
+    doc = nlp(line["utterance"]) # TODO -> make this line get the json doc from the line and use from spacy.tokens import Doc to recreate the doc object + see if it'd even give us any performance boost (perhaps not here, but when reloading existing data)
     line["highlighted utterance"] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop
                                                               or t.lemma_ in tokens_excluded_from_lines.get(row, [])
                                                               or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
@@ -487,6 +462,7 @@ def generate_utterance_table(data, display_options, in_sents=False):
             {'field': 'utterance', 'hide': 3 in display_options, 'flex': 1},
             {'field': 'highlighted utterance', 'headerName': 'Highlighted Utterance', 'hide': 3 not in display_options, 'flex': 1},
             {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
+            {'field': 'tokens', "editable": False, 'hide': True},
         ],
         defaultColDef={
             'resizable': True,
@@ -945,18 +921,15 @@ def draw_token_graph_plotly_object(
 # ---- INTERFACE ----
 
 # -- input section --
-
-INPUT_FOLDER = "samples"
-
 # creates Path object
-input_folder_path = Path(INPUT_FOLDER)
+INPUT_FOLDER = Path("samples")
 
 file_list = ["__manual entry__"]
 
 # checks if there is a path directory from creating the path object
-if input_folder_path.is_dir():
+if INPUT_FOLDER.is_dir():
     # gets all txt files
-    text_files = [f.name for f in sorted(input_folder_path.glob("*.txt"))]
+    text_files = [f.name for f in sorted(INPUT_FOLDER.glob("*.txt"))]
     if len(text_files) > 0:
         # adds each txt file to the file_list list
         file_list.extend(text_files)
@@ -1294,7 +1267,8 @@ grap_layout_options_div = html.Div(
             ],
             class_name="mt-4",
         ),
-        dbc.Row([
+        dbc.Row(
+            [
                 dbc.Col(
                     [
                         dbc.Checkbox(label="Display weak links", id="weak-links", value=True, persistence=True),
@@ -1309,7 +1283,17 @@ grap_layout_options_div = html.Div(
                     lg=4,
                     xl=3,
                 ),
-        ], class_name="mt-4",
+            ],
+            class_name="mt-4",
+        ),dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Button("Revert to Default Parameters", id="reset-parameters", color="danger", outline=True, size="sm"),
+                    ],
+                ),
+            ],
+            class_name="mt-4",
         ),
     ],
     className="my-4",
@@ -1463,7 +1447,7 @@ def load_input_file_callback(file_name, is_sentencized, spacy_model):
         return "", "", True
 
     # gets path to file and removed .txt from the file's name
-    file_path = Path(INPUT_FOLDER) / file_name
+    file_path = INPUT_FOLDER / file_name
     mode_name = file_name.removesuffix(".txt")
 
     # checks file existence
@@ -1561,40 +1545,39 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     Input("parse-button", "n_clicks"),
     Input("load-cached-button", "n_clicks"),
 
+    State("input-file-dropdown", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
-    State("modal-row-id", "data"),
-    State("data-table", "rowData"),
-    # State("resolve-corefs", "value"),
 
     prevent_initial_call=True,
 )
 def parse_button_callback(
         n_parse_button_clicks,
         n_load_cached_button_clicks,
-        name,
-        txt,
+        filename,
+        mode_name,
+        raw_transcript_text,
         sentencized,
         spacy_model,
         use_nlp_tags,
-        revised_row_id,
-        existing_row_data,
-        # resolve_corefs,
 ):
+
+    # first, reset all the globals
+    #   to make sure that switching between transcripts doesn't mess things up
+    flush_globals()
+
     global user_actions
     global excluded_rows
     global tokens_excluded_from_lines
     global nlp
 
-    # first, reset all the globals
-    #   to make sure that switching between transcripts doesn't mess things up
-    flush_globals()
-    excluded_rows = []
+    ## TODO: doing right now -> using row data instead of active_data + removing the excluded_rows global variable
+    # excluded_rows = []
 
-    cached_parsed_data, deductive_codes, code_definitions, stopped_tokens, unstopped_tokens = unpickle_defaults_and_model(name, spacy_model, sentencized)
+    cached_parsed_data, deductive_codes, code_definitions, stopped_tokens, unstopped_tokens = unpickle_defaults_and_model(mode_name, spacy_model, sentencized)
 
     # load the model selected by the user
     nlp = spacy.load(spacy_model, exclude=["ner"])
@@ -1621,7 +1604,7 @@ def parse_button_callback(
     if ctx.triggered_id == "parse-button":
         # here in possible changes
         parsed_data = parse_raw_text(
-            txt, timestamp=time,
+            raw_transcript_text, timestamp=time,
             is_interviewer=interviewer,
             in_sentences = sentencized,
             use_nlp_tags = use_nlp_tags,
@@ -1629,8 +1612,19 @@ def parse_button_callback(
     else:
         parsed_data = cached_parsed_data
 
-    ### populate assigned codes dictionary if it is empty
+    # save a backup of the input file (if it doesn't exist)
+    # and save the input in the raw input texarea to the text file
+    # so that the changes user makes in the raw input isn't lost.
 
+    # TODO: Implement a new button that recovers the original text file
+
+    input_file = INPUT_FOLDER / filename
+    backup_file = INPUT_FOLDER / f'{filename}backup'
+
+    if not backup_file.is_file():
+        input_file.rename(backup_file)
+
+    input_file.write_text(raw_transcript_text)
 
     return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
 
@@ -1954,6 +1948,21 @@ def update_included_lines_callback(changed, parsed_data):
 def toggle_min_similarity_input_callback(combine_by_similarity):
     return not combine_by_similarity
 
+
+@app.callback(
+    Output("min-co", "value", allow_duplicate=True),
+    Output("min-strong-co", "value", allow_duplicate=True),
+    Output("node-size", "value"),
+    Output("graph-layout", "value"),
+    Output("layout-iterations", "value"),
+    Output("layout-k", "value"),
+    Output("weak-links", "value"),
+    Output("all-labels", "value"),
+    Input("reset-parameters", "n_clicks"),
+    prevent_initial_call=True,
+)
+def reset_parameters_callback(n_revert_button_clicks):
+    return 1, 2, 5, "1", 10, 0.5, True, True
 
 ## Umit: I commented out the following callback on 04/17/2025 to not cause any troubles
 ##      but I'll work on implementing this `click-to-remove-node-from-graph` feature in May
