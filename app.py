@@ -1121,7 +1121,7 @@ generate_div = html.Div([
             dbc.Col(
                 dbc.InputGroup([
                     dbc.InputGroupText("Min similarity"),
-                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.1, value=0.8, disabled=False, persistence=True),
+                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.01, value=0.8, disabled=False, persistence=True),
                 ]), width=3
             ),
         ],
@@ -1621,16 +1621,19 @@ def parse_button_callback(
     # If the user manually typed a transcript, save it as a new txt file
     # otherwise, use the txt filename chosen on the dropdown
     if filename == "__manual entry__":
-        input_file = INPUT_FOLDER / f'{filename}.txt'
+        input_file = INPUT_FOLDER / f'{mode_name}.txt'
     else:
         input_file = INPUT_FOLDER / filename
 
     backup_file = INPUT_FOLDER / f'{filename}backup'
 
-    if not backup_file.is_file():
+    if not backup_file.is_file() and input_file.is_file():
         input_file.rename(backup_file)
 
     input_file.write_text(raw_transcript_text)
+
+    # TODO -> refresh the file list if a new file was created and chose that file as the new input (requires updating this callback signature)
+    # if filename == "__manual entry__":
 
     return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
 
