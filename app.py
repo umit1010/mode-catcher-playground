@@ -565,7 +565,8 @@ def generate_token_graph_object(
 
         # first, let's make sure the token is in the model's vocab
         #   or the similarity algorithm will yield random results
-        tokens_in_vocab = [t for t in new_G.nodes if not nlp.vocab[t].is_oov]
+        # also exlude tokens that are like numbers because it combines tokens like 15 & 20 otherwise :)
+        tokens_in_vocab = [t for t in new_G.nodes if not nlp.vocab[t].is_oov and not nlp.vocab[t].like_num]
 
         # # now lets compare node pairs to see if we should combine them
         for n1, n2 in combinations(tokens_in_vocab, 2):
@@ -870,9 +871,6 @@ def draw_token_graph_plotly_object(
             ),
             column_widths=[0.5, 0.25, 0.25],
         )
-
-        with open("graph.pickle", "wb") as f:
-            pickle.dump(G, f)
 
         if ave_degree > 0:
             degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
