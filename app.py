@@ -1,3 +1,4 @@
+import math
 import pickle
 import re
 import tomllib
@@ -851,30 +852,48 @@ def draw_token_graph_plotly_object(
     if len(connected_nodes) > 0:
     
         ave_degree = (2 * G.number_of_edges()) / G.number_of_nodes() if G.number_of_nodes() > 0 else 0
-    
-        fig_metrics = make_subplots(rows=1, cols=2,
-                                    subplot_titles=(
-                                        f"μ<sub>degree</sub> = <b>{ave_degree:.3f}</b> | "
-                                        f"n<sub>connected</sub> = {len(connected_nodes)} | "
-                                        f"n<sub>total</sub> = {G.number_of_nodes()}",
-                                        f"μ<sub>clustering</sub> = <b>{ave_clustering:.3f}</b>"
-                                    ),
-                                    )
+
+        fig_metrics = make_subplots(
+            rows=1,
+            cols=3,
+            subplot_titles=(
+                f"μ<sub>deg</sub> = <b>{ave_degree:.3f}</b>",
+                f"ln(deg)",
+                f"μ<sub>C</sub> = <b>{ave_clustering:.3f}</b>"
+            ),
+            column_widths=[0.5, 0.25, 0.25],
+        )
+
+        with open("graph.pickle", "wb") as f:
+            pickle.dump(G, f)
+
         if ave_degree > 0:
-            degree_labels, degree_degrees = zip(
-                *list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+            degree_labels, degree_degrees = zip(*list(sorted(connected_nodes.items(), key=lambda t: t[1], reverse=True)))
+
+            # create the degree histogram
             fig_metrics.add_trace(
-                go.Scatter(
-                    y=degree_degrees,
-                    x=degree_labels
-                ),
+                go.Scatter(x=degree_labels, y=degree_degrees),
                 row=1, col=1
             )
+
+            # todo: ask Joseph to figure this out because I think I messed up the calculations :/
+            # create the log degree histogram following https://mathinsight.org/scale_free_network
+            n = G.number_of_nodes()
+            degree_hist = nx.degree_histogram(G)
+            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_hist))] # -> x coordinate
+            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist] # -> y coordinate
+
+            # degree_logs = [math.log10(d) for d in degree_degrees]
+            fig_metrics.add_trace(
+                go.Scatter(x=degree_logs, y=degree_freq_logs, mode="markers"),
+                row=1, col=2
+            )
+
+        # create the graph object
+        graph_config_options['toImageButtonOptions']['filename'] = f"{mode_name}-{timestamp}-metrics"
+        graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options)
     
-            graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options)
-    
-        # now let's get clustering coefficients for nodes if it's > 0
-    
+        # get the clustering coefficients for nodes if it's > 0
         clustered_nodes = dict(
             [(nlp.vocab.strings[token], node_clustering[token])
              for token in G.nodes
@@ -887,22 +906,26 @@ def draw_token_graph_plotly_object(
                 *list(sorted(clustered_nodes.items(), key=lambda t: t[1], reverse=True)))
     
             fig_metrics.add_trace(
-                go.Scatter(
-                    y=cluster_coefficients,
-                    x=cluster_labels
-                ),
-                row=1, col=2
+                go.Scatter(x=cluster_labels, y=cluster_coefficients),
+                row=1, col=3
             )
-    
+
         fig_metrics.update_yaxes(row=1, col=1)
         fig_metrics.update_yaxes(row=1, col=2)
+        fig_metrics.update_yaxes(row=1, col=3)
         fig_metrics.update_layout(
+            margin=dict(l=0, r=0, t=80, b=40),
             showlegend=False,
+            xaxis=dict(
+                nticks=len(degree_labels),
+                ticklabelstep=1 if len(degree_labels) < 50 else math.ceil(len(degree_labels) / 50), # shows all the tick labels if there are very few
+                tickfont=dict(size=9),
+            ),
             title=dict(
-                text=mode_name,
+                text=f'metrics for {mode_name}',
                 font=dict(size=18, weight="bold"),
                 subtitle=dict(
-                    text=f"density = {nx.density(G):.3f} | {subtitle_user_choices}",
+                    text=f"n = {n} (n<sub>d>0</sub> = {len(connected_nodes)}) | ρ = {nx.density(G):.3f} | {subtitle_user_choices}",
                     font=dict(size=10, color="gray")
                 ),
                 x=0.5,
@@ -910,7 +933,6 @@ def draw_token_graph_plotly_object(
                 xanchor="center",
                 yanchor="top"
             ),
-            margin = dict(l=0, r=0, t=80, b=40),
         )
 
     return graph_network, graph_metrics
