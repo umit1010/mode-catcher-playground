@@ -981,6 +981,7 @@ raw_text_input = dbc.Textarea(
 )
 
 parse_button = dbc.Button("Parse Transcript", id="parse-button", size="lg", class_name="mx-2")
+
 load_cached_button = dbc.Button("Reload", id="load-cached-button", outline=True, size="lg", color="primary", disabled=True, class_name="mx-2")
 
 sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True, persistence=True)
@@ -1077,7 +1078,7 @@ input_accordion = dbc.Accordion(
                     dbc.Col(
                         [
                             parse_button,
-                            load_cached_button
+                            load_cached_button,
                         ],
                         class_name="mt-4",
                     ),
@@ -1093,7 +1094,14 @@ input_accordion = dbc.Accordion(
                         )
                     ]
                 ),
-                html.P(""),
+                dbc.Row(
+                    dbc.Col(
+                        dbc.Spinner(html.Div(id="parsing-spinner")),
+                        width=1,
+                    ),
+                    justify="start",
+                    # class_name="ms-2",
+                ),
                 dbc.Row(
                     [
                         dbc.Col(
@@ -1104,7 +1112,8 @@ input_accordion = dbc.Accordion(
                             ],
                             class_name="d-flex align-items-end",
                         )
-                    ]
+                    ],
+                    class_name="mt-3",
                 ),
             ],
             title="Input",
@@ -1561,9 +1570,8 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
                     f'{mode_name} / {model_folder.name}',
                     color="light",
                     text_color="danger",
-                    class_name="p-2"
                 ),
-                html.Span(" was reset successfully; A page refresh is highly recommended."),
+                html.Span(" was purged! A page refresh is highly recommended."),
             ],
             color="danger"
         )
@@ -1583,6 +1591,7 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
     Output("stopped-tokens", "data", allow_duplicate=True),
     Output("unstopped-tokens", "data", allow_duplicate=True),
+    Output("parsing-spinner", "children"),
 
     Input("parse-button", "n_clicks"),
     Input("load-cached-button", "n_clicks"),
@@ -1677,7 +1686,7 @@ def parse_button_callback(
     # TODO -> refresh the file list if a new file was created and chose that file as the new input (requires updating this callback signature)
     # if filename == "__manual entry__":
 
-    return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
+    return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens), ""
 
 
 
