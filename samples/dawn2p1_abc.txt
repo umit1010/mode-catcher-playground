@@ -8,7 +8,7 @@
 
 [00:01:10] Interviewer: So did you, did you get a chance to think about the model in between meetings?
 
-[00:01:18] Participant_Dawn: I was thinking about it, and then I told you that I want it to. How do you say it? To go under the water after it explode. 
+[00:01:18] Participant_Dawn: I was thinking about it, and then I told you that I want it to. How do you say it? To go under the water after it explode.
 
 [00:01:31] Interviewer: Yeah.
 
@@ -16,9 +16,9 @@
 
 [00:01:34] Interviewer: You did? Okay, So currently, it runs this way. Let's, let's try it one more time. And you wanted to stay like it just disappears. So you wanted to modify.
 
-[00:01:44] Participant_Dawn: Well.I want like some part of it going under the ocean, but some stay there. 
+[00:01:44] Participant_Dawn: Well.I want like some part of it going under the ocean, but some stay there.
 
-[00:01:54] Interviewer: Okay. 
+[00:01:54] Interviewer: Okay.
 
 [00:01:55] Participant_Dawn: And split up.
 
@@ -30,29 +30,29 @@
 
 [00:02:35] Participant_Dawn: A few close islands? Small?
 
-[00:02:43] Interviewer: Like nearby? 
+[00:02:43] Interviewer: Like nearby?
 
-[00:02:45] Participant_Dawn: Yes. 
+[00:02:45] Participant_Dawn: Yes.
 
 [00:02:46] Interviewer: Okay. So, what I will do is. So this first piece of code I will write will try to stop the. Sorry. Wrong place. We'll try to stop the model from burning the, like, burying the whole island. Let's see how it works. Is this enough? Or do you want to go. Sorry, that's too much. Let's see again. Also slow down how, how much it goes. So here you see it got this small. Do you want it slightly bigger?
 
 [00:03:48] Participant_Dawn: Please.
 
-[00:03:49] Interviewer: Okay, let's make it maybe 200. It was good enough. Okay. Do you want these lavas around it disappear when they, when they are on the blue patch? Okay. Okay, let's see. Okay, they will now disappear. And island start, like island continues, like the volcano continues spewing stuff. So now here you want the island to be divided in half, right? 
+[00:03:49] Interviewer: Okay, let's make it maybe 200. It was good enough. Okay. Do you want these lavas around it disappear when they, when they are on the blue patch? Okay. Okay, let's see. Okay, they will now disappear. And island start, like island continues, like the volcano continues spewing stuff. So now here you want the island to be divided in half, right?
 
-[00:04:30] Participant_Dawn: Please. 
+[00:04:30] Participant_Dawn: Please.
 
 [00:04:31] Interviewer: Yeah. Okay. Let's do that. For example, let's try this. For example, let's try how this works. Let's see how this works and then you will tell me how to modify it. So it did divide on top of here. Did it divide too small? Do you want it like, do you want it right in the middle like I divided it on the top. Let me show you again.
 
 [00:05:23] Participant_Dawn: In the middle.
 
-[00:05:24] Interviewer: In the middle? Okay. So is this too small of a gap or is this a good gap? 
+[00:05:24] Interviewer: In the middle? Okay. So is this too small of a gap or is this a good gap?
 
 [00:05:40] Participant_Dawn: That's good.
 
-[00:05:42] Interviewer: Okay perfect. And then the next thing is we need to add like a tiny island right? 
+[00:05:42] Interviewer: Okay perfect. And then the next thing is we need to add like a tiny island right?
 
-[00:05:59] Participant_Dawn: Yes, please. 
+[00:05:59] Participant_Dawn: Yes, please.
 
 [00:06:01] Interviewer: Top right? Top left? Bottom left? Bottom right? Where should it go?
 
@@ -60,17 +60,17 @@
 
 [00:06:18] Interviewer: Three island? Okay. Let's make that. Okay. So far. Let's try this one and then I will adjust it again as usual. So I kind of put four little dots for you to see where the islands will go. Are they too close to the main island?
 
-[00:06:49] Participant_Dawn: Just make it a little bit bigger. Yep. 
+[00:06:49] Participant_Dawn: Just make it a little bit bigger. Yep.
 
-[00:06:51] Interviewer: Okay. Let's see how this works. How about now? I made four of them. Let me get rid of one of them. Okay. Oh, oh, sorry. Oops. Oh no. I p y core. Not too close to NPS score. I made. I messed it up. Let me leave it, four of them right now. I will turn it into three of them afterwards. I don't want to slow your thinking down. Let's leave three of them for now. So four of them. But I will make three nearby slides. Okay, so what's next? And also if you notice, by the virtue of us creating islands like this. It started placing trees on those islands, those new small islands as well and some people even and some houses by just random chance. Is that fine? Or would you like those islands to be completely empty? 
+[00:06:51] Interviewer: Okay. Let's see how this works. How about now? I made four of them. Let me get rid of one of them. Okay. Oh, oh, sorry. Oops. Oh no. I p y core. Not too close to NPS score. I made. I messed it up. Let me leave it, four of them right now. I will turn it into three of them afterwards. I don't want to slow your thinking down. Let's leave three of them for now. So four of them. But I will make three nearby slides. Okay, so what's next? And also if you notice, by the virtue of us creating islands like this. It started placing trees on those islands, those new small islands as well and some people even and some houses by just random chance. Is that fine? Or would you like those islands to be completely empty?
 
-[00:08:44] Participant_Dawn: Just trees. 
+[00:08:44] Participant_Dawn: Just trees.
 
 [00:08:47] Interviewer: Just trees. Okay. Let's actually make them slightly different color. So. Now, let's put some trees on them, right? Trees. Okay, now they only have just trees and pretty much nothing else. And as I said there will be three islands but it's kind of like, I don't want to take too much time making it three. So I kept this at four because the symmetry makes it easier to program, but in between meetings I will take out that one island. So what's next?
 
 [00:09:52] Participant_Dawn: Can you? Oh, the islands disappear.
 
-[00:09:55] Interviewer: Okay, they should not disappear. Give me one second. Island disappear and this is here, here. Okay. Here you go. So that should fix it. See again some people are being rescued. What happened? Oh, this is not working. Oh, okay, okay. To call into place. That has to be here. There we go. Those islands stayed there. It's. Perfect. Okay, what's next? 
+[00:09:55] Interviewer: Okay, they should not disappear. Give me one second. Island disappear and this is here, here. Okay. Here you go. So that should fix it. See again some people are being rescued. What happened? Oh, this is not working. Oh, okay, okay. To call into place. That has to be here. There we go. Those islands stayed there. It's. Perfect. Okay, what's next?
 
 [00:10:54] Participant_Dawn: Let's put a bridge.
 
@@ -78,29 +78,29 @@
 
 [00:11:03] Participant_Dawn: Yes. Just one of the island. The small island.
 
-[00:11:08] Interviewer: Oh from small island to the main island. 
+[00:11:08] Interviewer: Oh from small island to the main island.
 
-[00:11:10] Participant_Dawn: Yes. 
+[00:11:10] Participant_Dawn: Yes.
 
-[00:11:11] Interviewer: Okay. Go. There it is and then, okay. The easiest way to do it is. Let's see how this works. Make it simpler. Oh, that's an error. Almost done with this. Okay, there you go. Does this look like a bridge? 
+[00:11:11] Interviewer: Okay. Go. There it is and then, okay. The easiest way to do it is. Let's see how this works. Make it simpler. Oh, that's an error. Almost done with this. Okay, there you go. Does this look like a bridge?
 
-[00:13:04] Participant_Dawn: That's good. 
+[00:13:04] Participant_Dawn: That's good.
 
-[00:13:06] Interviewer: The trees get on that bridge. If it's not a good look. I can take it out. Should I take out the trees? Yeah, I should take out the trees, right? Let's see. So we have a bridge there. And do you want the people to be able to walk through the bridge to the, to that island? Okay. Let's make people. Oh, with distance boats. Okay, let's see if they will be able to go, walk through the bridge. Pair mostly. Okay. Okay, they are not really. Let me see. So people's intention is to. Okay, so they should either. Okay. Now I understand what's my code. They should either face. They should either go to the boat or go to that island, right? Am I understanding correctly? Dan? 
+[00:13:06] Interviewer: The trees get on that bridge. If it's not a good look. I can take it out. Should I take out the trees? Yeah, I should take out the trees, right? Let's see. So we have a bridge there. And do you want the people to be able to walk through the bridge to the, to that island? Okay. Let's make people. Oh, with distance boats. Okay, let's see if they will be able to go, walk through the bridge. Pair mostly. Okay. Okay, they are not really. Let me see. So people's intention is to. Okay, so they should either. Okay. Now I understand what's my code. They should either face. They should either go to the boat or go to that island, right? Am I understanding correctly? Dan?
 
-[00:14:37] Participant_Dawn: Oh, can you hear me? 
+[00:14:37] Participant_Dawn: Oh, can you hear me?
 
-[00:14:40] Interviewer: Yes, yes. Sometimes it cuts. Today, there's the connection, my connection is not great today. Sorry about that. So the idea is that sometimes they, some of them should go to the boats, or some of them should go to the island, right? Okay. So, okay. Oh, Okay. I will make them. Call. Let's see if this will work. So these ones walk to the boats. Yep, that one is going. Now some of them are saving themselves from the. Yep. These one save themselves. Is this working the way you want it to work? So if they are like closer to the boat, they will just go to the boat. And if they are near this bridge, they will go to the bridge. Is this working the way you wanted it to work? Perfect. What's next? My connection is really unstable. Do you hear me right now? 
+[00:14:40] Interviewer: Yes, yes. Sometimes it cuts. Today, there's the connection, my connection is not great today. Sorry about that. So the idea is that sometimes they, some of them should go to the boats, or some of them should go to the island, right? Okay. So, okay. Oh, Okay. I will make them. Call. Let's see if this will work. So these ones walk to the boats. Yep, that one is going. Now some of them are saving themselves from the. Yep. These one save themselves. Is this working the way you want it to work? So if they are like closer to the boat, they will just go to the boat. And if they are near this bridge, they will go to the bridge. Is this working the way you wanted it to work? Perfect. What's next? My connection is really unstable. Do you hear me right now?
 
-[00:16:40] Participant_Dawn: Hello? 
+[00:16:40] Participant_Dawn: Hello?
 
 [00:16:41] Interviewer: Yeah, let me turn off my camera to see if it will make a difference. Do you hear me now?
 
 [00:16:47] Participant_Dawn: Yes, I can hear you better.
 
-[00:16:48] Interviewer: Okay, maybe the, I should have turned off the video. How does it work? 
+[00:16:48] Interviewer: Okay, maybe the, I should have turned off the video. How does it work?
 
-[00:16:54] Participant_Dawn: Yeah, it's great. 
+[00:16:54] Participant_Dawn: Yeah, it's great.
 
 [00:16:55] Interviewer: Yeah. Do you have anything else to add? You can add as much stuff as you want.
 
@@ -110,15 +110,15 @@
 
 [00:17:26] Participant_Dawn: As the volcano is exploding.
 
-[00:17:31] Interviewer: Okay. Great. So when we are making new lava, every time we make a new lava, we should probably make dark clouds as well. Where's that. Here it is. Yeah, more clouds are being made. Do you like it this way? Or do you want them to be spreading out more? 
+[00:17:31] Interviewer: Okay. Great. So when we are making new lava, every time we make a new lava, we should probably make dark clouds as well. Where's that. Here it is. Yeah, more clouds are being made. Do you like it this way? Or do you want them to be spreading out more?
 
 [00:18:10] Participant_Dawn: Spread out.
 
-[00:18:11] Interviewer: Okay. How about now? 
+[00:18:11] Interviewer: Okay. How about now?
 
-[00:18:19] Participant_Dawn: That's better. 
+[00:18:19] Participant_Dawn: That's better.
 
-[00:18:21] Interviewer: So it's really like creating a tick. Small, clear. 
+[00:18:21] Interviewer: So it's really like creating a tick. Small, clear.
 
 [00:18:26] Participant_Dawn: That's a lot though.
 
@@ -130,9 +130,9 @@
 
 [00:18:43] Participant_Dawn: That's good.
 
-[00:18:47] Interviewer: What's next? 
+[00:18:47] Interviewer: What's next?
 
-[00:18:47] Participant_Dawn: That's good. 
+[00:18:47] Participant_Dawn: That's good.
 
 [00:18:53] Interviewer: That's good? Great. So this interview, as I said, goes on, as long as you want to add new things. And when you are happy with your model, the final version of your model, we stop right there. And then we do this reflection discussion. You know, it's just we just talked about the process, you know? So you are happy with the final version of your model?
 

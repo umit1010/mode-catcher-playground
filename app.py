@@ -22,6 +22,13 @@ import nlp_functions as nlf
 
 # ---- GLOBAL VARIABLES ----
 
+# Umit's note on 05/01/2025:
+# I added the following line to test if using the GPU makes much difference in speed
+#  doesn't seem to make much difference for the large model + loading takes longer, so probably not a good idea
+# Also, requires installing pytorch
+is_using_gpu = spacy.prefer_gpu()
+# print("Is spacy using the GPU? -> ", is_using_gpu)
+
 nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
 G = nx.Graph()
@@ -876,18 +883,27 @@ def draw_token_graph_plotly_object(
                 row=1, col=1
             )
 
-            # todo: ask Joseph to figure this out because I think I messed up the calculations :/
-            # create the log degree histogram following https://mathinsight.org/scale_free_network
+            # create a log-log graph
             n = G.number_of_nodes()
             degree_hist = nx.degree_histogram(G)
             degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_hist))] # -> x coordinate
             degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist] # -> y coordinate
 
-            # degree_logs = [math.log10(d) for d in degree_degrees]
+            # create the scatter plot graph
             fig_metrics.add_trace(
                 go.Scatter(x=degree_logs, y=degree_freq_logs, mode="markers"),
                 row=1, col=2
             )
+
+            # create a 2nd degree polynomial fit using the least squares method
+            degree_freq_fit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 3)
+            degree_freq_fit_points = [degree_freq_fit(d) for d in degree_logs]
+            print(degree_freq_fit_points)
+            fig_metrics.add_trace(
+                go.Scatter(x=degree_logs, y=degree_freq_fit_points, mode="lines"),
+                row=1, col=2
+            )
+
 
         # create the graph object
         graph_config_options['toImageButtonOptions']['filename'] = f"{mode_name}-{timestamp}-metrics"
@@ -1438,6 +1454,7 @@ app.layout = dbc.Container(
         dcc.Store(id="deductive-code-definitions", data=dict()),
         dcc.Store(id="stopped-tokens", data=list()),
         dcc.Store(id="unstopped-tokens", data=list()),
+        # dcc.Store(id="nlp-sm", data=spacy.load("en_core_web_sm")), # TODO: can I keep the pipeline in the memory so as to avoid reloading it every time?Í
         dbc.Row(dbc.Col(utterances_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
