@@ -1134,7 +1134,7 @@ utterances_accordion = dbc.Accordion(
             html.Div(
                 [
                     inclusion_options,
-                    dbc.Button("Clear Filters", id="clear-table-filters-button", size="sm", class_name="my-2", outline=True, color="primary"),
+                    dbc.Button("Clear Filters", id="clear-table-filters-button", size="sm", class_name="my-2"),
                 ],
                 className="d-flex justify-content-between",
             ),
@@ -1682,7 +1682,22 @@ def parse_button_callback(
     return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens)
 
 
-# needs to filter out interviewers as third option
+
+@app.callback(
+    Output("clear-table-filters-button", "disabled"),
+    Input("data-table", "filterModel"),
+)
+def activate_clear_table_filters_button_callback(existing_filters):
+
+    # there is always
+    keys = existing_filters.keys()
+    n_filters = len(keys)
+    if ('speaker' in keys and n_filters > 1) or ('speaker' not in keys and n_filters > 0):
+        return False
+    else:
+        return True
+
+
 @app.callback(
     Output('data-table', 'columnState'),
     Output('data-table', 'filterModel'),
