@@ -898,7 +898,7 @@ def draw_token_graph_plotly_object(
             # create a 2nd degree polynomial fit using the least squares method
             degree_freq_fit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 3)
             degree_freq_fit_points = [degree_freq_fit(d) for d in degree_logs]
-            print(degree_freq_fit_points)
+
             fig_metrics.add_trace(
                 go.Scatter(x=degree_logs, y=degree_freq_fit_points, mode="lines"),
                 row=1, col=2
@@ -1019,7 +1019,7 @@ inclusion_options = dbc.Checklist(
     value=[0, 1, 2],
     inline=True,
     class_name="mb-4",
-    id="inclusion-options",
+    id="inclusion-options-checklist",
     persistence=True,
 )
 
@@ -1130,7 +1130,14 @@ empty_utterances_table_data = [{
 
 utterances_accordion = dbc.Accordion(
     dbc.AccordionItem(
-        [inclusion_options,
+        [
+            html.Div(
+                [
+                    inclusion_options,
+                    dbc.Button("Clear Filters", id="clear-table-filters-button", size="sm", class_name="my-2", outline=True, color="primary"),
+                ],
+                className="d-flex justify-content-between",
+            ),
             html.Div(
                 [
                     generate_utterance_table(empty_utterances_table_data, (0, 1, 2), False)
@@ -1325,11 +1332,9 @@ grap_layout_options_div = html.Div(
             class_name="mt-4",
         ),dbc.Row(
             [
-                dbc.Col(
-                    [
-                        dbc.Button("Revert to Default Parameters", id="reset-parameters", color="danger", outline=True, size="sm"),
-                    ],
-                ),
+                dbc.Col([
+                    dbc.Button("Set Default Parameters", id="reset-parameters", color="primary", outline=True, size="sm"),
+                ]),
             ],
             class_name="mt-4",
         ),
@@ -1680,10 +1685,12 @@ def parse_button_callback(
 # needs to filter out interviewers as third option
 @app.callback(
     Output('data-table', 'columnState'),
-    Output('data-table', 'dashGridOptions'),
-    Input("inclusion-options", "value"),
+    Output('data-table', 'filterModel'),
+    Input("inclusion-options-checklist", "value"),
+    Input("clear-table-filters-button", "n_clicks"),
+    State('data-table', 'filterModel'),
 )
-def apply_table_layout_filters_callback(table_display_options):
+def apply_table_layout_filters_callback(table_display_options, n_reset_filters_clicks, existing_filters):
 
     new_state = [
         {'colId': 'line'},
@@ -1694,17 +1701,15 @@ def apply_table_layout_filters_callback(table_display_options):
         {'colId': 'in?'},
     ]
 
-    new_filter = {
-        'isExternalFilterPresent': {'function': 'false'}
-    }
-    if 2 in table_display_options:
-        new_filter = {
-            'isExternalFilterPresent': {'function': 'true'},
-            'doesExternalFilterPass': 
-                {'function': "params.data.speaker != 'Interviewer'"}
-        }
+    # if the "clear filters" button is clicked -> pass an empty dictionary
+    #       otherwise, pass along the existing filters
+    new_filters = existing_filters if ctx.triggered_id != "clear-table-filters-button" and existing_filters is not None else dict()
 
-    return new_state, new_filter
+    # if the "ignore interviewer speech" option is selected
+    if 2 in table_display_options:
+        new_filters['speaker'] = {'filterType': 'text', 'type': 'notContains', 'filter': 'Interviewer'}
+
+    return new_state, new_filters
 
 
 @app.callback(
@@ -1809,7 +1814,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     # Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
 
     State("parsed-data", "data"),
-    State("inclusion-options", "value"),
+    State("inclusion-options-checklist", "value"),
     State("use-deductive-codes", "value"),
     State("assigned-deductive-codes", "data"),
     State("graph-button", "disabled"),
