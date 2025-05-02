@@ -1,3 +1,4 @@
+import asyncio
 import math
 import pickle
 import re
@@ -19,15 +20,9 @@ from plotly.subplots import make_subplots
 
 # ---- INTERNAL MODULES
 import nlp_functions as nlf
+import filesystem_functions as fs
 
 # ---- GLOBAL VARIABLES ----
-
-# Umit's note on 05/01/2025:
-# I added the following line to test if using the GPU makes much difference in speed
-#  doesn't seem to make much difference for the large model + loading takes longer, so probably not a good idea
-# Also, requires installing pytorch
-is_using_gpu = spacy.prefer_gpu()
-# print("Is spacy using the GPU? -> ", is_using_gpu)
 
 nlp = spacy.blank("en")  # loading a blank model because we'll load the actual model later in the parse step
 
@@ -38,20 +33,6 @@ graph_button_clicked = False
 tokens_excluded_from_lines = dict()
 user_actions = list()
 
-# constants
-MODELS_FOLDER = Path("./models/")
-CONFIG_FOLDER = Path("./config/")
-
-DEDUCTIVE_LABEL_DEFINITIONS_FILENAME = "deductive_label_definitions.toml"
-DEFAULT_STOPWORDS_FILENAME = "default_stopwords.pickle"
-
-PARSED_DATA_FILENAME = "parsed_data.pickle"
-STOPWORDS_FILENAME = "stopwords.pickle"
-EXCLUDED_TOKENS_FILENAME = "excluded_tokens.pickle"
-EXCLUDED_ROWS_FILENAME = "excluded_rows.pickle"
-ASSIGNED_CODES_FILENAME = "assigned_deductive_codes.pickle"
-USER_ACTIONS_FILENAME = "user_actions.pickle"
-
 # ----- DASH APP CONFIGURATION -----
 
 app = Dash(
@@ -59,7 +40,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
 )
-app.title = f"mode-catcher-playground | dev build ({datetime.today()})"
+app.title = f"mode-catcher playground | dev build ({datetime.today()})"
 
 # needed to be able to publish the script on Heroku
 server = app.server
@@ -69,10 +50,10 @@ server = app.server
 
 def flush_globals():
 
-    global excluded_rows
-    global graph_button_clicked
+    global excluded_rows                # TODO: remove this and use the rowData which includes this info anyways
+    global graph_button_clicked         # TODO: figure out why this is needed & how to get rid of it
     global tokens_excluded_from_lines
-    global user_actions
+    global user_actions                 # TODO: convert to dcc.Store & then use the timestamp callback to update the table
 
     excluded_rows = None
     tokens_excluded_from_lines = None
@@ -85,56 +66,36 @@ def flush_globals():
 
 
 
-def get_model_path(mode_name, spacy_model, is_sentencized):
-    ## create the models folder if it doesn't exist already
-    ##     exists_ok = True -> don't overwrite if it already exists
-    if not MODELS_FOLDER.is_dir():
-        MODELS_FOLDER.mkdir(exist_ok=True)
-
-    ## define the path of the mode (case, participant) for the selected transcript
-    mode_path = MODELS_FOLDER / str(mode_name).strip()
-    if not mode_path.exists():
-        mode_path.mkdir(exist_ok=True)
-
-    ## define the subfolder that corresponds to the specific parsing parameters of the model
-    model_path = mode_path / f"{spacy_model}.{'sentencized' if is_sentencized else ''}/"
-    if not model_path.exists():
-        model_path.mkdir(exist_ok=True)
-
-    return model_path
-
-
-
-def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
+async def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
 
     global nlp
     global tokens_excluded_from_lines
     global excluded_rows
 
-    model_path = get_model_path(mode_name, spacy_model, is_sentencized)
+    model_path = fs.get_model_path(mode_name, spacy_model, is_sentencized)
 
     # pickle the stop words changed by the user
-    with open(model_path / PARSED_DATA_FILENAME, "wb") as f:
+    with open(model_path / fs.PARSED_DATA_FILENAME, "wb") as f:
         pickle.dump(parsed_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the stop words changed by the user
-    with open(model_path / STOPWORDS_FILENAME, "wb") as f:
+    with open(model_path / fs.STOPWORDS_FILENAME, "wb") as f:
         pickle.dump((stopped_tokens, unstopped_tokens), f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the tokens that are excluded in individual lines by the user
-    with open(model_path / EXCLUDED_TOKENS_FILENAME, "wb") as f:
+    with open(model_path / fs.EXCLUDED_TOKENS_FILENAME, "wb") as f:
         pickle.dump(tokens_excluded_from_lines, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the rows that are completely excluded by the user
-    with open(model_path / EXCLUDED_ROWS_FILENAME, "wb") as f:
+    with open(model_path / fs.EXCLUDED_ROWS_FILENAME, "wb") as f:
         pickle.dump(excluded_rows, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the user selected deductive codes
-    with open(model_path / ASSIGNED_CODES_FILENAME, "wb") as f:
+    with open(model_path / fs.ASSIGNED_CODES_FILENAME, "wb") as f:
         pickle.dump(deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the user actions log
-    with open(model_path / USER_ACTIONS_FILENAME, "wb") as f:
+    with open(model_path / fs.USER_ACTIONS_FILENAME, "wb") as f:
         pickle.dump(user_actions, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -147,18 +108,18 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     global tokens_excluded_from_lines
     global user_actions
 
-    model_path = get_model_path(mode_name, spacy_model, is_sentencized)
+    model_path = fs.get_model_path(mode_name, spacy_model, is_sentencized)
 
     # load deductive code definitions
-    with open(CONFIG_FOLDER / DEDUCTIVE_LABEL_DEFINITIONS_FILENAME, "rb") as f:
+    with open(fs.CONFIG_FOLDER / fs.DEDUCTIVE_LABEL_DEFINITIONS_FILENAME, "rb") as f:
         code_definitions = tomllib.load(f)
 
     # load the default stopwords list
-    with open(CONFIG_FOLDER / DEFAULT_STOPWORDS_FILENAME, "rb") as f:
+    with open(fs.CONFIG_FOLDER / fs.DEFAULT_STOPWORDS_FILENAME, "rb") as f:
         stopped_tokens = pickle.load(f)
 
     # load previously parsed data (if it exists)
-    parsed_data_file = model_path / PARSED_DATA_FILENAME
+    parsed_data_file = model_path / fs.PARSED_DATA_FILENAME
     if parsed_data_file.is_file():
         with open(parsed_data_file, "rb") as f:
             parsed_data = pickle.load(f)
@@ -166,7 +127,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         parsed_data = list()
 
     # load the user-made changes to the stopwords (if they exist)
-    stopwords_file = model_path / STOPWORDS_FILENAME
+    stopwords_file = model_path / fs.STOPWORDS_FILENAME
     if stopwords_file.is_file():
         with open(stopwords_file, "rb") as f:
             stopped_tokens, unstopped_tokens = pickle.load(f)
@@ -175,19 +136,19 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         unstopped_tokens = list()
 
     # load the tokens that were excluded on specific lines by the user
-    excluded_tokens_file = model_path / EXCLUDED_TOKENS_FILENAME
+    excluded_tokens_file = model_path / fs.EXCLUDED_TOKENS_FILENAME
     if excluded_tokens_file.is_file():
         with open(excluded_tokens_file, "rb") as f:
             tokens_excluded_from_lines = pickle.load(f)
 
     # load the lines that were completely excluded by the user
-    excluded_rows_file = model_path / EXCLUDED_ROWS_FILENAME
+    excluded_rows_file = model_path / fs.EXCLUDED_ROWS_FILENAME
     if excluded_rows_file.is_file():
         with open(excluded_rows_file, "rb") as f:
             excluded_rows = pickle.load(f)
 
     # load the deductive codes selected by the user
-    assigned_codes_file = model_path / ASSIGNED_CODES_FILENAME
+    assigned_codes_file = model_path / fs.ASSIGNED_CODES_FILENAME
     if assigned_codes_file.is_file():
         with open(assigned_codes_file, "rb") as f:
             assigned_codes = pickle.load(f)
@@ -195,7 +156,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         assigned_codes = dict()
 
     # load the user actions log
-    user_actions_log_file = model_path / USER_ACTIONS_FILENAME
+    user_actions_log_file = model_path / fs.USER_ACTIONS_FILENAME
     if user_actions_log_file.is_file():
         with open(user_actions_log_file, "rb") as f:
             user_actions = pickle.load(f)
@@ -884,8 +845,8 @@ def draw_token_graph_plotly_object(
             # create a log-log graph
             n = G.number_of_nodes()
             degree_hist = nx.degree_histogram(G)
-            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_hist))] # -> x coordinate
-            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist] # -> y coordinate
+            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
+            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
 
             # create the scatter plot graph
             fig_metrics.add_trace(
@@ -894,7 +855,7 @@ def draw_token_graph_plotly_object(
             )
 
             # create a 2nd degree polynomial fit using the least squares method
-            degree_freq_fit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 3)
+            degree_freq_fit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 1)
             degree_freq_fit_points = [degree_freq_fit(d) for d in degree_logs]
 
             fig_metrics.add_trace(
@@ -1513,7 +1474,7 @@ def load_input_file_callback(file_name, is_sentencized, spacy_model):
     # checks if there is actually text (rather than empty file/string)
     if len(file_text) > 0:
 
-        model_folder = get_model_path(mode_name, spacy_model, is_sentencized)
+        model_folder = fs.get_model_path(mode_name, spacy_model, is_sentencized)
         cached_parsed_data_file_name = model_folder / "parsed_data.pickle"
         if cached_parsed_data_file_name.is_file():
             return file_text, mode_name, False, "primary"
@@ -1547,7 +1508,7 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
         # first, let's get rid of the existing user generated model files
 
         ## path of current model folder
-        model_folder = get_model_path(mode_name, spacy_model, is_sentencized)
+        model_folder = fs.get_model_path(mode_name, spacy_model, is_sentencized)
 
         ## checks whether a model folder exists
         if model_folder.is_dir():
@@ -1890,7 +1851,8 @@ def generate_graph_button_callback(
         graph_button_clicked = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens)
+        #   and run that function asynchronously so that it doesn't slow down the graphing process
+        asyncio.run(pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens))
     
     if not graph_button_clicked:
         return empty_return
