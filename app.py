@@ -52,6 +52,7 @@ def flush_globals():
 
     global excluded_rows                # TODO: remove this and use the rowData which includes this info anyways
     global graph_button_clicked         # TODO: figure out why this is needed & how to get rid of it
+    global nlp
     global tokens_excluded_from_lines
     global user_actions                 # TODO: convert to dcc.Store & then use the timestamp callback to update the table
 
@@ -61,6 +62,7 @@ def flush_globals():
 
     excluded_rows = set()
     graph_button_clicked = False
+    nlp = spacy.blank("en")
     tokens_excluded_from_lines = dict()
     user_actions = list()
 
@@ -68,7 +70,6 @@ def flush_globals():
 
 async def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
 
-    global nlp
     global tokens_excluded_from_lines
     global excluded_rows
 
@@ -845,8 +846,14 @@ def draw_token_graph_plotly_object(
             # create a log-log graph
             n = G.number_of_nodes()
             degree_hist = nx.degree_histogram(G)
-            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
+
+
+            degree_freq_logs = [math.log(f) for f in degree_hist if f > 0 and math.log(f) > 0]  # -> y coordinate
             degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
+
+            # uncomment the following lines if you want to include the 0 values
+            # degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
+            # degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
 
             # create the scatter plot graph
             fig_metrics.add_trace(
@@ -864,8 +871,8 @@ def draw_token_graph_plotly_object(
             )
 
 
-        # create the graph object
-        graph_config_options['toImageButtonOptions']['filename'] = f"{mode_name}-{timestamp}-metrics"
+        # create the metric graph object
+
         graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options)
     
         # get the clustering coefficients for nodes if it's > 0
