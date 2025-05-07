@@ -68,7 +68,7 @@ def flush_globals():
 
 
 
-async def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
+async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
 
     global tokens_excluded_from_lines
     global excluded_rows
@@ -77,7 +77,7 @@ async def pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, dedu
 
     # pickle the stop words changed by the user
     with open(model_path / fs.PARSED_DATA_FILENAME, "wb") as f:
-        pickle.dump(parsed_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(full_row_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle the stop words changed by the user
     with open(model_path / fs.STOPWORDS_FILENAME, "wb") as f:
@@ -123,9 +123,9 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     parsed_data_file = model_path / fs.PARSED_DATA_FILENAME
     if parsed_data_file.is_file():
         with open(parsed_data_file, "rb") as f:
-            parsed_data = pickle.load(f)
+            full_row_data = pickle.load(f)
     else:
-        parsed_data = list()
+        full_row_data = list()
 
     # load the user-made changes to the stopwords (if they exist)
     stopwords_file = model_path / fs.STOPWORDS_FILENAME
@@ -162,7 +162,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         with open(user_actions_log_file, "rb") as f:
             user_actions = pickle.load(f)
 
-    return parsed_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens
+    return full_row_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens
 
 
 # ---- NLP FUNCTIONS ----
@@ -474,7 +474,7 @@ def generate_token_graph_object(
     #           filtering start to end instead of refiltering entire dataset over and over again
     #       pickling the rowData of the ag_grid instead of the active data object so that it loads even faster
 
-    data_dict_list = data[start:end]
+    data_dict_list = [row for row in data if row['line'] >= start and row['line'] <= end]
 
     for line in data_dict_list:
 
@@ -681,11 +681,11 @@ def draw_token_graph_plotly_object(
         pos = nx.circular_layout(G)
 
     # create the plotly graph for the network
-    edge_x = []
-    edge_y = []
+    edge_x = list()
+    edge_y = list()
 
-    light_edge_x = []
-    light_edge_y = []
+    light_edge_x = list()
+    light_edge_y = list()
 
     if min_co_occurrence > min_strong_co_occurrence:
         min_strong_co_occurrence = min_co_occurrence
@@ -828,7 +828,7 @@ def draw_token_graph_plotly_object(
             cols=3,
             subplot_titles=(
                 f"μ<sub>deg</sub> = <b>{ave_degree:.3f}</b>",
-                f"ln(deg)",
+                f"log-log",
                 f"μ<sub>C</sub> = <b>{ave_clustering:.3f}</b>"
             ),
             column_widths=[0.5, 0.25, 0.25],
@@ -847,33 +847,37 @@ def draw_token_graph_plotly_object(
             n = G.number_of_nodes()
             degree_hist = nx.degree_histogram(G)
 
-
-            degree_freq_logs = [math.log(f) for f in degree_hist if f > 0 and math.log(f) > 0]  # -> y coordinate
-            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
-
-            # uncomment the following lines if you want to include the 0 values
-            # degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
+            # uncomment the following two lines if you want to exclude the 0 values
+            # degree_freq_logs = [math.log(f) for f in degree_hist if f > 0 and math.log(f) > 0]  # -> y coordinate
             # degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
 
-            # create the scatter plot graph
+            # uncomment the following lines if you want to include the 0 values
+            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
+            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
+
             fig_metrics.add_trace(
                 go.Scatter(x=degree_logs, y=degree_freq_logs, mode="markers"),
                 row=1, col=2
             )
 
+            # TODO -> show all points, but ignore 0 values in the poly fit both for ln(n) and ln(deg(n))
+
             # create a 2nd degree polynomial fit using the least squares method
-            degree_freq_fit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 1)
-            degree_freq_fit_points = [degree_freq_fit(d) for d in degree_logs]
+            degree_freq_quadfit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 2)
+            degree_freq_fit_points = [degree_freq_quadfit(d) for d in degree_logs]
 
             fig_metrics.add_trace(
                 go.Scatter(x=degree_logs, y=degree_freq_fit_points, mode="lines"),
                 row=1, col=2
             )
 
+            fig_metrics.update_xaxes(title_text="$ln(deg)$", row=1, col=2)
+            fig_metrics.update_yaxes(title_text="$ln(n)$", row=1, col=2)
+
 
         # create the metric graph object
 
-        graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options)
+        graph_metrics = dcc.Graph(figure=fig_metrics, config=graph_config_options, mathjax=True)
     
         # get the clustering coefficients for nodes if it's > 0
         clustered_nodes = dict(
@@ -895,6 +899,7 @@ def draw_token_graph_plotly_object(
         fig_metrics.update_yaxes(row=1, col=1)
         fig_metrics.update_yaxes(row=1, col=2)
         fig_metrics.update_yaxes(row=1, col=3)
+
         fig_metrics.update_layout(
             margin=dict(l=0, r=0, t=80, b=40),
             showlegend=False,
@@ -1429,7 +1434,6 @@ app.layout = dbc.Container(
             )
         ),
         dcc.Store(id="modal-row-id"), # to keep track of the id of the row that is being revised in the modal view
-        dcc.Store(id="parsed-data"),
         dcc.Store(id="assigned-deductive-codes", data=dict()),
         dcc.Store(id="deductive-code-definitions", data=dict()),
         dcc.Store(id="stopped-tokens", data=list()),
@@ -1482,6 +1486,9 @@ def load_input_file_callback(file_name, is_sentencized, spacy_model):
     if len(file_text) > 0:
 
         model_folder = fs.get_model_path(mode_name, spacy_model, is_sentencized)
+
+        # TODO: review the following section about cached parsed data (probably not needed, repetitive, or erroneus)
+
         cached_parsed_data_file_name = model_folder / "parsed_data.pickle"
         if cached_parsed_data_file_name.is_file():
             return file_text, mode_name, False, "primary"
@@ -1554,7 +1561,6 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     Output("utterances-accordion", "active_item"),
     Output("input-accordion", "active_item"),
     Output("graph-button", "disabled"),
-    Output("parsed-data", "data"),
     Output("deductive-code-definitions", "data"),
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
     Output("stopped-tokens", "data", allow_duplicate=True),
@@ -1563,7 +1569,6 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
 
     Input("parse-button", "n_clicks"),
     Input("load-cached-button", "n_clicks"),
-
     State("input-file-dropdown", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
@@ -1622,14 +1627,14 @@ def parse_button_callback(
 
     if ctx.triggered_id == "parse-button":
         # here in possible changes
-        parsed_data = parse_raw_text(
+        full_row_data = parse_raw_text(
             raw_transcript_text, timestamp=time,
             is_interviewer=interviewer,
             in_sentences = sentencized,
             use_nlp_tags = use_nlp_tags,
         )
     else:
-        parsed_data = cached_parsed_data
+        full_row_data = cached_parsed_data
 
     # save a backup of the input file (if it doesn't exist)
     # and save the input in the raw input texarea to the text file
@@ -1654,7 +1659,7 @@ def parse_button_callback(
     # TODO -> refresh the file list if a new file was created and chose that file as the new input (requires updating this callback signature)
     # if filename == "__manual entry__":
 
-    return generate_highlighted_utterances(parsed_data), "revise", "nil", False, parsed_data, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens), ""
+    return generate_highlighted_utterances(full_row_data), "revise", "nil", False, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens), ""
 
 
 
@@ -1803,7 +1808,6 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     Input("node-size", "value"),
     # Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
 
-    State("parsed-data", "data"),
     State("inclusion-options-checklist", "value"),
     State("use-deductive-codes", "value"),
     State("assigned-deductive-codes", "data"),
@@ -1812,6 +1816,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     State("combine-by-similarity", "value"),
     State("min-similarity", "value"),
     State('data-table', 'virtualRowData'),
+    State('data-table', 'rowData'),
     State("by-sent", "value"),
     State("model-selection-dropdown", "value"),
     State("stopped-tokens", "data"),
@@ -1830,8 +1835,6 @@ def generate_graph_button_callback(
         spring_iterations,
         spring_k,
         node_size_multiplier,
-        # toggled_token,
-        parsed_data,
         selected_inclusion_options,
         use_deductive_codes,
         assigned_codes,
@@ -1839,7 +1842,8 @@ def generate_graph_button_callback(
         mode_name,
         combine_by_similarity,
         min_similarity,
-        active_row_data,
+        displayed_row_data,
+        full_row_data,
         is_sentencized,
         spacy_model,
         stopped_tokens,
@@ -1851,18 +1855,18 @@ def generate_graph_button_callback(
 
     empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", min_co_occurrence, user_actions]
 
-    if graph_button_disabled:
-        return empty_return
+    # if graph_button_disabled:
+    #     return empty_return
 
     if ctx.triggered_id == "graph-button":
         graph_button_clicked = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
         #   and run that function asynchronously so that it doesn't slow down the graphing process
-        asyncio.run(pickle_model(mode_name, parsed_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens))
+        asyncio.run(pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens))
     
-    if not graph_button_clicked:
-        return empty_return
+    # if not graph_button_clicked:
+    #     return empty_return
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
     if min_co_occurrence is None: min_co_occurrence = 1
@@ -1877,7 +1881,7 @@ def generate_graph_button_callback(
     #   Otherwise, all numbers get jumbled up
     # I use sorted to make sure that the user sorting the table does not mess up the graph
     # I also make sure not to include the lines that were turned off by the user
-    list_of_marks = sorted([l['line'] for l in active_row_data if l['in?']])
+    list_of_marks = sorted([l['line'] for l in displayed_row_data if l['in?']])
     slider_marks = {r: '' for r in list_of_marks}
 
     # determine the start and end of the range that the user picked
@@ -1887,14 +1891,14 @@ def generate_graph_button_callback(
         last_line = list(slider_marks.keys())[-1]
         end = selected_range[1] if selected_range[1] != 0 and selected_range[1] <= last_line else last_line
 
-    end = end if end < len(parsed_data) else len(parsed_data)
+    end = end if end < displayed_row_data[-1]['line'] else displayed_row_data[-1]['line']
 
     selected_range = list([start, end])
 
     if spring_k == 0: spring_k = 0.05 # otherwise, networkx throws a `division by zero` error :)
 
     graph, stats = draw_token_graph_plotly_object(
-        data=parsed_data,
+        data=displayed_row_data,
         start_line=start,
         end_line=end,
         mode_name=mode_name,
@@ -1910,13 +1914,13 @@ def generate_graph_button_callback(
         size_multiplier=node_size_multiplier,
         show_interviewer =2 not in selected_inclusion_options,
         show_all_labels=display_all_labels,
-        show_weak_links = display_weak_links,
+        show_weak_links=display_weak_links,
         combine_by_similarity=combine_by_similarity,
         min_similarity=min_similarity,
     )
-    # change_log = [{'dict a': 'test a'}, {'dict b': 'test b'}, {'dict c': 'test c'}]
+
     return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions
-    # need to update change_log
+
 
 
 # TODO: updating the datatable's highlighted tokens column once the user exits the revise modal
@@ -1964,16 +1968,15 @@ def revise_modal_closed_callback(
 @app.callback(
     Output("log-data-table", "rowData", allow_duplicate=True),
     Input("data-table", "cellValueChanged"),
-    State("parsed-data", "data"),
     prevent_initial_call=True,
 )
-def update_included_lines_callback(changed, parsed_data):
-    global user_actions
+def update_included_lines_callback(changed):
+
+    global user_actions # TODO -> Pickle the row_data of the user actions table instead of this global variable
 
     if changed:
         i = int(changed[0]["rowId"])
         cell_incl = changed[0]['data']['in?']
-        parsed_data[i]['in?'] = cell_incl
         curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if cell_incl:
             excluded_rows.discard(i)
