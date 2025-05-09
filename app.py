@@ -801,7 +801,6 @@ def draw_token_graph_plotly_object(
         animation_options= dict(redraw=True, duration=100),
     )
 
-
     ## Graph Metrics PLOTS
 
     graph_metrics = html.P("No metrics to display yet because there are no connected tokens.",className="lead",)
@@ -845,35 +844,39 @@ def draw_token_graph_plotly_object(
 
             # create a log-log graph
             n = G.number_of_nodes()
-            degree_hist = nx.degree_histogram(G)
+            degree_histogram = nx.degree_histogram(G)
 
-            # uncomment the following two lines if you want to exclude the 0 values
-            # degree_freq_logs = [math.log(f) for f in degree_hist if f > 0 and math.log(f) > 0]  # -> y coordinate
-            # degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
+            fig_metrics.update_xaxes(title_text="$log_{10}(deg)$", row=1, col=2)
+            fig_metrics.update_yaxes(title_text="$log_{10}(n)$", row=1, col=2)
 
-            # uncomment the following lines if you want to include the 0 values
-            degree_freq_logs = [math.log(f) if f > 0 else 0 for f in degree_hist]  # -> y coordinate
-            degree_logs = [math.log(d) if d > 0 else 0 for d in range(len(degree_freq_logs))] # -> x coordinate
+            # calculate log-log points based on the degree histogram
+            #   but drop the 0 values
+
+            loglog_points_x = list()
+            loglog_points_y = list()
+
+            for i in range(1, len(degree_histogram), 1):
+                if degree_histogram[i] > 0:
+                    log_x = math.log10(i)
+                    log_y = math.log10(degree_histogram[i])
+
+                    if log_y > 0:
+                        loglog_points_x.append(log_x)
+                        loglog_points_y.append(log_y)
+
+            loglog_fit = np.polynomial.Polynomial.fit(loglog_points_x, loglog_points_y, 2)
+            loglog_fitline_x = np.arange(0.01, max(loglog_points_x), 0.01)
+            loglog_fitline_y = loglog_fit(loglog_fitline_x)
 
             fig_metrics.add_trace(
-                go.Scatter(x=degree_logs, y=degree_freq_logs, mode="markers"),
+                go.Scatter(x=loglog_points_x, y=loglog_points_y, mode="markers"),
                 row=1, col=2
             )
 
-            # TODO -> show all points, but ignore 0 values in the poly fit both for ln(n) and ln(deg(n))
-
-            # create a 2nd degree polynomial fit using the least squares method
-            degree_freq_quadfit = np.polynomial.Polynomial.fit(degree_logs, degree_freq_logs, 2)
-            degree_freq_fit_points = [degree_freq_quadfit(d) for d in degree_logs]
-
             fig_metrics.add_trace(
-                go.Scatter(x=degree_logs, y=degree_freq_fit_points, mode="lines"),
+                go.Scatter(x=loglog_fitline_x, y=loglog_fitline_y, mode="lines"),
                 row=1, col=2
             )
-
-            fig_metrics.update_xaxes(title_text="$ln(deg)$", row=1, col=2)
-            fig_metrics.update_yaxes(title_text="$ln(n)$", row=1, col=2)
-
 
         # create the metric graph object
 
