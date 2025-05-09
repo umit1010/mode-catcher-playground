@@ -842,14 +842,14 @@ def draw_token_graph_plotly_object(
                 row=1, col=1
             )
 
-            # create a log-log graph
-            n = G.number_of_nodes()
+            # create a log-log plot of the degree distribution
+
             degree_histogram = nx.degree_histogram(G)
 
             fig_metrics.update_xaxes(title_text="$log_{10}(deg)$", row=1, col=2)
             fig_metrics.update_yaxes(title_text="$log_{10}(n)$", row=1, col=2)
 
-            # calculate log-log points based on the degree histogram
+            # calculate log-log points using the degree histogram
             #   but drop the 0 values
 
             loglog_points_x = list()
@@ -915,7 +915,7 @@ def draw_token_graph_plotly_object(
                 text=f'metrics for {mode_name}',
                 font=dict(size=18, weight="bold"),
                 subtitle=dict(
-                    text=f"n = {n} (n<sub>d>0</sub> = {len(connected_nodes)}) | ρ = {nx.density(G):.3f} | {subtitle_user_choices}",
+                    text=f"n = {G.number_of_nodes()} (n<sub>d>0</sub> = {len(connected_nodes)}) | ρ = {nx.density(G):.3f} | {subtitle_user_choices}",
                     font=dict(size=10, color="gray")
                 ),
                 x=0.5,
@@ -931,6 +931,9 @@ def draw_token_graph_plotly_object(
 
 
 # ---- INTERFACE ----
+# ---- INTERFACE ----
+# ---- INTERFACE ----
+
 
 # -- input section --
 # creates Path object
@@ -956,24 +959,27 @@ raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.", value="", rows=10, id="raw-text"
 )
 
-parse_button = dbc.Button("Parse Transcript", id="parse-button", size="lg", class_name="mx-2")
+parse_button = dbc.Button("Parse", id="parse-button", size="lg", class_name="mx-1")
 
 load_cached_button = dbc.Button("Reload", id="load-cached-button", outline=True, size="lg", color="primary", disabled=True, class_name="mx-2")
 
-sentencize_checkbox = dbc.Checkbox(label="Split into sentences?", id="by-sent", value=True, persistence=True)
-apply_tags_checkbox = dbc.Checkbox(label="Use NLP tags to infer irrelevant tokens", id="use-nlp-tags", value=True, persistence=True)
-#corefs_checkbox = dbc.Checkbox(label="Resolve coreferences", id="resolve-corefs", value=False, disabled=False if heroku_access_pwd is None else True)
+split_into_sents_checkbox = dbc.Checkbox(label="Split into sentences", id="split-into-sentences", value=True, persistence=True)
+apply_tags_checkbox = dbc.Checkbox(label="Infer irrelevant tokens", id="use-nlp-tags", value=True, persistence=True)
 
-model_selection_dropdown = dbc.Select(
-    id="model-selection-dropdown",
-    options=[
-        {"label": "Small", "value": "en_core_web_sm"},
-        {"label": "Medium", "value": "en_core_web_md"},
-        {"label": "Large", "value": "en_core_web_lg"},
-    ],
-    persistence=True,
-    value="en_core_web_lg"
-)
+
+model_selection_dropdown = dbc.InputGroup([
+    dbc.InputGroupText("Model"),
+    dbc.Select(
+        id="model-selection-dropdown",
+        options=[
+            {"label": "Small", "value": "en_core_web_sm"},
+            {"label": "Medium", "value": "en_core_web_md"},
+            {"label": "Large", "value": "en_core_web_lg"},
+        ],
+        persistence=True,
+        value="en_core_web_lg"
+    )
+], class_name="mb-2"),
 
 reset_button = dbc.Button(
     "Reset Model",
@@ -981,8 +987,92 @@ reset_button = dbc.Button(
     color="danger",
     outline=True,
     class_name="ms-auto",
-    n_clicks=0,
+    size="sm"
 )
+
+input_accordion = dbc.Accordion(
+    [
+        dbc.AccordionItem(
+            [
+                dbc.Row(
+                    dbc.Col(
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Transcript File"),
+                            input_file_dropdown
+                        ]),
+                        class_name="mb-4",
+                        width=12,
+                        lg=8,
+                    )
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        dbc.InputGroup([
+                            dbc.InputGroupText("Mode name"),
+                            model_name_input
+                        ]),
+                        class_name="mb-4",
+                        width=12,
+                        lg=8,
+                    )
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        [
+                            dbc.Label("Transcript:"),
+                            raw_text_input,
+                        ]
+                    ),
+                    class_name="mb-4",
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(model_selection_dropdown, xl=4),
+                        dbc.Col(split_into_sents_checkbox, xl=2),
+                        dbc.Col(apply_tags_checkbox, xl=3),
+                    ],
+                    class_name="mt-4",
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        [
+                            parse_button,
+                            load_cached_button,
+                            reset_button,
+                        ],
+                        class_name="d-flex align-items-end my-4",
+                    ),
+                    
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.Div("", id="reset-message-div", className="ms-auto"),
+                            class_name="d-flex align-items-end",
+                        )
+                    ],
+                ),
+            ],
+            title="Input",
+            item_id="input",
+        )
+    ],
+    active_item="input",
+    id="input-accordion",
+    className="my-4",
+)
+
+# -- utterances section --
+
+parsing_spinner = dbc.Spinner(html.Div(id="parsing-spinner"), color="primary"),
+
+empty_utterances_table_data = [{
+    'line': '0',
+    'time': '00:00:00',
+    'speaker': 'N/A',
+    'utterance': 'Processed text will be displayed in this table.',
+    'in?': False
+}]
 
 inclusion_options = dbc.Checklist(
     options=[
@@ -997,119 +1087,6 @@ inclusion_options = dbc.Checklist(
     id="inclusion-options-checklist",
     persistence=True,
 )
-
-input_accordion = dbc.Accordion(
-    [
-        dbc.AccordionItem(
-            [
-                dbc.Row(
-                    dbc.Col(
-                        dbc.InputGroup([
-                            dbc.InputGroupText("Transcript File"),
-                            input_file_dropdown
-                        ]),
-                        class_name="mb-4",
-                        width=10,
-                        lg=6,
-                    )
-                ),
-                dbc.Row(
-                    dbc.Col(
-                        dbc.InputGroup([
-                            dbc.InputGroupText("Mode name"),
-                            model_name_input
-                        ]),
-                        class_name="mb-4",
-                        width=10,
-                        lg=6,
-                    )
-                ),
-                dbc.Row(
-                    dbc.Col(
-                        [
-                            dbc.Label("Transcript:"),
-                            raw_text_input,
-                        ]
-                    ),
-                    class_name="mb-4",
-                ),
-                dbc.Row(
-
-                ),
-                dbc.Row([
-                    dbc.Col(sentencize_checkbox, xl=2),
-                    dbc.Col(apply_tags_checkbox, xl=3),
-                    # dbc.Col(corefs_checkbox, xl=2),
-                    dbc.Col(width=2),
-                    dbc.Col(
-                        dbc.InputGroup([
-                            dbc.InputGroupText("Model"),
-                            model_selection_dropdown
-                        ]),
-                        xl=3
-                    )
-                ], class_name="mt-4", justify="between"
-                ),
-                dbc.Row(
-                    dbc.Col(
-                        [
-                            parse_button,
-                            load_cached_button,
-                        ],
-                        class_name="mt-4",
-                    ),
-                    
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                reset_button,
-                            ],
-                            class_name="d-flex align-items-end",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    dbc.Col(
-                        dbc.Spinner(html.Div(id="parsing-spinner")),
-                        width=1,
-                    ),
-                    justify="start",
-                    # class_name="ms-2",
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                html.Div(
-                                    "", id="reset-message-div", className="ms-auto"
-                                ),
-                            ],
-                            class_name="d-flex align-items-end",
-                        )
-                    ],
-                    class_name="mt-3",
-                ),
-            ],
-            title="Input",
-            item_id="input",
-        )
-    ],
-    active_item="input",
-    id="input-accordion",
-    className="my-4",
-)
-
-# -- utterances section --
-
-empty_utterances_table_data = [{
-    'line': '0',
-    'time': '00:00:00',
-    'speaker': 'N/A',
-    'utterance': 'Processed text will be displayed in this table.',
-    'in?': False
-}]
 
 utterances_accordion = dbc.Accordion(
     dbc.AccordionItem(
@@ -1223,7 +1200,7 @@ user_log_accordion = dbc.Accordion(
 grap_layout_options_div = html.Div(
     [
         html.Br(),
-        html.H4("Graph Construction", className="my-4"),
+        html.H5("Graph Construction", className="my-2"),
         dbc.Row(
             [
                 dbc.Col(
@@ -1246,7 +1223,7 @@ grap_layout_options_div = html.Div(
             class_name="mt-4"
         ),
         html.Br(),
-        html.H4("Visualization", className="my-4"),
+        html.H5("Visualization", className="my-2"),
         dbc.Row(
             [
                 dbc.Col(
@@ -1328,9 +1305,12 @@ grap_layout_options_div = html.Div(
 
 graph_view_options_div = html.Div(
     [
-        html.H3("Token Graph", className="mb-4"),
-        html.P(" "),
-        html.P(" "),
+        html.H4(
+            [
+                "Token Graph",
+                dbc.Spinner(html.Div(id="graphing-spinner"), color="primary", size="md"),
+            ], className="mb-4"
+        ),
         html.Div(
             "The token graph will be displayed once you generate it.",
             id="graph-div",
@@ -1346,7 +1326,7 @@ graph_view_options_div = html.Div(
         ),
         grap_layout_options_div,
     ],
-    className="border rounded p-4 my-4",
+    className="border rounded p-4",
 )
 
 metrics_viewer_wrapper_div = html.Div(
@@ -1371,21 +1351,6 @@ coding_modal = dbc.Modal(
                 ]),
                 dbc.Col(
                     [
-                        ## Umit commented out the following lines on 02/24/2025 to deactivate
-                        ##      the treemap visualization of token counts
-
-                        # dbc.Row(
-                        #     dbc.Col(
-                        #         [
-                        #             html.H4("Frequency map"),
-                        #             html.Div(
-                        #                 "Something must have gone wrong!",
-                        #                 id="utterance-stats",
-                        #             ),
-                        #         ]
-                        #     ),
-                        # ),
-
                         html.H5("Deductive Codes"),
                         dbc.Container(id="code-checkboxes-container")
                     ]
@@ -1436,18 +1401,18 @@ app.layout = dbc.Container(
                 ]
             )
         ),
-        dcc.Store(id="modal-row-id"), # to keep track of the id of the row that is being revised in the modal view
-        dcc.Store(id="assigned-deductive-codes", data=dict()),
-        dcc.Store(id="deductive-code-definitions", data=dict()),
-        dcc.Store(id="stopped-tokens", data=list()),
-        dcc.Store(id="unstopped-tokens", data=list()),
-        # dcc.Store(id="nlp-sm", data=spacy.load("en_core_web_sm")), # TODO: can I keep the pipeline in the memory so as to avoid reloading it every time?Í
+        dbc.Row(dbc.Col(parsing_spinner), class_name="mb-4"),
         dbc.Row(dbc.Col(utterances_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
         dbc.Row(dbc.Col(user_log_accordion)),
-        coding_modal
+        coding_modal,
+        dcc.Store(id="modal-row-id"),  # to keep track of the id of the row that is being revised in the modal view
+        dcc.Store(id="assigned-deductive-codes", data=dict()),
+        dcc.Store(id="deductive-code-definitions", data=dict()),
+        dcc.Store(id="stopped-tokens", data=list()),
+        dcc.Store(id="unstopped-tokens", data=list()),
     ],
     fluid=True,
     class_name="p-4",
@@ -1465,7 +1430,7 @@ app.layout = dbc.Container(
     Output("load-cached-button", "disabled"),
     Output("load-cached-button", "color"),
     Input("input-file-dropdown", "value"),
-    State("by-sent", "value"),
+    State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value")
 )
 def load_input_file_callback(file_name, is_sentencized, spacy_model):
@@ -1514,7 +1479,7 @@ def enable_parse_button_callback(name: str, text: str):
     Output("reset-message-div", "children"),
     Input("reset-button", "n_clicks"),
     State("mode-name", "value"),
-    State("by-sent", "value"),
+    State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
@@ -1575,7 +1540,7 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     State("input-file-dropdown", "value"),
     State("mode-name", "value"),
     State("raw-text", "value"),
-    State("by-sent", "value"),
+    State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
 
@@ -1798,6 +1763,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     Output("metrics-div", "children"),
     Output("min-strong-co", "value"),
     Output("log-data-table", "rowData"),
+    Output("graphing-spinner", "children"),
 
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
@@ -1820,7 +1786,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     State("min-similarity", "value"),
     State('data-table', 'virtualRowData'),
     State('data-table', 'rowData'),
-    State("by-sent", "value"),
+    State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value"),
     State("stopped-tokens", "data"),
     State("unstopped-tokens", "data"),
@@ -1856,20 +1822,12 @@ def generate_graph_button_callback(
     global graph_button_clicked
     global user_actions
 
-    empty_return = ["You need to process some data.", {0: 'N/A'}, [0, 0], "You need to process some data.", min_co_occurrence, user_actions]
-
-    # if graph_button_disabled:
-    #     return empty_return
-
     if ctx.triggered_id == "graph-button":
         graph_button_clicked = True
 
         # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
         #   and run that function asynchronously so that it doesn't slow down the graphing process
         asyncio.run(pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens))
-    
-    # if not graph_button_clicked:
-    #     return empty_return
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
     if min_co_occurrence is None: min_co_occurrence = 1
@@ -1922,7 +1880,7 @@ def generate_graph_button_callback(
         min_similarity=min_similarity,
     )
 
-    return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions
+    return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions, ""
 
 
 

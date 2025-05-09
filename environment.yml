@@ -3,13 +3,13 @@ channels:
   - conda-forge
 dependencies:
   - python=3.12.10
-  - pip=25.0.1
-  - dash=3.0.2
-  - dash-bootstrap-components=2.0.1
+  - pip=25.1.1
+  - dash=3.0.4
+  - dash-bootstrap-components=2.0.2
   - dash-ag-grid=31.3.1
   - networkx=3.4.2
-  - numpy=2.2.4
-  - orjson=3.10.16
+  - numpy=2.2.5
+  - orjson=3.10.18
   - spacy=3.8.5
   - pip:
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
