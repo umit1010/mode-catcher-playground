@@ -556,7 +556,7 @@ def draw_token_graph_plotly_object(
 
     # first, let's generate the token graph
     G = generate_token_graph_object(
-        data= data,
+        data=data,
         start=start_line,
         end=end_line,
         use_similarity=combine_by_similarity,
@@ -1681,14 +1681,14 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
             was_stop = ctx.triggered_id["stop"]
 
             # to log the time this token was toggled
-            curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             if was_stop:
 
                 nlp.vocab[toggled_token].is_stop = False
                 stopped_tokens_set.discard(toggled_token)
                 unstopped_tokens_set.add(toggled_token)
-                user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
+                user_actions.append({'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
 
             else:
 
@@ -1702,7 +1702,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
                     stopped_tokens_set.add(toggled_token)
                     unstopped_tokens_set.discard(toggled_token)
                     tokens_excluded_from_lines[row].remove(toggled_token)
-                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
+                    user_actions.append({'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
 
                 else:
 
@@ -1713,8 +1713,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
                     else:
                         tokens_excluded_from_lines[row].append(toggled_token)
 
-                    user_actions.append({'time': curr_time, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
-                    # change_log.append(html.P(f'At time {curr_time}: \"{toggled_token}\" was excluded from line {row + 1}.'))
+                    user_actions.append({'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
 
         token_buttons = process_utterance(row_data[row]["utterance"], row=row)
 
@@ -1902,8 +1901,12 @@ def update_included_lines_callback(changed_row):
 
     global user_actions # TODO -> Pickle the row_data of the user actions table instead of this global variable
 
-    if changed_row:
-        user_actions.append({'time': curr_time, 'line': i + 1, 'change': text})
+    if changed_row is not None:
+        user_actions.append({
+            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'line': changed_row[0]['data']['line'],
+            'change': changed_row[0]['data']['utterance']
+        })
     return user_actions
 
 
