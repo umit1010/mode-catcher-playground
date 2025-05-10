@@ -230,7 +230,9 @@ def parse_raw_text(txt: str,
                 utterance = s.text
 
                 sent_row['utterance'] = utterance
-                sent_row['tokens'] = s.as_doc().to_json()        # umit's addition onn 04/24 to avoid reparsing the sentences again and again
+                sent_row['tokens'] = [t.lower_ for t in s]
+                sent_row['lemmas'] = [t.lemma_ for t in s]
+                sent_row['is_punct'] = [t.is_punct for t in s]
                 data.append(sent_row)
 
         else:
@@ -238,7 +240,10 @@ def parse_raw_text(txt: str,
             i += 1
             row['line'] = i
             row["utterance"] = utterance.strip()
-            row['tokens'] = doc.to_json()             # umit's addition onn 04/24 to avoid reparsing the sentences again and again
+            row['doc'] = doc.to_json()
+            row['tokens'] = [t.lower_ for t in doc]
+            row['lemmas'] = [t.lemma_ for t in doc]
+            row['is_punct'] = [t.is_punct for t in doc]
             data.append(row)
 
     return data
@@ -335,37 +340,35 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
 
     return checkboxes_container
 
-# mapping use of certain "tokens" --> words?
-def process_utterance(raw_text, row):
+
+def generate_token_buttons(row_data, row):
 
     global nlp
     global tokens_excluded_from_lines
 
-    doc = nlp(raw_text.strip().lower())
+    doc = nlp(row_data['utterance'].strip().lower())
 
-    buttons_for_text = html.Div(
-        [
-            html.Span(
-                dbc.Button(
-                    token.text,
-                    id={
-                        "type": "toggle-token",
-                        "index": token.lemma_,
-                        "stop": True if nlp.vocab[token.lemma_].is_stop else False
-                    },
-                    n_clicks=0,
-                    color="light" if nlp.vocab[token.lemma_].is_stop else "danger" if token.lemma_ in tokens_excluded_from_lines.get(row, []) else "success",
-                    class_name="m-1",
-                    size="sm",
-                )
+    lowers = row_data['tokens']
+    lemmas = row_data['lemmas']
+    stops = [nlp.vocab[l].is_stop for l in lemmas]
+    puncts = row_data['is_punct']
+
+    buttons_for_text = html.Div([
+        html.Span(
+            dbc.Button(
+                lowers[i],
+                id={"type": "toggle-token", "index": lemmas[i], "stop": True if stops[i] else False},
+                color = "light" if stops[i] else "danger" if lemmas[i] in tokens_excluded_from_lines.get(row, []) else "success",
+                class_name = "m-1",
+                size="sm",
             )
-            if not nlp.vocab[token.lemma_].is_punct
-            else html.Span(token.text, className="mx-1")
-            for token in doc
-        ]
-    )
+        )
+        if not puncts[i]
+        else html.Span(lowers[i], className="m-1")
+        for i in range(len(lowers))
+    ])
 
-    return buttons_for_text #, token_treemap
+    return buttons_for_text
 
 
 
@@ -407,7 +410,10 @@ def generate_utterance_table(data, display_options, in_sents=False):
             {'field': 'utterance', 'hide': 3 in display_options, 'flex': 1},
             {'field': 'highlighted utterance', 'headerName': 'Highlighted Utterance', 'hide': 3 not in display_options, 'flex': 1},
             {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
-            {'field': 'tokens', "editable": False, 'hide': True},
+            {'field': 'tokens', "editable": False, 'hide': True}, # lowercase text of the tokens
+            {'field': 'lemmas', "editable": False, 'hide': True}, # lemmas of the tokens
+            {'field': 'is_punct', "editable": False, 'hide': True}, # whether to display the token as toggleable or not
+
         ],
         defaultColDef={
             'resizable': True,
@@ -1002,9 +1008,9 @@ input_accordion = dbc.Accordion(
                 ),
                 dbc.Row(
                     [
-                        dbc.Col(model_selection_dropdown, xl=4),
                         dbc.Col(split_into_sents_checkbox, xl=2),
-                        dbc.Col(apply_tags_checkbox, xl=3),
+                        dbc.Col(apply_tags_checkbox, xl=2),
+                        dbc.Col(model_selection_dropdown, xl=3),
                     ],
                     class_name="mt-4",
                 ),
@@ -1181,7 +1187,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Weak min co-occurrence"),
-                        dbc.Input(id="min-co", type="number", min=1, max=10, step=1, value=1, persistence=True, debounce=500),
+                        dbc.Input(id="min-co", type="number", min=1, max=10, step=1, value=1, persistence=True, debounce=300),
                     ]),
                     class_name="mt-2",
                     md=6, lg=4, xl=3,
@@ -1189,7 +1195,7 @@ grap_layout_options_div = html.Div(
                 dbc.Col(
                     dbc.InputGroup([
                         dbc.InputGroupText("Strong min co-occurrence"),
-                        dbc.Input(id="min-strong-co", type="number", min=1, max=10, step=1, value=2, persistence=True, debounce=500)
+                        dbc.Input(id="min-strong-co", type="number", min=1, max=10, step=1, value=2, persistence=True, debounce=300)
                     ]),
                     class_name="mt-2",
                     md=6, lg=4, xl=3,
@@ -1652,8 +1658,10 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
     Output("modal-row-id", "data"),
     Output("stopped-tokens", "data", allow_duplicate=True),
     Output("unstopped-tokens", "data", allow_duplicate=True),
+
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
+
     State("data-table", "rowData"),
     State("assigned-deductive-codes", "data"),
     State("deductive-code-definitions", "data"),
@@ -1715,7 +1723,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 
                     user_actions.append({'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
 
-        token_buttons = process_utterance(row_data[row]["utterance"], row=row)
+        token_buttons = generate_token_buttons(row_data[row], row=row)
 
         code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
@@ -1899,7 +1907,15 @@ def revise_modal_closed_callback(
 )
 def update_included_lines_callback(changed_row):
 
-    global user_actions # TODO -> Pickle the row_data of the user actions table instead of this global variable
+    global user_actions
+
+    # TODO -> Pickle the row_data of the user actions table instead of this global variable
+
+    # TODO -> change this callback (and the others) to directly manipulate the data of the
+    #           user actions log grid instead of using the global
+
+    # TODO -> make this algorithm smart, so that if an action cancels an earlier opposite action,
+    #           we delete the earlier opposite action instead of overpopulating the log
 
     if changed_row is not None:
         user_actions.append({
