@@ -28,8 +28,6 @@ nlp = spacy.blank("en")  # loading a blank model because we'll load the actual m
 
 G = nx.Graph()
 
-excluded_rows = set()
-graph_button_clicked = False
 tokens_excluded_from_lines = dict()
 user_actions = list()
 
@@ -50,18 +48,13 @@ server = app.server
 
 def flush_globals():
 
-    global excluded_rows                # TODO: remove this and use the rowData which includes this info anyways
-    global graph_button_clicked         # TODO: figure out why this is needed & how to get rid of it
     global nlp
     global tokens_excluded_from_lines
     global user_actions                 # TODO: convert to dcc.Store & then use the timestamp callback to update the table
 
-    excluded_rows = None
     tokens_excluded_from_lines = None
     user_actions = None
 
-    excluded_rows = set()
-    graph_button_clicked = False
     nlp = spacy.blank("en")
     tokens_excluded_from_lines = dict()
     user_actions = list()
@@ -71,7 +64,6 @@ def flush_globals():
 async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
 
     global tokens_excluded_from_lines
-    global excluded_rows
 
     model_path = fs.get_model_path(mode_name, spacy_model, is_sentencized)
 
@@ -87,10 +79,6 @@ async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, de
     with open(model_path / fs.EXCLUDED_TOKENS_FILENAME, "wb") as f:
         pickle.dump(tokens_excluded_from_lines, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # pickle the rows that are completely excluded by the user
-    with open(model_path / fs.EXCLUDED_ROWS_FILENAME, "wb") as f:
-        pickle.dump(excluded_rows, f, protocol=pickle.HIGHEST_PROTOCOL)
-
     # pickle the user selected deductive codes
     with open(model_path / fs.ASSIGNED_CODES_FILENAME, "wb") as f:
         pickle.dump(deductive_codes, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -105,7 +93,6 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
 
     flush_globals()
 
-    global excluded_rows
     global tokens_excluded_from_lines
     global user_actions
 
@@ -142,12 +129,6 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
         with open(excluded_tokens_file, "rb") as f:
             tokens_excluded_from_lines = pickle.load(f)
 
-    # load the lines that were completely excluded by the user
-    excluded_rows_file = model_path / fs.EXCLUDED_ROWS_FILENAME
-    if excluded_rows_file.is_file():
-        with open(excluded_rows_file, "rb") as f:
-            excluded_rows = pickle.load(f)
-
     # load the deductive codes selected by the user
     assigned_codes_file = model_path / fs.ASSIGNED_CODES_FILENAME
     if assigned_codes_file.is_file():
@@ -174,14 +155,10 @@ def parse_raw_text(txt: str,
                    use_nlp_tags=False,
                    ):
 
-    global excluded_rows
     global tokens_excluded_from_lines
     global nlp
 
     first_parse = True if len(tokens_excluded_from_lines) == 0 else False
-
-    if excluded_rows is None:
-        excluded_rows = list()
 
     data = list()
 
@@ -249,7 +226,6 @@ def parse_raw_text(txt: str,
                 sent_row = row.copy()
                 i += 1
                 sent_row['line'] = i
-                sent_row['in?'] = False if i in excluded_rows else True
 
                 utterance = s.text
 
@@ -261,7 +237,6 @@ def parse_raw_text(txt: str,
         # here would I go through and make each token bold using markdown?
             i += 1
             row['line'] = i
-            row['in?'] = False if i in excluded_rows else True
             row["utterance"] = utterance.strip()
             row['tokens'] = doc.to_json()             # umit's addition onn 04/24 to avoid reparsing the sentences again and again
             data.append(row)
@@ -1383,8 +1358,6 @@ coding_modal = dbc.Modal(
 
 ## TODO: Remaining globals to convert to dcc.Store objects
 
-# excluded_rows = set()
-# graph_button_clicked = False
 # lemmas_excluded_from_lines = dict()
 # user_actions = list()
 
@@ -1562,12 +1535,8 @@ def parse_button_callback(
     flush_globals()
 
     global user_actions
-    global excluded_rows
     global tokens_excluded_from_lines
     global nlp
-
-    ## TODO: doing right now -> using row data instead of active_data + removing the excluded_rows global variable
-    # excluded_rows = []
 
     cached_parsed_data, deductive_codes, code_definitions, stopped_tokens, unstopped_tokens = unpickle_defaults_and_model(mode_name, spacy_model, sentencized)
 
@@ -1819,14 +1788,12 @@ def generate_graph_button_callback(
         unstopped_tokens
 ):
 
-    global graph_button_clicked
     global user_actions
 
     if ctx.triggered_id == "graph-button":
-        graph_button_clicked = True
 
-        # also save (pickle) the user's work if the user clicks the "Generate Knowledge Graph" button
-        #   and run that function asynchronously so that it doesn't slow down the graphing process
+        # pickle the user's work
+        #   and do it asynchronously so that it doesn't slow down the graphing process
         asyncio.run(pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens, unstopped_tokens))
 
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
@@ -1931,20 +1898,11 @@ def revise_modal_closed_callback(
     Input("data-table", "cellValueChanged"),
     prevent_initial_call=True,
 )
-def update_included_lines_callback(changed):
+def update_included_lines_callback(changed_row):
 
     global user_actions # TODO -> Pickle the row_data of the user actions table instead of this global variable
 
-    if changed:
-        i = int(changed[0]["rowId"])
-        cell_incl = changed[0]['data']['in?']
-        curr_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if cell_incl:
-            excluded_rows.discard(i)
-            text = f'The line is turned ON.'
-        else:
-            excluded_rows.add(i)
-            text = f'The line is turned OFF.'
+    if changed_row:
         user_actions.append({'time': curr_time, 'line': i + 1, 'change': text})
     return user_actions
 
