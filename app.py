@@ -2,6 +2,7 @@ import asyncio
 import math
 import pickle
 import re
+import sys
 import tomllib
 from collections import Counter
 from datetime import datetime
@@ -203,7 +204,7 @@ def parse_raw_text(txt: str,
         doc = nlp(utterance.strip())
 
         if in_sentences:
-            for s in doc.sents:
+            for sentence in doc.sents:
 
                 excluded_in_row = tokens_excluded_from_lines.get(i, [])
 
@@ -211,7 +212,7 @@ def parse_raw_text(txt: str,
                 #    but only if this transcript is being loaded for the first time
                 #    otherwise, don't overwrite user-made changes
                 if use_nlp_tags and first_parse:
-                    excluded_in_row.extend([ t.lemma_ for t in s if nlf.has_excluded_nlp_tag(t) and not t.is_stop ])
+                    excluded_in_row.extend([ t.lemma_ for t in sentence if nlf.has_excluded_nlp_tag(t) and not t.is_stop ])
 
                 # add the tokens excluded by the algorithm to the rest of exclusions
                 if i in tokens_excluded_from_lines.keys():
@@ -227,12 +228,14 @@ def parse_raw_text(txt: str,
                 i += 1
                 sent_row['line'] = i
 
-                utterance = s.text
+                utterance = sentence.text
 
                 sent_row['utterance'] = utterance
-                sent_row['tokens'] = [t.lower_ for t in s]
-                sent_row['lemmas'] = [t.lemma_ for t in s]
-                sent_row['is_punct'] = [t.is_punct for t in s]
+                sent_row['tokens'] = [t.lower_ for t in sentence]
+                sent_row['lemmas'] = [t.lemma_ for t in sentence]
+                sent_row['is_punct'] = [t.is_punct for t in sentence]
+                sent_row['highlighted utterance'] = highlight_utterance(sentence)
+
                 data.append(sent_row)
 
         else:
@@ -240,10 +243,11 @@ def parse_raw_text(txt: str,
             i += 1
             row['line'] = i
             row["utterance"] = utterance.strip()
-            row['doc'] = doc.to_json()
             row['tokens'] = [t.lower_ for t in doc]
             row['lemmas'] = [t.lemma_ for t in doc]
             row['is_punct'] = [t.is_punct for t in doc]
+            row['highlighted utterance'] = highlight_utterance(sentence)
+
             data.append(row)
 
     return data
@@ -359,12 +363,12 @@ def generate_token_buttons(row_data, row):
                 lowers[i],
                 id={"type": "toggle-token", "index": lemmas[i], "stop": True if stops[i] else False},
                 color = "light" if stops[i] else "danger" if lemmas[i] in tokens_excluded_from_lines.get(row, []) else "success",
-                class_name = "m-1",
+                class_name = "m-2",
                 size="sm",
             )
         )
         if not puncts[i]
-        else html.Span(lowers[i], className="m-1")
+        else html.Span(lowers[i], className="m-2")
         for i in range(len(lowers))
     ])
 
@@ -376,21 +380,17 @@ def generate_token_buttons(row_data, row):
 # ---- UTTERANCE TABLE ----
 
 # create a highlighted version of any given utterance using the html <mark> tag
-def highlight_utterance(line):
+def highlight_utterance(doc):
     global nlp
-    global tokens_excluded_from_lines
+    global tokens_excluded_from_lines # Todo: include this factor!
 
-    row = line["line"] - 1
-    doc = nlp(line["utterance"]) # TODO -> make this line get the json doc from the line and use from spacy.tokens import Doc to recreate the doc object + see if it'd even give us any performance boost (perhaps not here, but when reloading existing data)
-    line["highlighted utterance"] = "".join(t.text_with_ws if nlp.vocab[t.lemma].is_stop
-                                                              or t.lemma_ in tokens_excluded_from_lines.get(row, [])
-                                                              or t.is_punct else f"<mark>{t.text}</mark>{t.whitespace_}"
-                                                            for t in doc)
-    return line
-
-# generate the highlighted utterance column values for the entire dataset
-def generate_highlighted_utterances(data):
-    return list(map(lambda x: highlight_utterance(x), data))
+    return ''.join([
+                    t.text_with_ws if nlp.vocab[t.lemma_].is_stop
+                                      or nlp.vocab[t.lemma_].is_punct
+                                      or t.lemma_ in tokens_excluded_from_lines.get(t.i, [])
+                    else f"<mark>{t.text}</mark>{t.whitespace_}"
+                    for t in doc
+                ])
 
 # created this function to refactor table generation because it was used in multiple places
 def generate_utterance_table(data, display_options, in_sents=False):
@@ -1549,13 +1549,6 @@ def parse_button_callback(
     # load the model selected by the user
     nlp = spacy.load(spacy_model, exclude=["ner"])
 
-    # if resolve_corefs:
-    #     nlp.add_pipe("fastcoref", config={  'device': 'cpu',
-    #                                                 # 'model_architecture': 'LingMessCoref', # this model runs slower
-    #                                                 # 'model_path': 'biu-nlp/lingmess-coref' # comment these two lines if you want the default faster model
-    #                                              })
-
-
     # update stop_words of the small model
     #   I have to do it this y because spacy's to_disk method doesn't save stopwords
     for word in stopped_tokens:
@@ -1602,7 +1595,7 @@ def parse_button_callback(
     # TODO -> refresh the file list if a new file was created and chose that file as the new input (requires updating this callback signature)
     # if filename == "__manual entry__":
 
-    return generate_highlighted_utterances(full_row_data), "revise", "nil", False, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens), ""
+    return full_row_data, "revise", "nil", False, code_definitions, deductive_codes, list(stopped_tokens), list(unstopped_tokens), ""
 
 
 
