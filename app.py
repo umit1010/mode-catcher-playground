@@ -106,7 +106,7 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
 
     # load the default stopwords list
     with open(fs.CONFIG_FOLDER / fs.DEFAULT_STOPWORDS_FILENAME, "rb") as f:
-        stopped_tokens = pickle.load(f)
+        stopped_tokens, unstopped_tokens = pickle.load(f)
 
     # load previously parsed data (if it exists)
     parsed_data_file = model_path / fs.PARSED_DATA_FILENAME
@@ -121,9 +121,6 @@ def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
     if stopwords_file.is_file():
         with open(stopwords_file, "rb") as f:
             stopped_tokens, unstopped_tokens = pickle.load(f)
-    else:
-        stopped_tokens = list()
-        unstopped_tokens = list()
 
     # load the tokens that were excluded on specific lines by the user
     excluded_tokens_file = model_path / fs.EXCLUDED_TOKENS_FILENAME
