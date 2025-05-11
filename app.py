@@ -53,6 +53,7 @@ def flush_globals():
     global tokens_excluded_from_lines
     global user_actions                 # TODO: convert to dcc.Store & then use the timestamp callback to update the table
 
+    nlp = None
     tokens_excluded_from_lines = None
     user_actions = None
 
@@ -235,6 +236,7 @@ def parse_raw_text(txt: str,
                 sent_row['lemmas'] = [t.lemma_ for t in sentence]
                 sent_row['is_punct'] = [t.is_punct for t in sentence]
                 sent_row['highlighted utterance'] = highlight_utterance(sentence)
+                sent_row['excluded'] = list()
 
                 data.append(sent_row)
 
@@ -246,7 +248,8 @@ def parse_raw_text(txt: str,
             row['tokens'] = [t.lower_ for t in doc]
             row['lemmas'] = [t.lemma_ for t in doc]
             row['is_punct'] = [t.is_punct for t in doc]
-            row['highlighted utterance'] = highlight_utterance(sentence)
+            row['highlighted utterance'] = highlight_utterance(doc)
+            sent_row['excluded'] = list()
 
             data.append(row)
 
@@ -345,16 +348,18 @@ def generate_code_checkboxes(line_num, assigned_codes, code_definitions):
     return checkboxes_container
 
 
-def generate_token_buttons(row_data, row):
+def generate_token_buttons(row_data, row, vocab=None):
 
     global nlp
     global tokens_excluded_from_lines
 
-    doc = nlp(row_data['utterance'].strip().lower())
+    if vocab == None:
+        global nlp
+        vocab = nlp.vocab
 
     lowers = row_data['tokens']
     lemmas = row_data['lemmas']
-    stops = [nlp.vocab[l].is_stop for l in lemmas]
+    stops = [vocab[l].is_stop for l in lemmas]
     puncts = row_data['is_punct']
 
     buttons_for_text = html.Div([
@@ -430,6 +435,23 @@ def generate_utterance_table(data, display_options, in_sents=False):
     )
 
 # ---- NETWORK ANALYSIS
+
+def combine_token_nodes(G, node1, node2):
+
+    # combine the node counts
+    G.nodes[node1]["count"] += G.nodes[node2]["count"]
+
+    # add the label of the second node to the first node
+    G.nodes[node1]["label"] += f" <sup>+{G.nodes[node2]['label']}</sup>"
+
+    # Umit's NOTE: I did not implement any code that adjusts the weights of the 1st node's edges
+    #       based on the weights of the 2nd node's edges yet (because time :)
+
+    # finally combine the two tokens, which keeps the properties of the 1st node
+    G = nx.contracted_nodes(G, node1, node2, self_loops=True, copy=True)
+
+    return G
+
 
 def generate_token_graph_object(
         data,
@@ -521,17 +543,14 @@ def generate_token_graph_object(
                     # then check if the similarity between the two tokens is above the cutoff value
                     if nlp.vocab[n1].similarity(nlp.vocab[n2]) > similarity_cutoff:
 
-                        # add the frequency of the second node to the first node
-                        new_G.nodes[n1]["count"] += new_G.nodes[n2]["count"]
+                        # add the frequency of the less frequent node to the more frequent node
+                        n1_count = new_G.nodes[n1]["count"]
+                        n2_count = new_G.nodes[n2]["count"]
 
-                        # add the label of the second node to the first node
-                        new_G.nodes[n1]["label"] += f" <sup>+{nlp.vocab.strings[n2]}</sup> "
-
-                        # Umit's NOTE: I did not implement any code that adjusts the weights of the 1st node's edges
-                        #       based on the weights of the 2nd node's edges yet (because time :)
-
-                        # finally combine the two tokens, which keeps the properties of the 1st node
-                        new_G = nx.contracted_nodes(new_G, n1, n2, self_loops=True, copy=True)
+                        if n1_count > n2_count:
+                            new_G = combine_token_nodes(new_G, n1, n2)
+                        else:
+                            new_G = combine_token_nodes(new_G, n2, n1)
 
     return new_G
 
@@ -1664,6 +1683,7 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
 )
 def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens, unstopped_tokens):
 
+    global nlp
     global tokens_excluded_from_lines
     global user_actions
 
@@ -1716,7 +1736,7 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 
                     user_actions.append({'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
 
-        token_buttons = generate_token_buttons(row_data[row], row=row)
+        token_buttons = generate_token_buttons(row_data[row], row=row, vocab=nlp.vocab)
 
         code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
