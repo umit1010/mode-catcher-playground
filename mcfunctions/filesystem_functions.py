@@ -1,8 +1,9 @@
 from pathlib import Path
 
 # constants
-MODELS_FOLDER = Path("./models/")
-CONFIG_FOLDER = Path("./config/")
+SAMPLES_FOLDER = Path(__file__).parent.parent / "samples"
+MODELS_FOLDER = Path(__file__).parent.parent / "models"
+CONFIG_FOLDER = Path(__file__).parent.parent / "config"
 
 DEDUCTIVE_LABEL_DEFINITIONS_FILENAME = "deductive_label_definitions.toml"
 DEFAULT_STOPWORDS_FILENAME = "default_stopwords.pickle"
