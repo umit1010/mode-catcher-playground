@@ -362,27 +362,20 @@ def generate_token_buttons(row_data, row, vocab=None):
 
     return buttons_for_text
 
-def generate_common_token_buttons(token_counts):
+def generate_common_token_buttons(common_tokens):
+
     global nlp
 
     common_token_buttons = [
         dbc.Button(
             [
-                f"{t}",
-                html.Sup(
-                    dbc.Badge(
-                        n,
-                        color="white",
-                        text_color="secondary",
-                        class_name="ms-2 border",
-                    )
-                )
+                f"{t}"
             ],
             id={"type": "common-token-button", "index": t, "stop": nlp.vocab[t].is_stop},
             color="success" if not nlp.vocab[t].is_stop else "light",
             class_name="m-1",
         )
-        for t, n in token_counts
+        for t, n in common_tokens
         if not nlp.vocab[t].is_punct
     ]
 
@@ -1584,6 +1577,7 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value"),
     State("use-nlp-tags", "value"),
+    State("inclusion-options-checklist", "value"),
 
     prevent_initial_call=True,
 )
@@ -1596,6 +1590,7 @@ def parse_button_callback(
         sentencized,
         spacy_model,
         use_nlp_tags,
+        inclusion_options
 ):
     # first, reset all the globals
     #   to make sure that switching between transcripts doesn't mess things up
@@ -1619,7 +1614,6 @@ def parse_button_callback(
     for word in unstopped_tokens:
         nlp.vocab[word].is_stop = False
 
-    # tokens that are excluded from a specific line, but not the entire analysis
     time = True
     interviewer = True
 
@@ -1638,14 +1632,19 @@ def parse_button_callback(
     # Generate toggle buttons for top 20 most frequent tokens
     #   so that they can be toggled easily without having to go through the interview line by line
 
-    all_tokens = sum([line["lemmas"] for line in full_row_data], [])
-    token_counts = Counter(all_tokens).most_common(50)
+    # Todo: this is kind of awkward because the buttons are generated after parsing,
+    #         but the user doesn't see the inclusion options until after parsing is done
 
-    most_common_toggle_buttons = generate_common_token_buttons(token_counts)
+    if 2 in inclusion_options:
+        tokens_in_lines = [line["lemmas"] for line in full_row_data if line["speaker"] != "Interviewer"]
+    else:
+        tokens_in_lines = [line["lemmas"] for line in full_row_data]
 
-    # top_tokens = token_counts.most_common(20)
-    # for token, count in top_tokens:
-    #     print(f"{token}: {count}")
+    all_tokens = sum(tokens_in_lines, [])
+    common_tokens = sorted(Counter(all_tokens).most_common(60))
+
+    most_common_toggle_buttons = generate_common_token_buttons(common_tokens)
+
 
     # save a backup of the input file (if it doesn't exist)
     # and save the input in the raw input texarea to the text file
@@ -1671,7 +1670,7 @@ def parse_button_callback(
     # if filename == "__manual entry__":
 
     return full_row_data, "revise", "nil", "common", False, code_definitions, deductive_codes, list(stopped_tokens), list(
-        unstopped_tokens), "", most_common_toggle_buttons, token_counts
+        unstopped_tokens), "", most_common_toggle_buttons, common_tokens
 
 
 @callback(
