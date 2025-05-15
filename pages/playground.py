@@ -373,7 +373,8 @@ def generate_common_token_buttons(common_tokens):
             ],
             id={"type": "common-token-button", "index": t, "stop": nlp.vocab[t].is_stop},
             color="success" if not nlp.vocab[t].is_stop else "light",
-            class_name="m-1",
+            size="sm",
+            class_name="m-2",
         )
         for t, n in common_tokens
         if not nlp.vocab[t].is_punct
@@ -967,9 +968,9 @@ raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.", value="", rows=10, id="raw-text"
 )
 
-parse_button = dbc.Button("Parse", id="parse-button", size="lg", class_name="mx-1")
+parse_button = dbc.Button("Parse", id="parse-button", size="lg", color="warning", class_name="mx-1")
 
-load_cached_button = dbc.Button("Reload", id="reload-button", outline=True, size="lg", color="primary", disabled=True,
+load_cached_button = dbc.Button("Load", id="reload-button", size="lg", color="primary", disabled=True,
                                 class_name="mx-2")
 
 split_into_sents_checkbox = dbc.Checkbox(label="Split into sentences", id="split-into-sentences", value=True,
@@ -1036,17 +1037,17 @@ input_accordion = dbc.Accordion(
                 ),
                 dbc.Row(
                     [
+                        dbc.Col(model_selection_dropdown, xl=3),
                         dbc.Col(split_into_sents_checkbox, xl=2),
                         dbc.Col(apply_tags_checkbox, xl=2),
-                        dbc.Col(model_selection_dropdown, xl=3),
                     ],
                     class_name="mt-4",
                 ),
                 dbc.Row(
                     dbc.Col(
                         [
-                            parse_button,
                             load_cached_button,
+                            parse_button,
                             reset_button,
                         ],
                         class_name="d-flex align-items-end my-4",
@@ -1462,10 +1463,10 @@ layout = dbc.Container(
     Output("reload-button", "disabled"),
     Output("reload-button", "color"),
     Input("input-file-dropdown", "value"),
+    Input("model-selection-dropdown", "value"),
     State("split-into-sentences", "value"),
-    State("model-selection-dropdown", "value")
 )
-def load_input_file_callback(file_name, is_sentencized, spacy_model):
+def load_input_file_callback(file_name, spacy_model, is_sentencized):
     if file_name == "__manual entry__":
         return "", "", True, "secondary"
 
@@ -1641,7 +1642,7 @@ def parse_button_callback(
         tokens_in_lines = [line["lemmas"] for line in full_row_data]
 
     all_tokens = sum(tokens_in_lines, [])
-    common_tokens = sorted(Counter(all_tokens).most_common(60))
+    common_tokens = sorted(Counter(all_tokens).most_common(80))
 
     most_common_toggle_buttons = generate_common_token_buttons(common_tokens)
 
@@ -1723,6 +1724,7 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
     Output("modal-row-id", "data"),
     Output("stopped-tokens", "data", allow_duplicate=True),
     Output("unstopped-tokens", "data", allow_duplicate=True),
+    Output("common-tokens-div", "children", allow_duplicate=True),
 
     Input("data-table", "cellClicked"),
     Input({"type": "toggle-token", "index": ALL, "stop": ALL}, "n_clicks"),
@@ -1732,10 +1734,11 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
     State("deductive-code-definitions", "data"),
     State("stopped-tokens", "data"),
     State("unstopped-tokens", "data"),
+    State("common-tokens-store", "data"),
     prevent_initial_call=True,
 )
 def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens,
-                                unstopped_tokens):
+                                unstopped_tokens, common_tokens):
     global nlp
     global tokens_excluded_from_lines
     global user_actions
@@ -1796,14 +1799,16 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 
         code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
-        return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set)
+        common_token_buttons = generate_common_token_buttons(common_tokens)
+
+        return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set), common_token_buttons
     else:
         return "Something", "went wrong", False, -1, stopped_tokens, unstopped_tokens
 
 
 
 @callback(
-    Output("common-tokens-div", "children"),
+    Output("common-tokens-div", "children", allow_duplicate=True),
     Input({"type": "common-token-button", "index": ALL, "stop": ALL}, "n_clicks"),
     State("common-tokens-store", "data"),
     prevent_initial_call=True,
@@ -1816,6 +1821,7 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts):
         raise PreventUpdate
 
     global nlp
+    global user_actions
 
     clicked_button = ctx.triggered_id
     lemma = clicked_button["index"]
@@ -1824,6 +1830,12 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts):
     nlp.vocab[lemma].is_stop = not was_stop
 
     new_common_token_buttons = generate_common_token_buttons(token_counts)
+
+    user_actions.append({
+        'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'line': 'NA',
+        'change': f'\"{lemma}\" was toggled {"ON" if was_stop else "OFF"}.\n'
+    })
 
     return new_common_token_buttons
 

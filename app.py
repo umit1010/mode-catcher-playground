@@ -48,11 +48,24 @@ app.layout = dbc.Container(
                                 " Aggregate Stats"
                             ],
                             id="aggregate-stats-button",
-                            class_name="ms-2 my-2",
-                            color="primary",
+                            class_name="mx-2 my-2",
+                            color="dark",
                             outline=True,
                         ),
                         href="/aggregates",
+                    ),
+                    dcc.Link(
+                        dbc.Button(
+                            [
+                                html.I(className="bi bi-file-earmark-break me-2"),
+                                " Pre-processing"
+                            ],
+                            id="pre-processing-button",
+                            class_name="ms-2 my-2",
+                            color="dark",
+                            outline=True,
+                        ),
+                        href="/pre-processing",
                     ),
 
                 ], className="ms-auto")
@@ -72,13 +85,16 @@ app.layout = dbc.Container(
     Output("active-page-name", "children"),
     Output("playground-button", "disabled"),
     Output("aggregate-stats-button", "disabled"),
+    Output("pre-processing-button", "disabled"),
     Input("url", "pathname")
 )
 def display_active_pagename_callback(url):
     if url == "/":
-        return "playground", True, False
+        return "playground", True, False, False
     elif url=="/aggregates":
-        return "stats", False, True
+        return "stats", False, True, False
+    elif url=="/pre-processing":
+        return "pre-processing", False, False, True
     else:
         return "", True, True
 

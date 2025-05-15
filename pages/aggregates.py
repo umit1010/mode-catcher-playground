@@ -28,24 +28,42 @@ plotting_variables = [
 layout = dbc.Card(
     dbc.CardBody(
         [
-            dbc.Stack(
+            dbc.Row(
+                dbc.Col(
+                    dbc.Alert(
+                        [
+                            html.I(className="bi bi-exclamation-triangle-fill me-2"),
+                            "This view is not yet functional."
+                        ],
+                        color="warning"
+                    ),
+                )
+            ),
+            dbc.Row(
                 [
-                    dbc.InputGroup(
-                        [
-                            dbc.InputGroupText("x-axis: "),
-                            dbc.Select(options=plotting_variables, value="avedeg"),
-                        ],
-                        class_name="mx-2",
+                    dbc.Col(
+                        dbc.InputGroup(
+                            [
+                                dbc.InputGroupText("x-axis: "),
+                                dbc.Select(options=plotting_variables, value="avedeg"),
+                            ],
+                            class_name="mx-2",
+                        ),
+                        xl=4, lg=6, md=12,
                     ),
-                    dbc.InputGroup(
-                        [
-                            dbc.InputGroupText("y-axis: "),
-                            dbc.Select(options=plotting_variables, value="avedeg"),
-                        ],
-                        class_name="mx-2",
-                    ),
+                    dbc.Col(
+                        dbc.InputGroup(
+                            [
+                                dbc.InputGroupText("y-axis: "),
+                                dbc.Select(options=plotting_variables, value="avedeg"),
+                            ],
+                            class_name="mx-2",
+                        ),
+                        xl=4, lg=6, md=12,
+                    )
                 ],
-                direction="horizontal",
+                justify="end",
+                class_name="mx-1 my-3",
             ),
             dcc.Graph(id='graph', figure=fig, mathjax=True, className="border rounded p-2 m-2"),
             html.Div(
