@@ -362,6 +362,31 @@ def generate_token_buttons(row_data, row, vocab=None):
 
     return buttons_for_text
 
+def generate_common_token_buttons(token_counts):
+    global nlp
+
+    common_token_buttons = [
+        dbc.Button(
+            [
+                f"{t}",
+                html.Sup(
+                    dbc.Badge(
+                        n,
+                        color="white",
+                        text_color="secondary",
+                        class_name="ms-2 border",
+                    )
+                )
+            ],
+            id={"type": "common-token-button", "index": t, "stop": nlp.vocab[t].is_stop},
+            color="success" if not nlp.vocab[t].is_stop else "light",
+            class_name="m-1",
+        )
+        for t, n in token_counts
+        if not nlp.vocab[t].is_punct
+    ]
+
+    return common_token_buttons
 
 # ---- UTTERANCE TABLE ----
 
@@ -1097,34 +1122,53 @@ utterances_accordion = dbc.Accordion(
             )
         ],
         item_id="revise",
-        title="Revise Tokens",
+        title="Transcript Table",
     ),
     id="utterances-accordion",
     active_item="nil",  # collapsed by default
 )
+
+common_tokens_accordion = dbc.Accordion(
+    dbc.AccordionItem(
+        [
+            html.Div(
+                html.P("Most common 50 tokens will be displayed here after parsing.",),
+                id="common-tokens-div",
+            ),
+            dcc.Store("common-tokens-store")
+        ],
+        item_id="common",
+        title="Common Tokens",
+    ),
+    id="common-tokens-accordion",
+    active_item="nil",
+    className="mt-4",
+)
+
 
 generate_div = html.Div([
     dbc.Row(
         [
             dbc.Col(
                 dbc.Checkbox(id="use-deductive-codes", label="Include deductive codes", value=False, persistence=True),
-                width=3
+                xl=3, lg=12
             ),
             dbc.Col(
-                dbc.Checkbox(id="skip-empty-rows", label="Ignore lines with no included tokens", value=True,
-                             persistence=True),
-                width=3
+                dbc.Checkbox(id="skip-empty-rows", label="Ignore lines with no included tokens", value=True, persistence=True),
+                xl=3, lg=12
             ),
             dbc.Col(
                 dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True, persistence=True),
-                width=3
+                xl=3, lg=12
             ),
             dbc.Col(
-                dbc.InputGroup([
-                    dbc.InputGroupText("Min similarity"),
-                    dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.01, value=0.8, disabled=False,
-                              persistence=True),
-                ]), width=3
+                dbc.InputGroup(
+                    [
+                        dbc.InputGroupText("Min similarity"),
+                        dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.01, value=0.8, disabled=False, persistence=True),
+                    ]
+                ),
+                xl=3, lg=6
             ),
         ],
         align="center",
@@ -1399,6 +1443,7 @@ layout = dbc.Container(
         dbc.Row(dbc.Col(input_accordion,)),
         dbc.Row(dbc.Col(parsing_spinner), class_name="mb-4"),
         dbc.Row(dbc.Col(utterances_accordion)),
+        dbc.Row(dbc.Col(common_tokens_accordion)),
         dbc.Row(dbc.Col(generate_div)),
         dbc.Row(dbc.Col(graph_view_options_div)),
         dbc.Row(dbc.Col(metrics_viewer_wrapper_div)),
@@ -1521,12 +1566,15 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
     Output("data-table", "rowData"),
     Output("utterances-accordion", "active_item"),
     Output("input-accordion", "active_item"),
+    Output("common-tokens-accordion", "active_item"),
     Output("graph-button", "disabled"),
     Output("deductive-code-definitions", "data"),
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
     Output("stopped-tokens", "data", allow_duplicate=True),
     Output("unstopped-tokens", "data", allow_duplicate=True),
     Output("parsing-spinner", "children"),
+    Output("common-tokens-div", "children", allow_duplicate=True),
+    Output("common-tokens-store", "data"),
 
     Input("parse-button", "n_clicks"),
     Input("reload-button", "n_clicks"),
@@ -1586,6 +1634,19 @@ def parse_button_callback(
     else:
         full_row_data = cached_parsed_data
 
+
+    # Generate toggle buttons for top 20 most frequent tokens
+    #   so that they can be toggled easily without having to go through the interview line by line
+
+    all_tokens = sum([line["lemmas"] for line in full_row_data], [])
+    token_counts = Counter(all_tokens).most_common(50)
+
+    most_common_toggle_buttons = generate_common_token_buttons(token_counts)
+
+    # top_tokens = token_counts.most_common(20)
+    # for token, count in top_tokens:
+    #     print(f"{token}: {count}")
+
     # save a backup of the input file (if it doesn't exist)
     # and save the input in the raw input texarea to the text file
     # so that the changes user makes in the raw input isn't lost.
@@ -1609,8 +1670,8 @@ def parse_button_callback(
     # TODO -> refresh the file list if a new file was created and chose that file as the new input (requires updating this callback signature)
     # if filename == "__manual entry__":
 
-    return full_row_data, "revise", "nil", False, code_definitions, deductive_codes, list(stopped_tokens), list(
-        unstopped_tokens), ""
+    return full_row_data, "revise", "nil", "common", False, code_definitions, deductive_codes, list(stopped_tokens), list(
+        unstopped_tokens), "", most_common_toggle_buttons, token_counts
 
 
 @callback(
@@ -1739,6 +1800,34 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
         return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set)
     else:
         return "Something", "went wrong", False, -1, stopped_tokens, unstopped_tokens
+
+
+
+@callback(
+    Output("common-tokens-div", "children"),
+    Input({"type": "common-token-button", "index": ALL, "stop": ALL}, "n_clicks"),
+    State("common-tokens-store", "data"),
+    prevent_initial_call=True,
+)
+def common_token_button_clicked_callback(toggle_clicks, token_counts):
+
+    # avoid initial activation when the buttons are created within the parse callback
+    n_clicked = len([v for v in toggle_clicks if v is not None])
+    if n_clicked == 0:
+        raise PreventUpdate
+
+    global nlp
+
+    clicked_button = ctx.triggered_id
+    lemma = clicked_button["index"]
+    was_stop = clicked_button["stop"]
+
+    nlp.vocab[lemma].is_stop = not was_stop
+
+    new_common_token_buttons = generate_common_token_buttons(token_counts)
+
+    return new_common_token_buttons
+
 
 
 @callback(

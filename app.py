@@ -23,9 +23,9 @@ app.layout = dbc.Container(
             [
                 html.H2([
                     "mode-catcher ",
-                    html.Em(
-                        html.Sub("", id="active-page-name", className="text-primary")
-                    )
+                    # html.Em(
+                        html.Span("", id="active-page-name", className="text-success")
+                    # )
                 ]),
                 html.Div([
                     dcc.Link(
@@ -45,10 +45,10 @@ app.layout = dbc.Container(
                         dbc.Button(
                             [
                                 html.I(className="bi bi-bar-chart-line me-2"),
-                                " Aggregate Data"
+                                " Aggregate Stats"
                             ],
-                            id="aggregate-data-button",
-                            class_name="m-2",
+                            id="aggregate-stats-button",
+                            class_name="ms-2 my-2",
                             color="primary",
                             outline=True,
                         ),
@@ -71,14 +71,14 @@ app.layout = dbc.Container(
 @app.callback(
     Output("active-page-name", "children"),
     Output("playground-button", "disabled"),
-    Output("aggregate-data-button", "disabled"),
+    Output("aggregate-stats-button", "disabled"),
     Input("url", "pathname")
 )
 def display_active_pagename_callback(url):
     if url == "/":
         return "playground", True, False
     elif url=="/aggregates":
-        return "aggregate data", False, True
+        return "stats", False, True
     else:
         return "", True, True
 
