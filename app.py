@@ -45,7 +45,7 @@ app.layout = dbc.Container(
                         dbc.Button(
                             [
                                 html.I(className="bi bi-bar-chart-line me-2"),
-                                " Aggregate Stats"
+                                " Stats"
                             ],
                             id="aggregate-stats-button",
                             class_name="mx-2 my-2",
@@ -58,7 +58,7 @@ app.layout = dbc.Container(
                         dbc.Button(
                             [
                                 html.I(className="bi bi-file-earmark-break me-2"),
-                                " Pre-processing"
+                                " Preprocessing"
                             ],
                             id="pre-processing-button",
                             class_name="ms-2 my-2",

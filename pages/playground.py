@@ -15,9 +15,12 @@ import networkx as nx
 import numpy as np
 import plotly.graph_objects as go
 import spacy
+
 from dash import Dash, ALL, callback, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
+from spacy.tokens import Doc
+from spacy.vocab import Vocab
 
 # ---- INTERNAL MODULES
 from mcfunctions import filesystem_functions as fs, nlp_functions as nlf
@@ -139,6 +142,7 @@ def parse_raw_text(txt: str,
                    in_sentences=True,
                    use_nlp_tags=False,
                    ):
+
     global tokens_excluded_from_lines
     global nlp
 
@@ -175,6 +179,7 @@ def parse_raw_text(txt: str,
             'speaker': '',
             'utterance': '',
             'highlighted utterance': '',
+            'n':0,                          # the number of included tokens in this row
             'in?': True
         }
 
@@ -189,6 +194,7 @@ def parse_raw_text(txt: str,
         if in_sentences:
             for sentence in doc.sents:
 
+                # TODO: convert the exlusion-in-line algorithm to use the ag-grid's `excluded` column
                 excluded_in_row = tokens_excluded_from_lines.get(i, [])
 
                 # if the user wants to filter out tokens based on NLP tags
@@ -218,8 +224,18 @@ def parse_raw_text(txt: str,
                 sent_row['tokens'] = [t.lower_ for t in sentence]
                 sent_row['lemmas'] = [t.lemma_ for t in sentence]
                 sent_row['is_punct'] = [t.is_punct for t in sentence]
-                sent_row['highlighted utterance'] = highlight_utterance(sentence)
-                sent_row['excluded'] = list()
+                sent_row['highlighted utterance'] = highlight_utterance(sentence, nlp.vocab)
+
+                sent_row['included'] = [
+                    t.lemma_ for t in sentence
+                    if not nlp.vocab[t.lemma_].is_stop
+                       and not t.is_punct
+                       and not t.lemma_ in excluded_in_row
+                ]
+
+                # sent_row['excluded'] = list()
+
+                # TODO: add the number of included tokens in this row
 
                 data.append(sent_row)
 
@@ -231,8 +247,17 @@ def parse_raw_text(txt: str,
             row['tokens'] = [t.lower_ for t in doc]
             row['lemmas'] = [t.lemma_ for t in doc]
             row['is_punct'] = [t.is_punct for t in doc]
-            row['highlighted utterance'] = highlight_utterance(doc)
-            sent_row['excluded'] = list()
+            row['highlighted utterance'] = highlight_utterance(doc, nlp.vocab)
+
+            row['included'] = [
+                t.lemma_ for t in doc
+                if not nlp.vocab[t.lemma_].is_stop
+                   and not t.is_punct
+                   and not t.lemma_ in excluded_in_row
+            ]
+
+            # row['excluded'] = list()
+
 
             data.append(row)
 
@@ -385,13 +410,13 @@ def generate_common_token_buttons(common_tokens):
 # ---- UTTERANCE TABLE ----
 
 # create a highlighted version of any given utterance using the html <mark> tag
-def highlight_utterance(doc):
-    global nlp
+def highlight_utterance(doc:Doc, vocab:Vocab):
+
     global tokens_excluded_from_lines  # Todo: include this factor!
 
     return ''.join([
-        t.text_with_ws if nlp.vocab[t.lemma_].is_stop
-                          or nlp.vocab[t.lemma_].is_punct
+        t.text_with_ws if vocab[t.lemma_].is_stop
+                          or vocab[t.lemma_].is_punct
                           or t.lemma_ in tokens_excluded_from_lines.get(t.i, [])
         else f"<mark>{t.text}</mark>{t.whitespace_}"
         for t in doc
@@ -416,6 +441,7 @@ def generate_utterance_table(data, display_options, in_sents=False):
             {'field': 'highlighted utterance', 'headerName': 'Highlighted Utterance', 'hide': 3 not in display_options,
              'flex': 1},
             {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
+            {'field': 'included', "editable": False, 'hide': True},  # tokens included in this line
             {'field': 'tokens', "editable": False, 'hide': True},  # lowercase text of the tokens
             {'field': 'lemmas', "editable": False, 'hide': True},  # lemmas of the tokens
             {'field': 'is_punct', "editable": False, 'hide': True},  # whether to display the token as toggleable or not
@@ -968,13 +994,14 @@ raw_text_input = dbc.Textarea(
     placeholder="Copy and paste some text here.", value="", rows=10, id="raw-text"
 )
 
-parse_button = dbc.Button("Parse", id="parse-button", size="lg", color="warning", class_name="mx-1")
 
-load_cached_button = dbc.Button("Load", id="reload-button", size="lg", color="primary", disabled=True,
-                                class_name="mx-2")
+
+load_cached_button = dbc.Button("Load", id="reload-button", size="lg", color="primary", disabled=True)
+
+parse_button = dbc.Button("Parse", id="parse-button", size="lg", color="warning", class_name="ms-3")
 
 split_into_sents_checkbox = dbc.Checkbox(label="Split into sentences", id="split-into-sentences", value=True,
-                                         persistence=True)
+                                         persistence=True, class_name="me-2 mt-1")
 apply_tags_checkbox = dbc.Checkbox(label="Infer irrelevant tokens", id="use-nlp-tags", value=True, persistence=True)
 
 model_selection_dropdown = dbc.InputGroup([
@@ -992,8 +1019,8 @@ model_selection_dropdown = dbc.InputGroup([
 ], class_name="mb-2"),
 
 reset_button = dbc.Button(
-    "Reset Model",
-    id="reset-button",
+    "Purge Model",
+    id="purge-button",
     color="danger",
     outline=True,
     class_name="ms-auto",
@@ -1152,17 +1179,27 @@ generate_div = html.Div([
                 xl=3, lg=12
             ),
             dbc.Col(
-                dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True, persistence=True),
-                xl=3, lg=12
-            ),
-            dbc.Col(
-                dbc.InputGroup(
-                    [
-                        dbc.InputGroupText("Min similarity"),
-                        dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.01, value=0.8, disabled=False, persistence=True),
-                    ]
-                ),
-                xl=3, lg=6
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Checkbox(id="combine-by-similarity", label="Combine similar tokens", value=True, persistence=True),
+                                xl=4, lg=12
+                            ),
+                            dbc.Col(
+                                dbc.InputGroup(
+                                    [
+                                        dbc.InputGroupText("Min similarity"),
+                                        dbc.Input(id="min-similarity", type="number", min=0, max=1, step=0.01, value=0.8, disabled=False, persistence=True),
+                                    ]
+                                ),
+                                xl=5, lg=7
+                            ),
+                        ],
+                        justify="start",
+                    ),
+                ],
+                xl=6, lg=12
             ),
         ],
         align="center",
@@ -1511,14 +1548,14 @@ def enable_parse_button_callback(name: str, text: str):
 @callback(
     Output("reset-message-div", "children"),
     Output("reload-button", "disabled", allow_duplicate=True),
-    Input("reset-button", "n_clicks"),
+    Input("purge-button", "n_clicks"),
     State("mode-name", "value"),
     State("split-into-sentences", "value"),
     State("model-selection-dropdown", "value"),
     prevent_initial_call=True,
 )
 def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy_model):
-    if ctx.triggered_id == "reset-button":
+    if ctx.triggered_id == "purge-button":
 
         # first, let's get rid of the existing user generated model files
 
@@ -1557,7 +1594,7 @@ def reset_model_button_callback(n_reset_clicks, mode_name, is_sentencized, spacy
 
 
 @callback(
-    Output("data-table", "rowData"),
+    Output("data-table", "rowData", allow_duplicate=True),
     Output("utterances-accordion", "active_item"),
     Output("input-accordion", "active_item"),
     Output("common-tokens-accordion", "active_item"),
@@ -1809,19 +1846,21 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 
 @callback(
     Output("common-tokens-div", "children", allow_duplicate=True),
+    Output("data-table", "rowData", allow_duplicate=True),
     Input({"type": "common-token-button", "index": ALL, "stop": ALL}, "n_clicks"),
     State("common-tokens-store", "data"),
+    State("data-table", "rowData"),
     prevent_initial_call=True,
 )
-def common_token_button_clicked_callback(toggle_clicks, token_counts):
+def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data):
 
     # avoid initial activation when the buttons are created within the parse callback
     n_clicked = len([v for v in toggle_clicks if v is not None])
     if n_clicked == 0:
         raise PreventUpdate
 
+    # update the toggled token in the model's vocabulary
     global nlp
-    global user_actions
 
     clicked_button = ctx.triggered_id
     lemma = clicked_button["index"]
@@ -1829,15 +1868,36 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts):
 
     nlp.vocab[lemma].is_stop = not was_stop
 
+    # update the common tokens div
     new_common_token_buttons = generate_common_token_buttons(token_counts)
 
+    # update the user actions log
+    global user_actions
     user_actions.append({
         'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'line': 'NA',
         'change': f'\"{lemma}\" was toggled {"ON" if was_stop else "OFF"}.\n'
     })
 
-    return new_common_token_buttons
+    # update the `highlighted utterance` and `included tokens` columns in the data table
+    #   for each row
+    global tokens_excluded_from_lines
+
+    print(row_data[0]['included'])
+
+    for i in range(len(row_data)):
+        # todo: fix the highlighted utterance algorithm to use the `included` column
+        # row_data[i]['highlighted utterance'] = highlight_utterance(row_data[i]['utterance'], vocab=nlp.vocab)
+        row_data[i]['included'] = [
+            t for t in row_data[i]['lemmas']
+            if not nlp.vocab[t].is_stop
+               and not nlp.vocab[t].is_punct
+               and not t in tokens_excluded_from_lines.get(i, [])
+        ]
+
+    print(row_data[0]['included'])
+
+    return new_common_token_buttons, row_data
 
 
 
@@ -2054,6 +2114,7 @@ def update_included_lines_callback(changed_row):
             'change': changed_row[0]['data']['utterance']
         })
     return user_actions
+
 
 
 @callback(
