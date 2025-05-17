@@ -221,9 +221,9 @@ def parse_raw_text(txt: str,
 
                 sent_row['utterance'] = utterance
                 sent_row['tokens'] = [t.lower_ for t in sentence]
+                sent_row['whitespaces'] = [t.whitespace_ for t in sentence]
                 sent_row['lemmas'] = [t.lemma_ for t in sentence]
                 sent_row['is_punct'] = [t.is_punct for t in sentence]
-                sent_row['highlighted utterance'] = highlight_utterance(sentence, nlp.vocab)
 
                 sent_row['included'] = [
                     t.lemma_ for t in sentence
@@ -231,6 +231,8 @@ def parse_raw_text(txt: str,
                        and not t.is_punct
                        and not t.lemma_ in excluded_in_row
                 ]
+
+                sent_row['highlighted utterance'] = generate_highlighted_utterance(sent_row, nlp.vocab)
 
                 # sent_row['excluded'] = list()
 
@@ -244,9 +246,9 @@ def parse_raw_text(txt: str,
             row['line'] = i
             row["utterance"] = utterance.strip()
             row['tokens'] = [t.lower_ for t in doc]
+            row['whitespaces'] = [t.whitespace_ for t in doc]
             row['lemmas'] = [t.lemma_ for t in doc]
             row['is_punct'] = [t.is_punct for t in doc]
-            row['highlighted utterance'] = highlight_utterance(doc, nlp.vocab)
 
             row['included'] = [
                 t.lemma_ for t in doc
@@ -254,6 +256,8 @@ def parse_raw_text(txt: str,
                    and not t.is_punct
                    and not t.lemma_ in excluded_in_row
             ]
+
+            row['highlighted utterance'] = generate_highlighted_utterance(row, nlp.vocab)
 
             # row['excluded'] = list()
 
@@ -409,21 +413,37 @@ def generate_common_token_buttons(common_tokens):
 # ---- UTTERANCE TABLE ----
 
 # create a highlighted version of any given utterance using the html <mark> tag
-def highlight_utterance(doc:Doc, vocab:Vocab):
-
-    global tokens_excluded_from_lines  # Todo: include this factor!
+def generate_highlighted_utterance(row_cells, vocab:Vocab):
 
     return ''.join([
-        t.text_with_ws if vocab[t.lemma_].is_stop
-                          or vocab[t.lemma_].is_punct
-                          or t.lemma_ in tokens_excluded_from_lines.get(t.i, [])
-        else f"<mark>{t.text}</mark>{t.whitespace_}"
-        for t in doc
+        f"<mark>{row_cells['tokens'][i]}</mark>{row_cells['whitespaces'][i]}"
+        if vocab[row_cells['lemmas'][i]] in row_cells['included']
+        else f"{row_cells['tokens'][i]}{row_cells['whitespaces'][i]}"
+        for i in range(len(row_cells['tokens']))
     ])
+
+# updates the 'included' and 'highlighted utterance' columns in the rows of the datatable
+def update_included_token_columns(row_data, vocab:Vocab):
+
+    global tokens_excluded_from_lines
+
+    for i in range(len(row_data)):
+        row_data[i]['included'] = [
+            t for t in row_data[i]['lemmas']
+            if not vocab[t].is_stop
+               and not vocab[t].is_punct
+               and not t in tokens_excluded_from_lines.get(i, [])
+        ]
+        row_data[i]['highlighted utterance'] = generate_highlighted_utterance(row_data[i], vocab=vocab)
+
+    return row_data
 
 
 # created this function to refactor table generation because it was used in multiple places
 def generate_utterance_table(data, display_options, in_sents=False):
+
+    # ToDo: try to see if turning on animations in the AgGrid looks better
+
     return dag.AgGrid(
         id='data-table',
         rowData=data,
@@ -442,6 +462,7 @@ def generate_utterance_table(data, display_options, in_sents=False):
             {'field': 'in?', "boolean_value": True, "editable": True, 'maxWidth': 80},
             {'field': 'included', "editable": False, 'hide': True},  # tokens included in this line
             {'field': 'tokens', "editable": False, 'hide': True},  # lowercase text of the tokens
+            {'field': 'whitespaces', "editable": False, 'hide': True},  # lowercase text of the tokens
             {'field': 'lemmas', "editable": False, 'hide': True},  # lemmas of the tokens
             {'field': 'is_punct', "editable": False, 'hide': True},  # whether to display the token as toggleable or not
 
@@ -1739,7 +1760,6 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
 
 @callback(
     Output("token-buttons", "children"),
-    # Output("utterance-stats", "children"), # umit temporarily commented out this line on 02/24/2025 to deactivate the treemap visualization
     Output("code-checkboxes-container", "children"),
     Output("coding-modal", "is_open"),
     Output("modal-row-id", "data"),
@@ -1760,6 +1780,16 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
 )
 def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, code_definitions, stopped_tokens,
                                 unstopped_tokens, common_tokens):
+
+    # avoid initial activation when the buttons are created within the parse callback
+    if ctx.triggered_id == "toggle-token":
+        n_clicked = len([v for v in toggle_clicks if v is not None])
+        if n_clicked == 0:
+            raise PreventUpdate
+
+    if cell is None:
+        raise PreventUpdate
+
     global nlp
     global tokens_excluded_from_lines
     global user_actions
@@ -1768,63 +1798,58 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
     stopped_tokens_set = set(stopped_tokens)
     unstopped_tokens_set = set(unstopped_tokens)
 
-    # create global table
-    if cell is not None:
+    row = int(cell["rowId"])
 
-        row = int(cell["rowId"])
+    if type(ctx.triggered_id) != str:
 
-        if type(ctx.triggered_id) != str:
+        toggled_token = ctx.triggered_id["index"]
+        was_stop = ctx.triggered_id["stop"]
 
-            toggled_token = ctx.triggered_id["index"]
-            was_stop = ctx.triggered_id["stop"]
+        # to log the time this token was toggled
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-            # to log the time this token was toggled
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if was_stop:
 
-            if was_stop:
+            nlp.vocab[toggled_token].is_stop = False
+            stopped_tokens_set.discard(toggled_token)
+            unstopped_tokens_set.add(toggled_token)
+            user_actions.append(
+                {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
 
-                nlp.vocab[toggled_token].is_stop = False
-                stopped_tokens_set.discard(toggled_token)
-                unstopped_tokens_set.add(toggled_token)
+        else:
+
+            # if a token was not a stop word, first check if it is in the excluded tokens list
+
+            if toggled_token in tokens_excluded_from_lines.get(row, []):
+                # if it was an excluded token, turn it into a stop word
+                # and remove it from the exluded tokens list
+
+                nlp.vocab[toggled_token].is_stop = True
+                stopped_tokens_set.add(toggled_token)
+                unstopped_tokens_set.discard(toggled_token)
+                tokens_excluded_from_lines[row].remove(toggled_token)
                 user_actions.append(
-                    {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled ON.\n'})
+                    {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
 
             else:
 
-                # if a token was not a stop word, first check if it is in the excluded tokens list
+                # if it was not in excluded tokens list, turn it into an excluded token
 
-                if toggled_token in tokens_excluded_from_lines.get(row, []):
-                    # if it was an excluded token, turn it into a stop word
-                    # and remove it from the exluded tokens list
-
-                    nlp.vocab[toggled_token].is_stop = True
-                    stopped_tokens_set.add(toggled_token)
-                    unstopped_tokens_set.discard(toggled_token)
-                    tokens_excluded_from_lines[row].remove(toggled_token)
-                    user_actions.append(
-                        {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was toggled OFF.\n'})
-
+                if len(tokens_excluded_from_lines.get(row, [])) == 0:
+                    tokens_excluded_from_lines[row] = [toggled_token]
                 else:
+                    tokens_excluded_from_lines[row].append(toggled_token)
 
-                    # if it was not in excluded tokens list, turn it into an excluded token
+                user_actions.append(
+                    {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
 
-                    if len(tokens_excluded_from_lines.get(row, [])) == 0:
-                        tokens_excluded_from_lines[row] = [toggled_token]
-                    else:
-                        tokens_excluded_from_lines[row].append(toggled_token)
+    token_buttons = generate_token_buttons(row_data[row], row=row, vocab=nlp.vocab)
 
-                    user_actions.append(
-                        {'time': timestamp, 'line': row, 'change': f'\"{toggled_token}\" was excluded from the line.'})
+    code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
 
-        token_buttons = generate_token_buttons(row_data[row], row=row, vocab=nlp.vocab)
+    common_token_buttons = generate_common_token_buttons(common_tokens)
 
-        code_checkboxes = generate_code_checkboxes(row, assigned_codes, code_definitions)
-
-        common_token_buttons = generate_common_token_buttons(common_tokens)
-
-        return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set), common_token_buttons
-    else:
-        return "Something", "went wrong", False, -1, stopped_tokens, unstopped_tokens
+    return token_buttons, code_checkboxes, True, row, list(stopped_tokens_set), list(unstopped_tokens_set), common_token_buttons
 
 
 
@@ -1880,18 +1905,8 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data, 
     })
 
     # update the `highlighted utterance` and `included tokens` columns in the data table
-    #   for each row
-    global tokens_excluded_from_lines
 
-    for i in range(len(row_data)):
-        # todo: fix the highlighted utterance algorithm to use the `included` column
-        # row_data[i]['highlighted utterance'] = highlight_utterance(row_data[i]['utterance'], vocab=nlp.vocab)
-        row_data[i]['included'] = [
-            t for t in row_data[i]['lemmas']
-            if not nlp.vocab[t].is_stop
-               and not nlp.vocab[t].is_punct
-               and not t in tokens_excluded_from_lines.get(i, [])
-        ]
+    row_data = update_included_token_columns(row_data, vocab=nlp.vocab)
 
     return new_common_token_buttons, row_data, list(stopped_tokens_set), list(unstopped_tokens_set)
 
@@ -2037,40 +2052,46 @@ def generate_graph_button_callback(
 #   So that we an save the user selected deductive codes
 @callback(
     Output("assigned-deductive-codes", "data", allow_duplicate=True),
+    Output("data-table", "rowData", allow_duplicate=True),
     Input("coding-modal", "is_open"),
-    State({"type": "code-checklist", "index": ALL}, "value"),
     State("modal-row-id", "data"),
-    State("deductive-code-definitions", "data"),
     State("assigned-deductive-codes", "data"),
+    State("data-table", "rowData"),
     prevent_initial_call=True,
 )
 def revise_modal_closed_callback(
         is_open,
-        new_code_checkbox_values,
         row_id,
-        deductive_code_definitions,
-        previously_assigned_deductive_codes
+        previously_assigned_deductive_codes,
+        row_data,
 ):
+
     if is_open:
         # nothing to do if the modal was opened
         raise PreventUpdate
     else:
 
+        # ToDo: change the following algorithm to use a hidden column in the datatable instead of the store object
+
         # update the assigned deductive codes list once the modal is closed
+        # row_str = str(row_id)  # TODO: figure out why we have to convert this index to string :)
+        # updated_codes = previously_assigned_deductive_codes
+        # new_values = ctx.states_list[0]
+        #
+        # if row_str not in updated_codes.keys():
+        #     updated_codes[row_str] = dict()
+        #
+        # for cat in new_values:
+        #     cat_name = cat["id"]["index"]
+        #     cat_vals = cat["value"]
+        #     updated_codes[row_str][cat_name] = cat_vals
 
-        row_str = str(row_id)  # TODO: figure out why we have to convert this index to string :)
-        updated_codes = previously_assigned_deductive_codes
-        new_values = ctx.states_list[0]
+        global nlp
 
-        if row_str not in updated_codes.keys():
-            updated_codes[row_str] = dict()
+        row_data = update_included_token_columns(row_data, nlp.vocab)
 
-        for cat in new_values:
-            cat_name = cat["id"]["index"]
-            cat_vals = cat["value"]
-            updated_codes[row_str][cat_name] = cat_vals
-
-        return updated_codes
+        # return updated_codes, row_data  # ToDo: reactivate this line after completing the previous todo
+        return previously_assigned_deductive_codes, row_data
 
 
 @callback(
