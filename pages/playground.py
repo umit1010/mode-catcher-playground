@@ -54,8 +54,7 @@ def flush_globals():
     user_actions = list()
 
 
-async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens,
-                       unstopped_tokens):
+async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
     global tokens_excluded_from_lines
 
     model_path = fs.get_model_path(mode_name, spacy_model, is_sentencized)
@@ -490,7 +489,6 @@ def generate_token_graph_object(
         assigned_codes,
         use_similarity=True,
         similarity_cutoff=0.8,
-        skip_empty_rows=False,
         use_deductive_codes=False,
         with_interviewer=False
 ):
@@ -502,14 +500,7 @@ def generate_token_graph_object(
     # if showing a cumulative graph (start == 0), generate nodes for just until that point
     #    otherwise, generate nodes for the entire transcript
 
-    # TODO: phasing out the active_data object altogether and using ag_grid's rowData property
-    #       embedding the parsed doc object as a hidden column so that we don't have to reparse it over and over again
-    #           filtering start to end instead of refiltering entire dataset over and over again
-    #       pickling the rowData of the ag_grid instead of the active data object so that it loads even faster
-
-    data_dict_list = [row for row in data if row['line'] >= start and row['line'] <= end]
-
-    skipped_rows = list()
+    data_dict_list = [row for row in data if start <= row['line'] <= end]
 
     for line in data_dict_list:
 
@@ -538,11 +529,6 @@ def generate_token_graph_object(
                       and not nlp.vocab[t.lemma_].is_stop
                       and not t.lemma_ in tokens_excluded_from_lines.get(row, [])
                       ]
-
-            # skip empty rows if the user wished to do so
-            if skip_empty_rows and len(tokens) == 0 and row > start and row <= end:
-                skipped_rows.append(line["line"])
-                continue
 
             # incorporate deductive codes into the graph
 
@@ -589,7 +575,7 @@ def generate_token_graph_object(
                     else:
                         new_G = combine_token_nodes(new_G, n2, n1)
 
-    return new_G, skipped_rows
+    return new_G
 
 
 def draw_token_graph_plotly_object(
@@ -612,19 +598,17 @@ def draw_token_graph_plotly_object(
         show_weak_links=True,
         combine_by_similarity=True,
         min_similarity=0.8,
-        skip_empty_rows=False
 ):
     global nlp
     global G
 
     # first, let's generate the token graph
-    G, skipped_rows = generate_token_graph_object(
+    G = generate_token_graph_object(
         data=data,
         start=start_line,
         end=end_line,
         use_similarity=combine_by_similarity,
         similarity_cutoff=min_similarity,
-        skip_empty_rows=skip_empty_rows,
         use_deductive_codes=with_codes,
         assigned_codes=assigned_codes,
         with_interviewer=show_interviewer,
@@ -964,7 +948,7 @@ def draw_token_graph_plotly_object(
             ),
         )
 
-    return graph_network, graph_metrics, skipped_rows
+    return graph_network, graph_metrics
 
 
 # ---- INTERFACE ----
@@ -1847,12 +1831,18 @@ def revise_tokens_view_callback(cell, toggle_clicks, row_data, assigned_codes, c
 @callback(
     Output("common-tokens-div", "children", allow_duplicate=True),
     Output("data-table", "rowData", allow_duplicate=True),
+    Output("stopped-tokens", "data", allow_duplicate=True),
+    Output("unstopped-tokens", "data", allow_duplicate=True),
+
     Input({"type": "common-token-button", "index": ALL, "stop": ALL}, "n_clicks"),
+
     State("common-tokens-store", "data"),
     State("data-table", "rowData"),
+    State("stopped-tokens", "data"),
+    State("unstopped-tokens", "data"),
     prevent_initial_call=True,
 )
-def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data):
+def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data, stopped_tokens, unstopped_tokens):
 
     # avoid initial activation when the buttons are created within the parse callback
     n_clicked = len([v for v in toggle_clicks if v is not None])
@@ -1866,7 +1856,17 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data):
     lemma = clicked_button["index"]
     was_stop = clicked_button["stop"]
 
+    stopped_tokens_set = set(stopped_tokens)
+    unstopped_tokens_set = set(unstopped_tokens)
+
     nlp.vocab[lemma].is_stop = not was_stop
+
+    if was_stop:
+        stopped_tokens_set.discard(lemma)
+        unstopped_tokens_set.add(lemma)
+    else:
+        unstopped_tokens_set.discard(lemma)
+        stopped_tokens_set.add(lemma)
 
     # update the common tokens div
     new_common_token_buttons = generate_common_token_buttons(token_counts)
@@ -1883,8 +1883,6 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data):
     #   for each row
     global tokens_excluded_from_lines
 
-    print(row_data[0]['included'])
-
     for i in range(len(row_data)):
         # todo: fix the highlighted utterance algorithm to use the `included` column
         # row_data[i]['highlighted utterance'] = highlight_utterance(row_data[i]['utterance'], vocab=nlp.vocab)
@@ -1895,9 +1893,7 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data):
                and not t in tokens_excluded_from_lines.get(i, [])
         ]
 
-    print(row_data[0]['included'])
-
-    return new_common_token_buttons, row_data
+    return new_common_token_buttons, row_data, list(stopped_tokens_set), list(unstopped_tokens_set)
 
 
 
@@ -1986,7 +1982,10 @@ def generate_graph_button_callback(
     #   Otherwise, all numbers get jumbled up
     # I use sorted to make sure that the user sorting the table does not mess up the graph
     # I also make sure not to include the lines that were turned off by the user
-    list_of_marks = sorted([l['line'] for l in displayed_row_data if l['in?']])
+    if skip_empty_rows:
+        list_of_marks = sorted([l['line'] for l in displayed_row_data if l['in?'] and len(l['included']) > 0])
+    else:
+        list_of_marks = sorted([l['line'] for l in displayed_row_data if l['in?']])
 
     # determine the start and end of the range that the user picked
     #    unless they are (somehow) outside the available selection range
@@ -2000,7 +1999,7 @@ def generate_graph_button_callback(
 
     if spring_k == 0: spring_k = 0.05  # otherwise, networkx throws a `division by zero` error :)
 
-    graph, stats, skipped_rows = draw_token_graph_plotly_object(
+    graph, stats = draw_token_graph_plotly_object(
         data=displayed_row_data,
         start_line=start,
         end_line=end,
@@ -2020,7 +2019,6 @@ def generate_graph_button_callback(
         show_weak_links=display_weak_links,
         combine_by_similarity=combine_by_similarity,
         min_similarity=min_similarity,
-        skip_empty_rows=skip_empty_rows
     )
 
     # ToDo: this algorithm does not work properly :(
@@ -2028,23 +2026,7 @@ def generate_graph_button_callback(
     #           I need to fix it
     #           -umit on 05/11/2025
 
-    # drop the skipped rows from the slier marks
-    if skip_empty_rows:
-        filtered_list_of_marks = [m for m in list_of_marks if m not in skipped_rows]
-        slider_marks = {m: '' for m in filtered_list_of_marks}
-
-        # correct the start point if the algorithm dropped lines at the start of the table
-        slider_min = int(filtered_list_of_marks[0])
-        slider_max = int(filtered_list_of_marks[-1])
-
-        if selected_range[0] < slider_min:
-            selected_range[0] = slider_min
-
-        # correct the end point if the algorithm dropped lines at the start of the table
-        if selected_range[1] > slider_max:
-            selected_range[1] = slider_max
-    else:
-        slider_marks = {m: '' for m in list_of_marks}
+    slider_marks = {m: '' for m in list_of_marks}
 
     return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions, ""
 
