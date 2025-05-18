@@ -1735,9 +1735,10 @@ def activate_clear_table_filters_button_callback(existing_filters):
     Output('data-table', 'filterModel'),
     Input("inclusion-options-checklist", "value"),
     Input("clear-table-filters-button", "n_clicks"),
-    State('data-table', 'filterModel'),
+    State('data-table', 'filterModel')
 )
 def apply_table_layout_filters_callback(table_display_options, n_reset_filters_clicks, existing_filters):
+
     new_state = [
         {'colId': 'line'},
         {'colId': 'time', 'hide': 0 not in table_display_options},
@@ -1754,6 +1755,8 @@ def apply_table_layout_filters_callback(table_display_options, n_reset_filters_c
     # if the "ignore interviewer speech" option is selected
     if 2 in table_display_options:
         new_filters['speaker'] = {'filterType': 'text', 'type': 'notContains', 'filter': 'Interviewer'}
+    else:
+        new_filters['speaker'] = None
 
     return new_state, new_filters
 
