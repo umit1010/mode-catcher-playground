@@ -1,0 +1,384 @@
+[00:00:00] Interviewer: So, last meeting, I just showed you NetLogo a little bit. We did create a fire model together, where we had trees burning, spinning from each other, etc, and did some additional things. This meeting, we will work on a novel idea that you come up with. So, did you get a chance to think about a little idea?
+
+[00:00:23] Participant_Walt: Um, yeah. I do have an idea in mind. I'm not exactly sure how it will work, it's going to be implemented yet. But of course, we're probably just gonna work on that throughout the.
+
+[00:00:34] Interviewer: Yeah, just tell me about your idea, and I'll take some notes. And then, yeah.
+
+[00:00:44] Participant_Walt: Alright, so what I had in mind was, so I personally, I really, um, I do dislike politics. I think a lot of people can kind of say that just because of how divisive it is. But then, at the same time, even though I do, like, dislike it, I do find it fascinating, because it goes back into, like, our biology of, like, you know, tribalism and all of that other kind of, like, human, human society, constructs I guess you can call. So, I want to see if we can, if we can model a development of, like, umm, opposing political parties, I guess. Yeah.
+
+[00:01:41] Interviewer: Why not? This will be very interesting, and, you know, the best way to attack this will be. Let's create something together. You just shoot ideas. You don't need to shoot well formed ideas. You can try something and say, "I kind of don't like it. Let's do it different way." I'd never want to think that you are wasting my time, so this is like me being just the translator between you and computer as to how you should go about creating this model, when you feel like creating. Let me share my screen, and then we'll just get started putting some things together. So, I have just an empty model right now.
+
+[00:02:29] Participant_Walt: Yeah.
+
+[00:02:29] Interviewer: Can you see the screen?
+
+[00:02:30] Participant_Walt: Yeah.
+
+[00:02:31] Interviewer: Can you read the text?
+
+[00:02:33] Participant_Walt: Yeah.
+
+[00:02:34] Interviewer: Perfect. As I said last week, this right side is literally for you to see that I write every word of code, something changes. This is not for you to remember or really, like, pay too much attention. I just wanted to, I always liked it being exposed to you and, you know, so.
+
+[00:02:53] Participant_Walt: Yeah.
+
+[00:02:56] Interviewer: How do you imagine this model? What is in this model?
+
+[00:02:59] Participant_Walt: Of course, you got to start off with people, so, umm, just do a baseline of like 100 people inside there.
+
+[00:03:15] Interviewer: Okay, so I hope it's not too distractive. I have my, I am at a conference room in my school, so the screen's a bit higher, so if I look like this one. So, I have 100 people. What, what, what do they look like? Let's see. Okay, yes. I have a simple person shape, the stick person shape, but we can also bring in some other shapes. For example, I think there are some fun people shapes as well, and these don't need to be realistic. You can even just say, "I just kind of find it fun," you know? It never has to be, like, fully precise. So, we have this person business, person construction, graduate, etc. Do you want a simple person shape, or any of these shapes, or a new shape from scratch?
+
+[00:04:08] Participant_Walt: Let's do a lumberjack for fun.
+
+[00:04:11] Interviewer: Okay, yeah. Okay, and. Okay, and then, where do we put these people? So, currently, when I create them, they will be at the center of the model.
+
+[00:04:31] Participant_Walt: I think we can just do a similar thing as last time, just a random distribution.
+
+[00:04:40] Interviewer: Okay. Very good, so are they too small, too large? And they're all different colors. Do we want to make them one specific color?
+
+[00:04:57] Participant_Walt: Oh, wait. Hold up, let me turn on the A/C real quick. It's just, I'm just gonna this one.
+
+[00:05:04] Interviewer: Okay. Yeah, take care. We will create 100 lumberjacks, put them in random places. Do you like the size? The way they look?
+
+[00:05:30] Participant_Walt: Yeah, this is fine, and I think, yeah, definitely want to pronounce, keep them at one color.
+
+[00:05:41] Interviewer: Okay. What should be their color?
+
+[00:05:48] Participant_Walt: Oh, let's just, let's just say purple.
+
+[00:05:56] Interviewer: OK. There we go. OK, cool. Every time we have 100 people, they look like lumberjacks. They're in random places. What else?
+
+[00:06:07] Participant_Walt: Umm, say, I do want to implement movement into this. I'm just trying to see what kind of movement. You know, okay, how about this? Umm, randomly make one of the people turn red and one of the people randomly turn blue, like when it's, umm, first created.
+
+[00:06:53] Interviewer: And let's count them to make sure that we have everything working correctly.
+
+[00:07:10] Participant_Walt: Yeah.
+
+[00:07:10] Interviewer: And so I will not call them, "Red." I will call them currently "red people" and "blue people," but you can always call them GOP versus Democrats. It's totally up to you.
+
+[00:07:26] Participant_Walt: Red people and blue people are totally fine, yeah.
+
+[00:07:36] Interviewer: Okay, so, set up: we have one of each. Let's see if the red one is here. Let's see. Yeah.
+
+[00:07:42] Participant_Walt: Yeah.
+
+[00:07:42] Interviewer: On the top. And then, the blue one is. Where is that? Blue one is hard to see. Let me reset again. It's somewhere there, the blue one. It's harder to see than the red one.
+
+[00:07:59] Participant_Walt: Yeah, it seems like that.
+
+[00:08:03] Interviewer: Where is the blue one? Okay, I can do this. There you go. It's down there, all the way there.
+
+[00:08:29] Participant_Walt: Oh, okay.
+
+[00:08:32] Interviewer: I think it kind of blends in with the blue pants, that's why. So, maybe I should make the pants a different color.
+
+[00:08:42] Participant_Walt: Yeah, sure.
+
+[00:08:46] Interviewer: What should be their pants' color, because their jackets are also red I guess? So, let's make them, like, a more neutral color. For example, does this look good? You just tell me. Let's see again. If it's going to be. So red is here. And then, red is always easy to see. Where is the blue? It's possible it goes to the edges.
+
+[00:09:27] Participant_Walt: Maybe.
+
+[00:09:27] Interviewer: Give me one more second, one more second. Let's make, and it's hard to see. Okay, let's make their jackets change shape and change color as well.
+
+[00:09:52] Participant_Walt: Yeah, for sure.
+
+[00:09:54] Interviewer: That way, red is here, and for, for blue, I can maybe use the color cyan, which may be more easy to see on here. Anyways, I won't waste too much time. Sorry, I am dealing with myself.
+
+[00:10:18] Participant_Walt: Yeah. I mean, it's fine. I guess, cause of, I mean, the plan is just to have them all grow eventually, so we're not really looking for just one.
+
+[00:10:28] Interviewer: There it is. Now I am seeing.
+
+[00:10:30] Participant_Walt: Oh, okay. Oh, yeah, yeah, sure. All right, now that we have, yeah.
+
+[00:10:38] Interviewer: Mm hmm. What's next?
+
+[00:10:43] Participant_Walt: Let's see, just for now, have, like, the people, everyone, moving in a random direction.
+
+[00:11:07] Interviewer: So, let's see if this works for you. What do you think about the way they work, they walk? Is it too wiggly? Too jittery? Or do you like the way they look, they move?
+
+[00:11:23] Participant_Walt: Is it like, umm, on your end, is it, like, smooth or.?
+
+[00:11:28] Interviewer: It's not, it's not smooth on your end?
+
+[00:11:33] Participant_Walt: Yeah, yeah. It's. I mean, it's probably just because my Internet's, like, kind of slow and that's oversimplified, so it's probably.
+
+[00:11:40] Interviewer: I mean, there's a bit of lag from here to Hawaii.
+
+[00:11:43] Participant_Walt: Yeah, the guard.
+
+[00:11:45] Interviewer: Let me see, and we make this. You know, I also made the movement a bit jittery. Like, let me make it a bit more normal. Maybe that made you confused. How about now? Is it working better? Or is it still too cutting off?
+
+[00:12:17] Participant_Walt: I think it's, I think it's just, like, time, honestly, so I don't think there's really anything we can do about that.
+
+[00:12:27] Interviewer: Yeah, there's a bit of a lag, yeah. I will show you the pen down to make it, like, show the trace, so you can see the trace of the random movement. Does this movement sound good to you? Like, does it look like a random movement? Yeah. Okay, so I will definitely share the final version that we created today with you, with the link, so that you can actually engage with the more smooth version instead of this lag.
+
+[00:12:56] Participant_Walt: Alright.
+
+[00:12:57] Interviewer: So, I keep on moving randomly.
+
+[00:13:00] Participant_Walt: Okay.
+
+[00:13:00] Interviewer: What's next?
+
+[00:13:01] Participant_Walt: Let's see. Um, alright, and then we'll make it so that the red and blue persons, respectively, kind of have, like a, like a radius around them. So. maybe, like, a radius that's like two people tall? Not sure how big that is on the simulation. So, as they move, the radius will move around with them, and if, and if, like, a person moves within that radius two times, then they will change into that color.
+
+[00:13:55] Interviewer: Perfect, so let me try one version of this idea. And if we, so there are two ways to do it: we can just draw a perfect circle, or we can use the background squares patches to create a rough radius. So let me start with the letter. Let's see if that works for you. If not, we can also do the circle, like a full, perfect circle, so.
+
+[00:14:18] Participant_Walt: Honestly, whatever works.
+
+[00:14:19] Interviewer: Are you fine the circles being black, by the way?
+
+[00:14:21] Participant_Walt: Um, yeah, you can just keep it black. It makes everything easier, everything else the same.
+
+[00:14:34] Interviewer: OK. OK. So, wherever they're moving, they will, they will create their own colored radius. Let me show you how it works. Oh? Something. It should be the correct. Here and there, I will make a little bug into this bug. Okay, that's too small. Where do I put this.. Okay, think about this. Does it look like a radius?
+
+[00:15:24] Participant_Walt: Yeah.
+
+[00:15:25] Interviewer: Is it too small? Too big?
+
+[00:15:27] Participant_Walt: That's fine. That's okay. Yeah, so, so, again, if they run into, well, yeah, if they run into the same, if, the same people twice, right, then that person, umm, becomes , you know, the respective color, and then, they also kind of, like, they get a radius around them or whatever.
+
+[00:15:55] Interviewer: Okay. Perfect. So let's do that. So, the people, if they get into the radius just once, nothing happens. If they did, if they get into that radius twice, they turn into that color. Okay.
+
+[00:16:20] Participant_Walt: Yeah.
+
+[00:16:24] Interviewer: So, let's say it's like something called "last exposure," right? So, let's do this. And now, I'll do it this way. So, this should be working straightforward, but, oh, a typo. And let's see if it actually does, and I slowed down the model a little bit for you to easily see.
+
+[00:17:13] Participant_Walt: Honestly. Actually, yeah, that'll probably be good.
+
+[00:17:17] Interviewer: Okay. So, what do you think?
+
+[00:17:20] Participant_Walt: Oh, that's a lot faster than I thought it would happen, actually.
+
+[00:17:29] Interviewer: Okay. You know, maybe because, like, so the way it's programmed right now, the person is here, the other, like, the blue person is here. The other person is here, right?
+
+[00:17:45] Participant_Walt: Yeah.
+
+[00:17:45] Interviewer: The blue person moves, the other person moves like this. It still counts as twice exposure.
+
+[00:17:50] Participant_Walt: Yeah.
+
+[00:17:51] Interviewer: You want to give some time between two exposures?
+
+[00:17:54] Participant_Walt: Um, yeah, time between exposures and, I mean, let's try to increase the number of exposures to maybe, like, five as well.
+
+[00:18:10] Interviewer: Okay, number of exposures will be five? Okay. Okay. Okay, then I have to restructure this. So, blue to red here, it will be if. So this time, it will just count, but my question then: let's say, so you said five exposures?
+
+[00:18:57] Participant_Walt: Yeah.
+
+[00:18:57] Interviewer: I was exposed to red once, and then the next time I'm exposed to blue, does it reset my red exposure, or it just keeps counting and whichever hits the five first turns me out?
+
+[00:19:10] Participant_Walt: For now, let's go with whoever hits the five first. Like, so, yeah, it's keeping separate, like, sum records, yeah.
+
+[00:19:21] Interviewer: Perfect. So they are counting, and then what happens is, let's call it exposure time between exposures. And, hey, ooh, already getting complicated this code, right?
+
+[00:20:03] Participant_Walt: Yeah.
+
+[00:20:05] Interviewer: Okay, let's see if this will work, or if I broke something. So. No, this one's not working. Let's see, let's see if anyone in these numbers will increase, or I may have broken something; sometimes when writing these codes. So, let's pick one random person and see if their exposure increased. So, let's see. This one has exposure to blue one. It keeps following this person. Oh, okay. You know what? I messed something up. I really messed something up. And some people. So this should be better now. Now, more people should be. Next, it's going to be tricky. Let me think about this. How many times they were exposed.? This one was exposed to blue twice so far. Let's count. So we implemented the, we did, there needs to be at least 10 ticks in between each exposure for it to count a new exposure, and then we also made it five required exposures.
+
+[00:21:56] Participant_Walt: Well, how long is it.?
+
+[00:21:57] Interviewer: Definitely longer. 10 may be too much. You mean, 10 ticks, you see the ticks here on the top? Ticks are like the measured time to make computational time measurements that we have. Every time someone moves one step, ticks increase by one. Exposure increased three times, exposed to it three times, and this is currently running slow. Let's speed it up. I'll generate it slowly for me to be able to see it more easily. When exposed to blue four times, they're exposed to. So, soon, at least one of them, oh, no. Oh, no, it did not change color. So, okay. Something's not working, because I did not implement the five thingy. Okay, sorry about that. Okay.
+
+[00:22:54] Participant_Walt: That's alright.
+
+[00:22:55] Interviewer: Oh, my God. I knew something was wrong. If exposure to red equals five, switch to color red. If exposure to blue equals five, turn blue. Okay, so now, this should be more. Two ticks. Oh, there you go. One person changed. Oh, oh!
+
+[00:23:31] Participant_Walt: OK, OK. That's very, uh, that got out of control really quickly.
+
+[00:23:41] Interviewer: Yeah, I mean, there is really hardcore competition. What do you think?
+
+[00:23:51] Participant_Walt: Umm, okay. I like the beginning part, umm, where, you know, it takes a while, but let's say. That wrapped up very eloquently.
+
+[00:24:04] Interviewer: Why do you think it happens that quickly?
+
+[00:24:19] Participant_Walt: I mean, there's just a lot more area to be exposed.
+
+[00:24:26] Interviewer: Yeah, it's very cool. So, what's next?
+
+[00:24:33] Participant_Walt: Wait. By the way, when, umm. What happens if both of them, their exposure to both red and blue are over five right now?
+
+[00:24:46] Interviewer: Nothing, currently.
+
+[00:24:48] Participant_Walt: Okay. Umm, let's see.
+
+[00:24:55] Interviewer: Give me one second. Yeah, nothing. A red can turn into a blue if they're exposed enough times, but I don't know how it is happening, like, I think it's just about by random chance, when a red and blue expose each other, the who influences who is by pure random chance, with the way we programmed them.
+
+[00:25:16] Participant_Walt: Yeah. All right. How about? I want to see what happens if, like, once they're, like, once they're, like, both over five, if, if one of them gets higher than the other, then they'll switch.
+
+[00:25:46] Interviewer: Switch? Okay.
+
+[00:25:47] Participant_Walt: Yeah. Not sure if that's gonna be too fast, but we'll see.
+
+[00:25:54] Interviewer: Let's see. I messed something up with small typos. It's running. Soon, someone will be captured. Oh, there you go.
+
+[00:26:41] Participant_Walt: Oh. Oh, wait.
+
+[00:26:47] Interviewer: What happened? Do you want to run it again?
+
+[00:26:55] Participant_Walt: Well, let's see. It's sort of, like, imprecise, like.
+
+[00:26:56] Interviewer: Shall I run it again?
+
+[00:26:59] Participant_Walt: Yeah, you can pause that..
+
+[00:27:12] Interviewer: Let's see. What does this say? Exposure to blue 72. Exposure to red, 2. How about this red one? Exposure to blue 1, exposure to red 86. Is it, well, I guess. Okay, try again. I wonder if the way I programmed it has anything to do with it. Let's see. No, it shouldn't. Yeah, it shouldn't. One or the other, I wonder, "Why is the red continuously.?"
+
+[00:28:13] Participant_Walt: Yeah.
+
+[00:28:14] Interviewer: Try a few times speeding up?
+
+[00:28:15] Interviewer: Just,
+
+[00:28:16] Participant_Walt: when's.
+
+[00:28:16] Interviewer: If it is always, like, consistently red, I'm. No, this is the correct answer.
+
+[00:28:22] Participant_Walt: There you go. Okay.
+
+[00:28:23] Interviewer: Yeah, because if it was always blue winning, it will be, like, "Maybe I did something wrong?"
+
+[00:28:32] Participant_Walt: Nah, you, you're losing the coin flip, like, a bunch of times.
+
+[00:28:37] Interviewer: Okay. Okay, there you go. Okay, makes sense. It just was a coincidence back to back. It was. What do you think?
+
+[00:28:50] Participant_Walt: Um. I, I, just, umm, I think I'm planning on trying to make some adjustments so that, like, one doesn't, like, completely overtake the other like what's happening right now, because that's not, that's all, obviously not really what happens. There's always, like, kind of like a split about. Yeah, about if one. So, if the person that's in, like, the, these are assuming two people who are already have a color, right?
+
+[00:29:36] Interviewer: Mm hmm.
+
+[00:29:37] Participant_Walt: If one of these people get into the radius of another person that's a different color, they will, they will, like, I guess, go in the opposite direction. It's like repelling, yeah. In fact, they'll both go in the opposite direction.
+
+[00:30:08] Interviewer: Okay. Let's do that. Okay, so this should try to make them get away from each other. Let's see if they actually do that. Yeah. Yep. It does seem to be the case, right? Is it too fast?
+
+[00:31:23] Participant_Walt: Yeah, I think I saw them.
+
+[00:31:27] Interviewer: They do avoid each other as much as possible, yeah. Very cool. When they're a bunch of ones, why do you think one takes over the other the whole time? Like, it's just, it seems to be the constant outcome, like, one or the other always takes over.
+
+[00:31:53] Participant_Walt: Yeah, I'm just trying to. Not, I'm not really sure, because what I'm trying to go for is kind of trying to, like, model kind of what's happens, so, like, one would go over the other, and then it would, like, constantly be like a back and forth. I'm just trying to see what factors to include to kind of get that idea, yeah.
+
+[00:32:22] Interviewer: Yeah, very cool. Okay, any other, any other things you would like to implement?
+
+[00:32:34] Participant_Walt: Um. Oh! Actually, you know? Okay. Okay. Um. If, so, if you remember earlier, the exposure was getting to, like, a 70:2 ratio, which is, like, absolutely crazy. Let's just say, if, if, if one, if one of the exposures is, like, 10 times higher than another or something, then it also changes color, yeah.
+
+[00:33:16] Interviewer: So it's like, what will change color? Oh, okay. If one is, for example, I'm a person. I'm exposed to blue 10 times and red one time. Do I switch the blue or red?
+
+[00:33:33] Participant_Walt: Umm, then you've switched to. You'll have switched to red. That's the first step.
+
+[00:33:43] Interviewer: Is it something, like, "I'm just sick of being exposed to one type?" Like.?
+
+[00:33:46] Participant_Walt: Yeah, basically, yeah!
+
+[00:33:49] Interviewer: Okay, yeah.
+
+[00:33:50] Participant_Walt: Yeah, I'm just trying to, I'm just trying to see what would, like, create a bit more of a balance. But then, I mean, at the same time, then you'll probably have to adjust the.
+
+[00:34:13] Interviewer: Say, you said it was the 10 times?
+
+[00:34:16] Participant_Walt: Yeah, 10 times.
+
+[00:34:17] Interviewer: Does the. Okay.
+
+[00:34:20] Participant_Walt: If it's 10 times higher than our smaller one, yeah.
+
+[00:34:22] Interviewer: Okay, there we go. So this, I just implemented it. Let's see how it works. It's almost, like, starting to root for the underdog or something like that.
+
+[00:34:22] Participant_Walt: Yeah.
+
+[00:34:22] Interviewer: Let me speed it up, now that we know how it works. What happened? So, two red. Okay. let's see if balance happens. Oh, I don't know if I coded it correctly. So, exposure to red with exposure to blue greater than 10, yeah. Blue exposure to red.Yeah, that's, that should work. Let's give it some time. It reached not 10 times yet. It's not, not working well the way I hoped it would work.
+
+[00:35:41] Participant_Walt: So, yeah, cause I feel like it's interfering with the other thing that I've put, where, like, if one of them is higher than the other, then it will change to that color.
+
+[00:35:56] Interviewer: Yeah.
+
+[00:35:58] Participant_Walt: So, I guess, yeah. If it becomes 10 times higher, it becomes 10 times higher.
+
+[00:36:11] Interviewer: So, I think I wrote the code to the wrong place. So, let's see again. I think I put the code into the wrong part of the algorithm, so let's see again. It may work this time. Okay. Yes, now, you see: the smaller one starts increasing a little bit. It's not always, like, it goes to five or six and stays there. What do you think now? Okay, let me slow it down. I sped it up to make it, like, easier to see.
+
+[00:36:44] Participant_Walt: Yeah.
+
+[00:36:44] Interviewer: So, what do you think?
+
+[00:36:47] Participant_Walt: Let's see. It's it's getting better for sure. How about, after the whole getting sick thing or whatever, after they switch color, they can't be switched back for a certain amount of time.
+
+[00:37:22] Interviewer: How long should that be?
+
+[00:37:27] Participant_Walt: Try, like, 100 ticks for now, yeah. Yeah, let's see how that works. And again, this is only, it fits from, like, getting sick of the whole 10 times ratio.
+
+[00:37:54] Interviewer: Yeah.
+
+[00:37:54] Participant_Walt: Part of it.
+
+[00:38:03] Interviewer: Okay, there you go. So they did switch. So when they switch, for 100 ticks, they cannot switch, right? They cannot be switched in any sort of way. Okay. Yeah. So, give me one second. Let's see. So, why, why did you implement this "Cannot be 100 ticks" idea?
+
+[00:39:12] Participant_Walt: I mean, I feel, I mean, the way I see it, it's like. Well, there's two reasons. The first reason was, because I kind of wanted to balance out the switching back and forth. But at the same time, I knew, like, if someone in real life were to, like, decide to switch political parties or something like that, that is, like, a big decision that would have taken a lot of consideration. Like, you don't, you don't just switch a political party, like, every day, like.
+
+[00:39:49] Interviewer: Yeah.
+
+[00:39:49] Participant_Walt: Some people will stay their whole lives without even switching at all, so I just wanted to be, like, if you're going to switch based on that decision, then it's kind of like long, kind of a bit more long term, and I'm not sure 100% and not to, like, compensate for that, but I just kind of wanted to implement that idea.
+
+[00:40:15] Interviewer: Okay, let's try. I will speed it up to get there.
+
+[00:40:22] Participant_Walt: Yeah, sure.
+
+[00:40:24] Interviewer: Now, we have the colors. Okay, let's see. I may have broken something. Sometimes, it will happen: I will be implementing an idea, and then it will break something else.
+
+[00:40:49] Participant_Walt: Yeah.
+
+[00:40:50] Interviewer: And I'm just speeding up to see the outcome. Yeah, I certainly broke it. Certainly. Give me one second. Ah, okay. So. There you go. Okay so, the exposure happened. Let me try one more time.
+
+[00:41:34] Participant_Walt: Yeah.
+
+[00:41:38] Interviewer: Numbers are increasing. Okay. What do you think about this outcome?
+
+[00:41:42] Participant_Walt: Let's see. It does seem a lot more balanced, which I, I mean, it's a, feels like it's a lot more accurate.
+
+[00:42:00] Interviewer: Let's try again. Yeah, I love watching it. We came up with, we really came up with something very, like, cool to watch, you know? Like, a really cool visualization. Okay, it does seem to be more balanced, as you said.
+
+[00:42:17] Participant_Walt: Yeah.
+
+[00:42:17] Interviewer: Definitely not where you wanted it to be, close to 50 50 up and down, so what else would you like to add or change?
+
+[00:42:33] Participant_Walt: Mm, alright. I guess, we can, I guess, one last thing is, if, like, if one color is live next to two other people of the same color, then they'll kind of, like, stay together.
+
+[00:43:08] Interviewer: Oh, you mean, like, blob up? Okay.
+
+[00:43:11] Participant_Walt: Yeah, so, because, I was just thinking to, like, the examples you showed me from last week, where there was a whole linking thing? Yeah, something like, yeah.
+
+[00:43:24] Interviewer: Let's try that. That will be cool. Let's get people. And they move together, right?
+
+[00:44:13] Participant_Walt: Oh, yeah.
+
+[00:44:17] Interviewer: It's going to be tricky again. Do you see?
+
+[00:44:19] Participant_Walt: Yeah.
+
+[00:44:24] Interviewer: Typo. Woah, not okay. Oh, I did not, I did not. Okay, it's not supposed to be violet, like the purple. So, now, this works. Okay. Are they forming that first.? Yep, they are, they are. They're moving out. Oh, the network got kind of confused. Slowed on my computer, so what happened there? Why did they spread out so much? Okay. Let me try one more time, this one. You know, because the world wraps from bottom to top, some links connect from here to the back. We can fix that.
+
+[00:45:44] Participant_Walt: Oh, yeah. Yeah, let's, yeah, I think we should treat our border, the source of borders so that we can't go from the top to the bottom.
+
+[00:45:56] Interviewer: Yes, they shouldn't go from top to bottom. Okay, let's fix this. See, now they shouldn't cross the border. They just more around., and I think my linking code will not be perfect right now. We'll see what it does, finally. And then in the next meeting, we will work on fixing linking and having more ideas. We are at the 50 minute mark, and now. Okay, they're there. Oh? So, what is happening is, the code creates links with. So they are created. But for some reason, they go to. They're supposed to tie. Tie means just they all go together. For some reason, they don't stick together. Okay. Let me try one final time, and I will slow down on this. So, you see, these, these are grouped together right now. There's no problem. Doing it, they're becoming, like, almost like a Pac Man, him eating up.
+
+[00:47:54] Participant_Walt: Yeah, pretty much.
+
+[00:47:56] Interviewer: Because it's some. See, okay, they you go. At some point, they are, for some reason, forming a network of the wrong people. They're all blue, but they're all moving now. Yeah, okay, so let's pause here.
+
+[00:48:13] Participant_Walt: Yeah, for sure.
+
+[00:48:15] Interviewer: We'll put a note. Let me link.. Okay, so it. Between this meeting and the next meeting, I will fix this bug.
+
+[00:48:35] Participant_Walt: Alright.
+
+[00:48:35] Interviewer: Okay, let me stop my. No, let me ask that. But let's use the last eight minutes to talk about our work today and schedule our next meeting. So, what do you think about your model so far?
+
+[00:48:49] Participant_Walt: Um, I think the one before the linking was, uh, starting to get, well, it's starting to get, like, somewhere kind of close to what I was, guess, envisioning? But, I mean, of course, it is a model, so it could kind of go off of what I, go, like, completely different from what I'm envisioning, but, yeah, I'm just trying to model the historical, the historical, uh, like, data, or whatever you want to call it. And yeah, I think the previous model is trying to get there with the, like, split the, halve the distribution between rather than, like. The only other thing that I'll be trying to do, and this is, of course, for next time, but it'll probably be, like, once the linking thing. Not was what I wasn't. Linking happens, what I was looking to see what happened is that there will be like two separate blobs, like, just kinda, it's kinda, like, going around the screen. And then, of course, you got people switching over. Yeah, I think, I think it's going.
+
+[00:50:16] Interviewer: Yeah, it's almost at the edges and stuff.
+
+[00:50:19] Participant_Walt: Yeah.
+
+[00:50:20] Interviewer: Looking great. Perfect. Let me stop my screen sharing. Do you have anything else to add or comment on our share before. To share. Before I stop recording?
+
+[00:50:32] Participant_Walt: Not the top of the my head, actually.
+
+[00:50:37] Interviewer: Okay, perfect. Let me stop recording, then.
+

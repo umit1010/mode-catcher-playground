@@ -475,11 +475,12 @@ def generate_utterance_table(data, display_options, in_sents=False):
             'autoHeight': True,
             'filter': True,
         },
-        dashGridOptions={"rowHeight": 40},
         # so that the height of single line rows are not recalculated in each update to prevent some interface jitteriness
-        dangerously_allow_code=True,
-        # to enable markdown rendering with the <mark> html tag because commonmark doesn't include highlighting
+        dashGridOptions={"rowHeight": 40},
         columnSize="sizeToFit",
+        # to enable markdown rendering with the <mark> html tag because commonmark doesn't include highlighting
+        dangerously_allow_code=True,
+        persisted_props=['filterModel', 'scrollTo'],
         # Umit's note: for some reason, using responsiveSizeToFit blocks hiding columns when an inclusion option is checked off
         style={'height': 600}
     )
@@ -616,7 +617,7 @@ def draw_token_graph_plotly_object(
         size_multiplier=2,
         show_interviewer=False,
         show_all_labels=True,
-        show_weak_links=True,
+        display_weak_links=True,
         combine_by_similarity=True,
         min_similarity=0.8,
 ):
@@ -757,16 +758,19 @@ def draw_token_graph_plotly_object(
         x=edge_x, y=edge_y, line=dict(width=2, color="#888"), mode="lines"
     )
 
-    if show_weak_links:
+    if display_weak_links:
         light_edge_trace = go.Scatter(
             x=light_edge_x,
             y=light_edge_y,
             line=dict(width=1, color="#BBB", dash="dot"),
-            hoverinfo="none",
             mode="lines",
         )
     else:
-        light_edge_trace = go.Scatter()
+        light_edge_trace = go.Scatter(
+            x=light_edge_x,
+            y=light_edge_y,
+            line=dict(width=0),
+        )
 
     node_x = [pos[n][0] for n in pos]
     node_y = [pos[n][1] for n in pos]
@@ -889,7 +893,7 @@ def draw_token_graph_plotly_object(
 
             degree_histogram = nx.degree_histogram(G)
 
-            fig_metrics.update_xaxes(title_text="$log_{10}(deg)$", row=1, col=2)
+            fig_metrics.update_xaxes(title_text="$log_{10}(deg)$", row=1, col=2, )
             fig_metrics.update_yaxes(title_text="$log_{10}(n)$", row=1, col=2)
 
             # calculate log-log points using the degree histogram
@@ -956,7 +960,7 @@ def draw_token_graph_plotly_object(
                 tickfont=dict(size=9),
             ),
             title=dict(
-                text=f'metrics for {mode_name}',
+                text=mode_name,
                 font=dict(size=18, weight="bold"),
                 subtitle=dict(
                     text=f"n = {G.number_of_nodes()} (n<sub>d>0</sub> = {len(connected_nodes)}) | ρ = {nx.density(G):.3f} | {subtitle_user_choices}",
@@ -980,6 +984,9 @@ def draw_token_graph_plotly_object(
 # -- input section --
 
 file_list = ["__manual entry__"]
+
+# ToDo:put the following code into a callback so that the file list is refreshed
+#       when the page is refreshed
 
 # checks if there is a path directory from creating the path object
 if fs.SAMPLES_FOLDER.is_dir():
@@ -1024,7 +1031,7 @@ model_selection_dropdown = dbc.InputGroup([
 ], class_name="mb-2"),
 
 reset_button = dbc.Button(
-    "Purge Model",
+    [html.I(className="bi bi-file-earmark-x me-2"), "Purge"],
     id="purge-button",
     color="danger",
     outline=True,
@@ -1180,7 +1187,7 @@ generate_div = html.Div([
                 xl=3, lg=12
             ),
             dbc.Col(
-                dbc.Checkbox(id="skip-empty-rows", label="Ignore lines with no included tokens", value=True, persistence=True),
+                dbc.Checkbox(id="skip-empty-rows", label="Skip lines with no included tokens", value=True, persistence=True),
                 xl=3, lg=12
             ),
             dbc.Col(
@@ -1416,8 +1423,14 @@ graph_view_options_div = html.Div(
 
 metrics_viewer_wrapper_div = html.Div(
     [
-        html.H3("", className="mb-4"),
-        html.P(" "),
+        html.H4(
+            [
+                "Graph Metrics",
+                dbc.Spinner(html.Div(id="metrics-spinner", className="p-2"), color="primary", size="md"),
+            ],
+            className="mb-4"
+        ),
+        # html.Div(dbc.Spinner(html.Div(id="metrics-spinner"), color="primary", size="md"), className="p-4"),
         html.Div("This view will be updated once the graph is generated.", className="lead", id="metrics-div"),
     ],
     className="border rounded p-4 my-4",
@@ -1684,7 +1697,7 @@ def parse_button_callback(
         tokens_in_lines = [line["lemmas"] for line in full_row_data]
 
     all_tokens = sum(tokens_in_lines, [])
-    common_tokens = sorted(Counter(all_tokens).most_common(80))
+    common_tokens = sorted(Counter(all_tokens).most_common(100))
 
     most_common_toggle_buttons = generate_common_token_buttons(common_tokens)
 
@@ -1923,6 +1936,7 @@ def common_token_button_clicked_callback(toggle_clicks, token_counts, row_data, 
     Output("min-strong-co", "value"),
     Output("log-data-table", "rowData"),
     Output("graphing-spinner", "children"),
+    Output("metrics-spinner", "children"),
 
     Input("graph-button", "n_clicks"),
     Input("graph-slider", "value"),
@@ -2034,7 +2048,7 @@ def generate_graph_button_callback(
         size_multiplier=node_size_multiplier,
         show_interviewer=2 not in selected_inclusion_options,
         show_all_labels=display_all_labels,
-        show_weak_links=display_weak_links,
+        display_weak_links=display_weak_links,
         combine_by_similarity=combine_by_similarity,
         min_similarity=min_similarity,
     )
@@ -2046,55 +2060,44 @@ def generate_graph_button_callback(
 
     slider_marks = {m: '' for m in list_of_marks}
 
-    return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions, ""
+    return graph, slider_marks, selected_range, stats, min_strong_co_occurrence, user_actions, "", ""
 
 
 # TODO: updating the datatable's highlighted tokens column once the user exits the revise modal
 
-# Callback that happens after the revise modal view is closed
-#   So that we an save the user selected deductive codes
-@callback(
-    Output("assigned-deductive-codes", "data", allow_duplicate=True),
-    Output("data-table", "rowData", allow_duplicate=True),
-    Input("coding-modal", "is_open"),
-    State("modal-row-id", "data"),
-    State("assigned-deductive-codes", "data"),
-    State("data-table", "rowData"),
-    prevent_initial_call=True,
-)
-def revise_modal_closed_callback(
-        is_open,
-        row_id,
-        previously_assigned_deductive_codes,
-        row_data,
-):
-
-    if is_open:
-        # nothing to do if the modal was opened
-        raise PreventUpdate
-    else:
-
-        # ToDo: change the following algorithm to use a hidden column in the datatable instead of the store object
-
-        # update the assigned deductive codes list once the modal is closed
-        # row_str = str(row_id)  # TODO: figure out why we have to convert this index to string :)
-        # updated_codes = previously_assigned_deductive_codes
-        # new_values = ctx.states_list[0]
-        #
-        # if row_str not in updated_codes.keys():
-        #     updated_codes[row_str] = dict()
-        #
-        # for cat in new_values:
-        #     cat_name = cat["id"]["index"]
-        #     cat_vals = cat["value"]
-        #     updated_codes[row_str][cat_name] = cat_vals
-
-        global nlp
-
-        row_data = update_included_token_columns(row_data, nlp.vocab)
-
-        # return updated_codes, row_data  # ToDo: reactivate this line after completing the previous todo
-        return previously_assigned_deductive_codes, row_data
+# # Callback that happens after the revise modal view is closed
+# #   So that we an save the user selected deductive codes
+# @callback(
+#     Output("assigned-deductive-codes", "data", allow_duplicate=True),
+#     # Output("data-table", "rowData", allow_duplicate=True),
+#     Input("coding-modal", "is_open"),
+#     State("modal-row-id", "data"),
+#     State("assigned-deductive-codes", "data"),
+#     State("data-table", "rowData"),
+#     prevent_initial_call=True,
+# )
+# def revise_modal_closed_callback(
+#         is_open,
+#         row_id,
+#         previously_assigned_deductive_codes,
+#         # row_data,
+# ):
+#
+#     # print(table_scroll_pos)
+#
+#     if is_open:
+#         # nothing to do if the modal was opened
+#         raise PreventUpdate
+#     else:
+#
+#         # ToDo: change the following algorithm to use a hidden column in the datatable instead of the store object
+#
+#         # global nlp
+#
+#         # row_data = update_included_token_columns(row_data, nlp.vocab)
+#
+#         # return updated_codes, row_data  # ToDo: reactivate this line after completing the previous todo
+#         return previously_assigned_deductive_codes#, row_data
 
 
 @callback(

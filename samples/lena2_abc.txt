@@ -1,0 +1,236 @@
+[00:00:00] Interviewer: So, another question that I usually ask in between these meetings is: do you remember what we did in the last meeting?
+
+[00:00:12] Participant_Lena: Yeah. We were building models to show like the different scenarios of what would happen if we kind of set it up to where like a house caught fire or if the weather was windy or if it was sunny. We built in like different kinds of plants, even some logs, different kinds of houses with different colors and placements. So, I think we left off at like one of them caught fire from lightning.
+
+[00:00:45] Interviewer: Yeah. And did you get a chance to look at the link I sent you? Did you tinker with it?
+
+[00:00:51] Participant_Lena: I did. Yeah. It was pretty cool. I showed my boyfriend. He thought it was pretty awesome.
+
+[00:00:57] Interviewer: That's pretty cool, yeah. And before we jump into like changing things, adding things, etc, so this meeting, we will do some modifications on the model as much as we can get done. Do you have any thoughts, reflections, ideas? 
+
+[00:01:15] Participant_Lena: I think staying on the track of the weather would be good, just to kind of show the differentiation and the climates. Maybe we could add in some animals? I know that we had some notes that we talked about for the end of our meeting last time. Other than that, though I, I would say we'll just keep on the same track that we were in the last meeting.
+
+[00:01:42] Interviewer: Sounds good. Let's, let me share my screen with you. Okay, are you able to see my screen? 
+
+[00:01:50] Participant_Lena: Yes.
+
+[00:01:51] Interviewer: Okay and. So the model we had, so the notes I have here, and I said that I may be able to implement some of these ideas, but I did not have a chance. I'm sorry about that. One way or the other, we will get these tasks done because my method is that we finished the model the way you want to finish. Like we stopped when you say I'm satisfied, I have all my ideas in the model. So we said nicely the kind of flowers on top row and bottom no overlapping, so it still is there the overlapping, which needs to be fixed, but hopefully it's not hindering your imagination with the model. We had the rain accumulating, which we did not do it yet. Rain just comes and goes.
+
+[00:02:34] Participant_Lena: I thought we decided not to do accumulating because it would slow down the model, like the computer.
+
+[00:02:49] Interviewer: And then we said, four lightning in between clouds and two lightning so. We had these lightnings. They do kind of work on in between clouds but they get stuck there, I guess, I have to fix it, but the lightning's from the clouds hit the house at the center. And it catches fire. We didn't do the fire spread from the house to the other objects yet, so we can start with that maybe. And ideas for the next meeting, we just, this was again, these are none of these are something that you should do, we should definitely do. These are more like. These were the ideas, just to remember, right. For the next meeting, or people, adding some people, adding a couple animals, perhaps wind, we talked about. And if it's sunny, people are walking around, if it's raining, we might have less people outside. So these were the and maybe building ground. These were some of the ideas that we talked about, as I said, you don't have to implement any of these things, if you don't feel like implementing and if you have other ideas. So what do you think, why do you think should we start adding things? 
+
+[00:03:53] Participant_Lena: Maybe we can start with the fire like you mentioned. Can we make that. Sorry I was . . Can we make it spread to like both the green and the yellow house?
+
+[00:04:09] Interviewer: Do they, does it spread through these leaves and stuff or does it just jump?
+
+[00:04:14] Participant_Lena: No, it would spread through the leaves and the logs.
+
+[00:04:16] Interviewer: Okay, so let's do that. We have the weather. We have the lightnings. The house catches fire here. And then, one sec can basically say fire selves. version of this. Let's see if it works the way we want, and then we can manipulate it. Let's see how this works. I did write a little bit of a headache version of it. Woa. Okay, it caught fire with that. I shouldn't have done it that way. Sorry. I made it in a way that it catches fire immediately when it touches something, but of course it tries to. The house heading any houses here. Oh, it was by future as it hit this hosue. Okay, we didn't write it. Okay. Now, it shouldn't, you should never catch fire with the top. What do you think? Too much? Now that when they catch fire. Oh. Little bug again. Uh oh. I did make a bunch of fires again and it kind of slow.
+
+[00:06:40] Participant_Lena: Oh no.
+
+[00:06:43] Interviewer: I will fix it. Don't worry. Just in case, I will force quit my netlogo. So what happened is, I did not control the number of fires that were created so that just keep, the file keep, kept replicating, it's replicating itself and spreading.
+
+[00:07:05] Participant_Lena: Gotchu.
+
+[00:07:11] Interviewer: Did it save my changes? That's okay. Sorry about this little hiccup.
+
+[00:07:23] Participant_Lena: No worries.
+
+[00:07:33] Interviewer: Let's see what happens. It burns now. Let's write that code again. So. This fire will look around and it will just jump into right side and this one will jump into left side. Okay. All right. Let me actually. Make sure that it doesn't do the same thing. So, the fire will be. It's kind of an awkward way to program it. The, the fire will be like did I already spread and I'm not going to keep making copies of myself. Let's see. See how this works. So it did spread just next to itself. And then. It should keep spreading. Okay. They should not keep spreading. Oh. I'll pop up and let's save it so that we don't lose it. Sorry. I guess it's the morning that I am a bit rusty. So we said that. Okay. Now it did not spread. Oh because I didn't do it forward. Okay. So basically yes now it's burning.
+
+[00:10:53] Participant_Lena: There it goes. It is burning.
+
+[00:10:57] Interviewer: And then I need to fix it a little bit more so that I'm sure that it's not going to be like creating too many. Let's see now. Now it's burning. Yes. It's burning a lot. Okay, what do you think?
+
+[00:11:28] Participant_Lena: It looks good.
+
+[00:11:31] Interviewer: Are the flames too big, or do you like, how it is?
+
+[00:11:34] Interviewer: I kind of like that size actually.
+
+[00:11:38] Participant_Lena: So what shall we add next. 
+
+[00:11:40] Participant_Lena: Can we add some people? Maybe three people walking between the orange and blue house at the bottom?
+
+[00:11:53] Interviewer: Right here?
+
+[00:11:55] Participant_Lena: Yeah.
+
+[00:11:59] Interviewer: Where's the orange house? Oh, so this is the one. 
+
+[00:12:09] Participant_Lena: I think we ran out of colors, so.
+
+[00:12:12] Interviewer: Yeah, I know I wasn't sure. Sorry again. I will just make sure I have everything. Remembered. Sometimes, I just will forget a simple thing, you know, like a simple piece of the code. Let's look at the turtle shapes. When it comes to people, we have the very simple, plain, person shape. This one. 
+
+[00:12:42] Participant_Lena: Yeah. 
+
+[00:12:42] Interviewer: We also have some people in the library. That maybe, maybe more like person business, person construction, doctor, farmer, graduate, lumberjack, police, service, soldier, and student. Would any of them look better for you?
+
+[00:13:04] Participant_Lena: Sure. Let's do the. I was thinking about the lumberjack. I kinda like farmer.
+
+[00:13:10] Interviewer: Okay. Let's do the farmer. Farmers. They will be here. This is minus twelve. Okay, so we have these people. Are they too small for you?
+
+[00:13:51] Participant_Lena: Yeah. Let's make them quite a bit bigger. 
+
+[00:13:56] Interviewer: Okay. Better or still too small.
+
+[00:14:04] Participant_Lena: Still kind of too small.
+
+[00:14:06] Interviewer: Okay. Let's make them bigger. How about now? 
+
+[00:14:13] Participant_Lena: Can we do just one more? Yeah that works.
+
+[00:14:20] Interviewer: Okay. We can make it even bigger. I mean we can make it as big as we want. We can make these people. You prefer this size or slightly smaller? 
+
+[00:14:29] Participant_Lena: Let's go slightly smaller.
+
+[00:14:30] Interviewer: Okay. Let's do four then. We have these people and they will just be walking back and forth. 
+
+[00:14:36] Participant_Lena: Okay. 
+
+[00:14:38] Interviewer: Is that how you want it?
+
+[00:14:39] Participant_Lena: Yeah. That sounds good.
+
+[00:14:46] Interviewer: And, my people will be going forward. If they hit one of the houses. Let's see if this little code works. Woah. Nope. That didn't work. Okay. Okay. So then I should probably hard code it. Okay. They will just walk back and forth. Are they walking too fast too slow? 
+
+[00:15:38] Participant_Lena: It. Let's have them move a little bit slower. 
+
+[00:15:41] Interviewer: Okay. How about now?
+
+[00:15:50] Participant_Lena: Yeah. That's cool.
+
+[00:15:51] Interviewer: So they are walking around. What what's next?
+
+[00:15:56] Participant_Lena: Let's see if we can add a couple animals to the very top. 
+
+[00:16:00] Interviewer: Okay. 
+
+[00:16:01] Participant_Lena: Row of houses like similar to where they all are in between the two.
+
+[00:16:05] Interviewer: Okay. Let's do that. And, also trying to make sure that the fires again do not slow down the model. Okay, there are more than. Ask. Well, again it's like. A little bit of a safeguard there so that the fires will not be too many, you know. Okay, there we go. Okay. Perfect. And then we are adding animals? 
+
+[00:16:58] Participant_Lena: Yeah. 
+
+[00:16:59] Interviewer: Okay. Do we add just one type of animal, multiple types of animals, do we differentiate between them?
+
+[00:17:05] Participant_Lena: Do you have any horses?
+
+[00:17:08] Interviewer: You know. We were building another model yesterday with another participant. I think we really do not have really horses in the shapes, but we have similar shapes. So we have. Let's walk through that.
+
+[00:17:24] Participant_Lena: Let's do some birds.
+
+[00:17:26] Interviewer: Yeah we can do birds. Is this good? This bird shape? 
+
+[00:17:27] Participant_Lena: Yeah.
+
+[00:17:27] Interviewer: Okay.
+
+[00:17:27] Participant_Lena: Let's do two birds. Just flying like between the houses in the clouds.
+
+[00:17:43] Interviewer: Right here? Okay. 
+
+[00:17:44] Participant_Lena: Yeah.
+
+[00:18:02] Interviewer: Yes, that's pretty good. Actually, let's make them 4. I'm assuming they are too big?
+
+[00:18:11] Participant_Lena: Those are some big birds.
+
+[00:18:13] Interviewer: How about now, but are they too close to the clouds?
+
+[00:18:16] Participant_Lena: Yeah. Could we move them down just a little bit?
+
+[00:18:22] Interviewer: Right here? Or a little bit more?
+
+[00:18:24] Participant_Lena: Oh. Yeah that's good.
+
+[00:18:28] Interviewer: Are they too big still or?
+
+[00:18:31] Participant_Lena: No. 
+
+[00:18:31] Interviewer: Okay. Let's make them all to. Basically, going to do the same thing. Right. They are just going to go back and forth. Let's see. Oh. Does it look fine the way they? Why did that house catch fire? Oh, because I did implement that feature in the previous one, but I didn't implement here. So where's the fire catching behavior? Yep there you go. There you go. Any house here. Okay, the top ones should not catch fire.
+
+[00:19:19] Participant_Lena: Yeah that looks really neat. 
+
+[00:19:21] Interviewer: Okay. It's really coming to live. It's becoming a live environment.
+
+[00:19:25] Participant_Lena: Yeah. Could we add like ground to each of the groups of houses?
+
+[00:19:32] Interviewer: Is it. Do you see it as, like all the background ground or do you see just little like strips as background?
+
+[00:19:38] Participant_Lena: I think just like little strips.
+
+[00:19:41] Interviewer: What will be the color of ground?
+
+[00:19:54] Participant_Lena: Let's do green.
+
+[00:20:01] Interviewer: Let's see how this works and then we will adjust. What happened? What decided to drive their own cor. Ope it's. Club up up there with six. Is this what you had in mind or? 
+
+[00:20:29] Participant_Lena: Yeah. Actually, that's perfect.
+
+[00:20:31] Interviewer: Okay, so let's do the same for the center and the button. Should be. Too much. How does this one look? The center one?
+
+[00:20:57] Participant_Lena: That looks good. Can we change the color of the trees, maybe?
+
+[00:21:04] Interviewer: Shall we make them a bit darker green, a different color? A different color. Okay.
+
+[00:21:08] Participant_Lena: Yeah. If it could be darker green, that would be great.
+
+[00:21:12] Interviewer: Green minus three, for example. Does it look better?
+
+[00:21:16] Participant_Lena: Yeah. That looks good.
+
+[00:21:18] Interviewer: And then. Yeah, it does give, especially with these logs here that kind of gives like a three dimensional look....
+
+[00:21:24] Participant_Lena: Yeah. It's cool.
+
+[00:21:26] Interviewer: I really like it. Let's see. 
+
+[00:21:28] Participant_Lena: I do too. 
+
+[00:21:38] Interviewer: Is this good or should this spread to the feet of the people? 
+
+[00:21:42] Participant_Lena: If we can spread it to the feet, that'd be great.
+
+[00:21:44] Interviewer: Yes, there you go.
+
+[00:21:45] Participant_Lena: And could we make the. Like a rule for the houses to not be green?
+
+[00:21:52] Interviewer: Okay, yes.
+
+[00:21:53] Participant_Lena: Random color except green.
+
+[00:22:00] Interviewer: Okay, there you go. So that way, we are sure that. Oh no. There was one green. Okay, what is this? This is not green. I guess it's lime? Okay. So now, it shouldn't happen. Well, what's this color? Color 6565. Let's see. 65, it is lime. If color equals green or color equals lime. Color. Ooh. Okay, I have to. We have these tender houses that are differently created. Okay. Now, it should not be the case. 
+
+[00:23:10] Participant_Lena: Cool.
+
+[00:23:11] Interviewer: None of them should be green. Perfect. And it's raining and it's catching fire. It's full catastrophe here right now.
+
+[00:23:21] Participant_Lena: That's pretty cool.
+
+[00:23:23] Interviewer: And I want to double check with you that this works the way you wanted. Did you always want the both houses to catch fire or did you want it to spread organically, if there are not. You know, sometimes by random chance. See there will not be too much space. There will be a bunch of space in between the house the greens and stuff. And in extreme cases, there may be so much space that the fire might not spread, spread to one of the houses. Is that fine for you, or do you always want those fires to spread?
+
+[00:23:51] Participant_Lena: Yeah, I think that's fine. 
+
+[00:23:53] Interviewer: Okay.
+
+[00:23:53] Participant_Lena: You know because the way we have it set up, it's going to be random.
+
+[00:23:57] Interviewer: Mmhmm.
+
+[00:23:58] Participant_Lena: So, I would rather go with what the situation is at the moment.
+
+[00:24:04] Interviewer: Okay. Yeah. For example, in this one, it just couldn't reach this house, just burnt all these places. Maybe, eventually, yes. So. This looks great. What do we add next?
+
+[00:24:17] Participant_Lena: I don't know. I just tried to think about that.
+
+[00:24:20] Interviewer: I mean you don't have to keep adding things. When you are happy, you can just tell me, I think I created the model in my mind.
+
+[00:24:29] Participant_Lena: Yeah. I think. It looks neat, I don't have any changes that I would make to it.
+
+[00:24:34] Interviewer: Great. Do you need to work on any other ideas to polish the way it looks, the way it works? You know, like would you like fires to behave slightly different? Humans to behave slightly different.
+
+[00:24:51] Participant_Lena: No, I think you've captured it perfectly. I mean you have thought of great clarifying questions to ensure that the sizes and colors and the placements are right. Yeah. I think you nailed it.
+

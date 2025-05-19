@@ -1,0 +1,298 @@
+[00:00:00] Interviewer: So, this is our second meeting. We did the first version of their model last week, and then we will add and change anything you want today, and if you are satisfied with the final version of the model, we will do one more interview to just reflect on the process. If you, if you work today, spend about an hour and then we still have some ideas left, we can meet again one more time. Yeah, to to add, doing more stuff. So, it's totally up to our progress. But, before starting today, I usually ask this to make sure that I'm on the same page of the participants. Can you tell me? What do you remember from last meeting?
+
+[00:00:42] Participant_Walt: So what I remember last meeting is, I guess, is trying to. We're trying to make the political model, I guess you can call it, yeah, so, well, I implemented people, implemented, like, a red and, red and green kind of thing, but the colors were kind of hard to see, hard to see, so we had to change a little bit of them, that their colors, and. So, and then the people, I believe there was like a. Like, 100, I think? I forget how much people exactly but, probably, probably somewhere around there, so there's 100 people uncolored, and then there'll be, like, one random red, one random blue, like anyone. And then they would have, like, a radius and then, once one uncolored person came into the radius, like, a certain amount of times, then they would change it to that color and gain their own radius. And then, oh, there were also a tick timer, whatever; it was between it, so it didn't, like, instantly happen, like, and I remember we tried to implement the kind of grouping, the grouping thing if there was like three or more, but at the end of the last meeting, there was kind of a bug last time, so.
+
+[00:02:25] Interviewer: Yes, well, you did pretty much cover everything. There wasn't 100 people, and let me share my screen with you now that. You recited things, I didn't want to impact your your thinking and memory. So, as you said, we have 100 people, as you said. Do we start with one red person, one blue person? They highlight themselves? They interact with the non. Like, the purple people who are not affiliated with any side, I guess?
+
+[00:02:57] Participant_Walt: Yeah.
+
+[00:02:59] Interviewer: And do they, do you influence the purple people to join your side? So far? And there was a bit of a bug. Links were getting really messy when they were forming groups, right? I did actually fix that, so you will see that it's not going to get messy like the last time, so I can take this out. So I hope it does work the way you wanted to, or, you know, like. Oh, yeah so they do. They do file, form groups. So the links emerged, but then it gets tightened.
+
+[00:03:36] Participant_Walt: It stays the same.
+
+[00:03:40] Interviewer: What do you think?
+
+[00:03:43] Participant_Walt: All right, so I'm thinking, like, two things. The first thing is, let's see, I'm probably going to move away from that first thing, because it seems to still be leaning towards the right side. Second thing I realized is, I'm not sure, maybe last time I was, like, a too, too much, like, results driven, cause I was trying to get, like, what I want, what something that I envisioned in my head, but I guess the goal of this is to find, like, unexpected behaviour, so, I mean, I might. Overall, just, instead of trying to get that, like, back and forth, like, actually, trying to get it, just keep on adding aspects and see what happens. 
+
+[00:04:30] Interviewer: You know the goal is really what you define. You know, if you wanted to understand how you can get to that, that situation where they're hovering around 50, going up and down. But you can also change your role, you know? Like, so if you, if you are currently now, "Okay, I don't want to go towards that goal, if we wanted open explore." That's also perfectly fine. It's totally up to you.
+
+[00:04:54] Participant_Walt: I'll try, yeah, I will try to change my goal for a few steps. The only thing I'm, the only thing. I'm not really worried, but, like, thinking about rather is, like, I just hope there isn't one fact, because now that I'm just going to go straight for, like, that, like, features and set up results. Ah, I'm just thinking that, like, hopefully, like, there. The only problem I see is that there's gonna be, like, one factor that weighs so heavily, and because the results don't change, we won't be able to see how much it affects it, unless you could probably add the variable counter, I guess? Yeah, yeah.
+
+[00:05:42] Interviewer: You can be implement anything you want, and then you can also implement it and then decide, "Oh, this factor is too overpowered," you know? And then you can try to modify it, take it out. It's totally up to you.
+
+[00:05:52] Participant_Walt: Yeah, okay.
+
+[00:05:57] Interviewer: So, how would you like to go about adding or changing things as well?
+
+[00:06:02] Participant_Walt: Let's see. I'm, I'm sorry. I know you debugged it, but, uh, I'm thinking of taking away the linking.
+
+[00:06:13] Interviewer: Perfectly fine. Perfectly fine. OK, I will, because these are recorded in video, I can always go back, and if, you know, you need to add it back, I can always remember. I will comment this out. This specific piece of code will not run. 
+
+[00:06:32] Participant_Walt: Okay, yeah. That'll work. 
+
+[00:06:33] Interviewer: Mm hmm, so let's try to speed it up a bit to get to. Okay, so, currently, they're not being linked.
+
+[00:06:45] Participant_Walt: Yeah.
+
+[00:06:57] Interviewer: Okay, what's next?
+
+[00:07:01] Participant_Walt: Let's see. So, politics., so, what I'm thinking right now is, politics usually comes down to, like, a few, like, super influential people. So, I'm, I'm thinking of a way to try and implement those super influential people.
+
+[00:07:28] Interviewer: Yeah, let's do that.
+
+[00:07:44] Participant_Walt: So, all right. Um, let's start with if. This is like after everybody has been, like, given a color. After everybody has been given a color.
+
+[00:07:56] Interviewer: Okay, let's do it that way. I think this is going to be a piece of code. Oh, no. I have a silly thing. Give me one second to fix this.
+
+[00:08:22] Participant_Walt: So, I remember there was, there was a counter, so. Hello.? Hello? Somebody there.?
+
+[00:08:23] Interviewer: I'm so sorry. Something's weird.
+
+[00:10:56] Participant_Walt: No, no. It's alright. It really is all alright.
+
+[00:10:57] Interviewer: It's weird, like, I never had this happen before.
+
+[00:11:02] Participant_Walt: I mean, we're, we're, I'm in an island in the middle of the Pacific. Maybe that's why what i'm hearing.
+
+[00:11:09] Interviewer: I don't think it's about you, I think my connection dropped, because I tried to log into some webpages into the movie star. But anyways, let's make. Now, do you see my screen?
+
+[00:11:18] Participant_Walt: Um, yeah.
+
+[00:11:20] Interviewer: Okay. The meeting is being recorded. Perfect. So, you were saying that the influential person were, was going to emerge, if, once everyone is affiliated a side, right?
+
+[00:11:36] Participant_Walt: Oh, are you on your. What was that called?. That logo screen right now?
+
+[00:11:42] Interviewer: Oh, you're not. I'm not sharing it with you now?
+
+[00:11:44] Participant_Walt: Uh, well, I only see, like, the cell.
+
+[00:11:48] Interviewer: Okay, no, that's not supposed to happen. Yeah, I picked the wrong one. Share. Here you go.. Do you see it better now? Okay. Perfect. Thank you. So we can trigger an event when, whenever everyone is affiliated with a part?
+
+[00:12:10] Participant_Walt: Yeah, so, yeah. Once everybody has a set color, and I remember, we had a counter earlier that kind of determined how many times one person went into, like, a radius, you know? It went up by one, so, I mean, I'm sure the number's really high, but once everyone has been determined, whoever from that. This is for both parties, actually. Whoever from each party who, who has, like, this. Let's say, wait. Wait. So, there's an exposure to blue, exposure to red for the first time.
+
+[00:13:04] Interviewer: And these are just numbers, basically? How many times they are exposed? This one is exposed to blue 755 times, for example..
+
+[00:13:15] Participant_Walt: Yeah. 
+
+[00:13:15] Interviewer: And red 31 times only?
+
+[00:13:20] Participant_Walt: Yeah. OK. Umm, can I see the variables for one of the red people?
+
+[00:13:38] Interviewer: Okay, of course. Let's look at this one. So, this one was exposed to blue 175 times and red 523 times.
+
+[00:13:51] Participant_Walt: Okay. Um, I guess, let's have it where, so, yeah, it'll create an influential person from each party, and I think the best way to do that is just to turn them into a different icon or whatever? I forgot what they were called.
+
+[00:14:14] Interviewer: Yeah.
+
+[00:14:16] Participant_Walt: So, yeah: turn into a different icon, and then they will have a, they'll have, like, a radius, a new radius that's, like, twice the size of the one that we currently have.
+
+[00:14:35] Interviewer: Okay, and will the mechanism be the same, the influence?
+
+[00:14:40] Participant_Walt: What was that? 
+
+[00:14:43] Interviewer: You know, will the influence be the same? For example, will they add +2 influence to people? +3 influence to people? Or the same +1 influence to people?
+
+[00:14:51] Participant_Walt: Umm, oh, no. What I was actually thinking is it, you know. You know, I wanna, I just want to see what happens, something crazy, like this will be changed later, but, umm, I just want to do it, but, like, yeah. They have double the radius, and anyone. So, like let's say, for the influential blue person, they'll have a radius, and whoever that's red that comes inside their radius will lose all their, like, all of the exposure to red, literally, like, straight to zero. I just wanted to see what happens.
+
+[00:15:45] Interviewer: Okay. So, for example, there's a blue, very influential person, and then there's a little red person, who's just a normal person.
+
+[00:16:03] Participant_Walt: Yeah. 
+
+[00:16:04] Interviewer: Red person comes into the blue person's radius. They don't necessarily turn into blue, but they lose all of their red influence.
+
+[00:16:13] Participant_Walt: Well, yeah. I mean, they lose all their red influence, then they will turn to blue, yeah.
+
+[00:16:18] Interviewer: Okay, sounds good, yeah. Yeah. Perfect.
+
+[00:16:26] Participant_Walt: And this is only if they're of the opposite color, yeah.
+
+[00:16:36] Interviewer: So, what should we make the shape of this new influential person? Should we make it, like, a rather random shape, or should we make it arrow? Let me go through these shapes for you. There's, there's a bunch of person shapes. You know we made the lumberjack. We can make it a different person shape, or you can make it a totally random shape as well, like the monster.
+
+[00:17:07] Participant_Walt: I mean, I saw an exclamation mark, so I guess make it that?
+
+[00:17:12] Interviewer: Exclamation mark?
+
+[00:17:13] Participant_Walt: Yeah, I'm pretty sure it's all. That should make it easier to recognize.
+
+[00:17:19] Interviewer: This one?
+
+[00:17:20] Participant_Walt: Yeah. 
+
+[00:17:21] Interviewer: Okay. Let's do exclamation, and this will be. These two people will be the ones with the highest blue influence, and the ones with the highest red influence?
+
+[00:17:33] Participant_Walt: Yeah, at the time when, like, every, after everyone gets determined. 
+
+[00:17:36] Interviewer: Okay. Yeah. This is going to be a very interesting code to write for me. Give me one second. Let me make sure. 
+
+[00:18:09] Participant_Walt: Yeah, yeah, and I know, I know I just threw, like, a bunch at you. 
+
+[00:18:12] Interviewer: No, that code is easily doable, but I gotta write it correctly, because if I make a bug, the output will be buggy, and you will be mis influenced, right?
+
+[00:18:26] Participant_Walt: I guess so.
+
+[00:18:27] Interviewer: This was exposure to blue, right? So, oftentimes I will copy this to easily write, but I will forget when I have to change things that may create bugs. Okay. Do you want them to be physically larger as well, you know, like the size wise? Or the same size as.?
+
+[00:19:24] Participant_Walt: Umm, yeah, might as well.
+
+[00:19:25] Interviewer: Let's make them twice as big just to see how it will look.
+
+[00:19:29] Participant_Walt: Yeah.
+
+[00:19:30] Interviewer: Okay, so they are there. There we go. Okay. People will be on a call. Small people cannot influence these influential people, right?
+
+[00:20:03] Participant_Walt: Um, yeah. Yeah.
+
+[00:20:06] Interviewer: Okay. Okay, so give me one second. So now, I will copy this, and then make it slow. Okay. But if I just copy and paste this fully. Almost there. I need a second more and. People who are influential people. Do the large people, no, they don't avoid the opposite people, right?
+
+[00:21:41] Participant_Walt: Oh, yeah.
+
+[00:21:42] Interviewer: They don't avoid them. Do they influence each other? Do they have the same effect on each other?
+
+[00:21:57] Participant_Walt: No.
+
+[00:21:59] Interviewer: So, okay. So, twice, twice the radius.
+
+[00:22:55] Participant_Walt: Yeah.
+
+[00:22:55] Interviewer: So, twice the radius. If they bump into a small person with the opposite color, they make those people. It doesn't matter the time between different exposures, right, for the, for the small people? I just want to make sure that I get everything.
+
+[00:23:26] Participant_Walt: Uh, for now, no.
+
+[00:23:29] Interviewer: Okay, they just immediately get captivated by this person.
+
+[00:23:32] Participant_Walt: Yeah, I just wanted, like I said, I want to see what happens.
+
+[00:23:36] Interviewer: Yeah, okay. That will be for the red ones to go through procedure. So, I think I introduced a few little bugs here and there, so let me fix those, too. These graphics are really messy sometimes. That one was closed. It must be. Okay, this should work as well. Okay, so that should work. I always mess up the brackets, just like so many brackets. 
+
+[00:25:35] Participant_Walt: Yeah.
+
+[00:25:36] Interviewer: Yeah. Okay, almost ready. Okay, there's the error. So, what does the, what do the people with exclamation marks do is, they move around randomly again, and then. Don't need this either, because they won't ever change their color. And then, if they. Oh, this one is not real, either. If they look at a larger radius, and then if there are small people whose color is not equal to their color, like, if they are blue, and then they have red people in their radius, they will ask those people to decrease their exposure to red to zero and reset their color to blue. So let's see how it works. It will, of course, only happen when everyone is assigned to a color, so I will speed this up so that we get there, OK, so, giving us the most. Oh? Something happened? Okay, small people radius for. Okay, I made a simple error. Okay, Let's see again. So, now, they're, like, exclamations. Let's see where's the exclamation. Oh, because its color is .OK, so I need to fix this. Because it just gets. Color code +2. It was a bad visualization. I didn't think about the shape getting. Okay let's see how it works. Okay, what? Now, I'm counting purple? Okay, I'm so sorry, I'm making little tiny bugs for no reason. Speeding up to get the process going. Okay. Okay, it's right there. Okay, it's still not working the way I expected it to work. It has to be a different color. Give me one second. That makes no sense. So. they're not supposed to be purple and orange; they're supposed to be light blue and light red, like, pink, almost. Just. Sorry, I will fix it. I think I'm making a very silly error. Oh, I see. I think I did this error. It still makes no sense. I can hard code this. It's. Sometimes, just, I think i'm writing one code, and it totally does something different. I honestly don't understand why.
+
+[00:29:47] Participant_Walt: Yeah, just experiment.
+
+[00:29:48] Interviewer: But I usually debug it quickly. If not, I will go back to the old version, the old visualization. I just wanted you to see the exclamation marks as well, because they were getting hidden. Okay, so, oh? There's nobody? What does it say? Wow, I introduced some funky error. This is surreal.
+
+[00:30:38] Participant_Walt: Nah, honestly, like, you're fine.
+
+[00:30:39] Interviewer: Oh, of course, Okay, I know what I'm doing. No, that should work. Okay, how about this one? That may be the solution. No, no. Nope. Try again. Let's do that. It has to stop. Okay, there are red people, and I always forget these, like, little logical errors that I make when programming. Okay, let's see this. Let's see how this will go. Okay, we have two influential people. How does it look? Okay? I think this is doing what I intended for it to do, based on your comments? What do you think?
+
+[00:31:51] Participant_Walt: Wait, uh. 
+
+[00:31:58] Interviewer: There are red people, but it shows zero. 
+
+[00:32:11] Participant_Walt: Wait. The red influencer is supposed to be, uh, changing anybody who's blue, right?
+
+[00:32:18] Interviewer: Yeah, it's not doing it. Let me see again. So, small people here. So if the person is blue, okay, set exposure to blue, zero. Set the color: if person is red, set exposure to zero. Set color to blue. Okay, set time between exposures, 10. Maybe the others are just immediately changing it. Speed it up a bit more. Let's see what happens. Okay. So, it's working better? What do you think? No, it's still not doing what it's supposed to do, right?
+
+[00:33:26] Participant_Walt: Yeah.
+
+[00:33:27] Interviewer: Okay. Number two. It's weird that exclamation people are moving around. Okay, give me a second.Exit a little more. Okay, they are there. It seems like the blue is overpowered, right? So. The blue is really beating the others.
+
+[00:34:27] Participant_Walt: Yeah.
+
+[00:34:27] Interviewer: It makes no sense to me. Okay, I didn't write anything like that. There's something weird there. People here are with shape that is not exclamation and color is not yet colored. Okay, and then the small people. Let me see. If I switch the order, like, that's good. That might make a difference. That will tell me something. Yeah, now, red is being overpowered. Oh, "if," I had to do "if else." No. Oh, yeah, blue. It changes to blue. Blue that. Oh, my God. I, I know what I did just: super silly programming error. I'm sorry. I took so much of the time. So, now, it should work as intended. Let's see the impact of the influencers.
+
+[00:35:35] Participant_Walt: Let's go. Maybe.
+
+[00:35:36] Interviewer: What do you think? 
+
+[00:35:44] Participant_Walt: At least it's doing something. Yeah, like, I think it's working out.
+
+[00:35:54] Interviewer: It does seem to be doing that up and down a little bit. Do you want to implement a plot to see the changes? Let's see.
+
+[00:36:04] Participant_Walt: Oh, sure, actually. 
+
+[00:36:05] Interviewer: That will be, maybe, easier to see. Let's say, "plotcount." And then, let's add one more. Look at blue. So it shows us the changes. It, like, it will help you see if it's doing that fluctuation. So what do you think?
+
+[00:36:55] Participant_Walt: Um, I think it's pretty good. Only thing is, I think I'm. Like, me, personally, I really like it, but then again, I, I think it still comes down to me being, like. Two things: so I think i'm still looking at it, but for results driven mindset, and also it's, it's, like, going back and forth, but it's, like, staying, like, really close, so like a 50 50. So, I'm just thinking back to, like, real life. It doesn't really hover around the 50 50. Like, it will. There are more dramatic changes, so. Let's say, so, the way I'm thinking, I'm thinking of trying to implement back in a kind of repelling, a kind of repelling system, 'cause, when I, when I think real life, it's, like, whichever party, like, affiliation you're on, you will tend to still hover more closely to, like, the political leader in that party so, like, if it involves Republican, I would watch a lot of, like, Trump, and, like, I would avoid. No, still, like, avoid, like, maybe, like, buying something, and the same thing another way, so.
+
+[00:38:48] Interviewer: Yeah. So, maybe the question is, like, do you want to bring back the linking thingy, that we made them tie together, you know, like, attached together and work together? Or do you want to implement a different system?
+
+[00:38:59] Participant_Walt: I don't think we need the linking one? I really just wanted to try the linking to see what would happen, but.
+
+[00:39:06] Interviewer: Okay. 
+
+[00:39:06] Participant_Walt: I mean, to be honest, there, besides, like, back, like, actually, like, online, where there is, like, a sort of link in real life isn't as much. I mean, there is definitely a sort of linking, but, I mean, people of different political parties still live amongst each other in real life, so I don't think the linking is necessary, unless we were doing an online, like, oh, like, social media model, which isn't the goal of this, so.
+
+[00:39:42] Interviewer: So, so you think maybe, like, a different mechanism? To pay closer attention to their kind of people?
+
+[00:39:52] Participant_Walt: Yeah, something that deals with paying attention to, like, influencers, which I'm trying to think of a way to try to model that? Call or not oh God only have a. Good day or night.
+
+[00:40:16] Interviewer: If you need to end right now, we can end. I mean, you don't need to. You, and what time do you need to end? Do you have time? So, we don't need to take.
+
+[00:40:24] Participant_Walt: I mean, I do have time.
+
+[00:40:26] Interviewer: Okay. 
+
+[00:40:27] Participant_Walt: Yeah, so I want to try that at least, like, at least one or part of one thing that I can. Let's see. You know, we're gonna, we're going to implement some randomness into this, just because, I mean, luckness. I feel luck still plays a big part of what happens in real life, actually, so. Okay, so, influencers, influencers, and then, like, person of the opposite party: if they, if, if they, like, let's just give the, the smaller person, a, an even bigger radius now, right? And if they detect the influencer, then they have, like, a 50% chance to, like, go, go in the opposite direction, yeah.
+
+[00:41:49] Interviewer: Perfect. Let's do that. Whereas the people who win. Okay, so this one, so the small people are not as small people in their regular radius, but they will notice large people in a larger radius.
+
+[00:42:05] Participant_Walt: Yeah. 
+
+[00:42:06] Interviewer: Yes.
+
+[00:42:08] Participant_Walt: And it's larger than the, it's larger than the influencer radius, actually.
+
+[00:42:18] Interviewer: Perfect. So, for example, the normal people avoiding other kind of, opposite kind of people is radius of 2. The influencers' radius is 4, so this should be, like, six, eight.
+
+[00:42:33] Participant_Walt: 6 or 8, yeah.
+
+[00:42:34] Interviewer: 6. Let's do 6, yeah. Color and shape of exclamation. So, I think I did already implement this. Let's speed it up. People are getting into shapes. Okay, the influencers will emerge soon. Wow, there's only one left. Okay, and then, does it seem like they're avoiding? They seem like avoiding, like, the blues are avoiding.
+
+[00:43:29] Participant_Walt: I kind of see that, like, circle.
+
+[00:43:31] Interviewer: Yeah.
+
+[00:43:32] Participant_Walt: But then, it felt, uh, that, like, it. Actually, wait.
+
+[00:43:38] Interviewer: Does it work like what you had in mind? Oh, but I need to give them a 50% chance. Ah, I knew I was doing something wrong. Okay, 50% chance.
+
+[00:43:45] Participant_Walt: Yeah, that's what I was about to mention else taking the 50% chance, but I was actually, like, starting to like the way that it looks, so, but. No, no, no! You can try at 50% just to see what happens.
+
+[00:44:28] Interviewer: Yeah, let's do that. So, I will speed up until the first thing happens. Okay, so now we have our if. What happened to the blue influencer? The blue influencer did not pop up. It makes no sense. I'm sorry. Let me try again. Why didn't it, didn't happen? That was weird. Never happened before. There's a little different body there were the blue influencer goes to. Okay. So, what do you think?
+
+[00:44:55] Participant_Walt: Let's say. Let's look at the graph. Let's see how that evolves.. Alright, try remove the, the, or, like, comment out the 50% thing or whatever. I want to just go back to, like, the one before.
+
+[00:45:29] Interviewer: Yes. 
+
+[00:45:29] Participant_Walt: I think that was a bit, I think interesting.
+
+[00:45:31] Interviewer: Why did you think the 50% thing looked less interesting than the previous version?
+
+[00:45:43] Participant_Walt: I mean, it could have just been a chance thing, but I saw that the 50% thing, how close they still stayed, close to that, like, that 50 50 distribution, where it's the first time we ran this, like, "100% chance to avoid" thing. There seemed to be a more gradual, like, graph.
+
+[00:46:05] Interviewer: I see. 
+
+[00:46:05] Participant_Walt: Yeah. 
+
+[00:46:06] Interviewer: So, that's how you think it should be, like, gradual changes, not like every day going up and down.
+
+[00:46:12] Participant_Walt: Yeah. That's what I liked about it.
+
+[00:46:15] Interviewer: Okay. 
+
+[00:46:16] Participant_Walt: But let's, let's just see how the graphical ones.
+
+[00:46:18] Interviewer: Does this seem better?
+
+[00:46:29] Participant_Walt: Let's see, let's see the next evolution of of the graph. Alright. Interesting. Yeah, I do really like that it's how I do. Like, the way it splits off from that 50 50. Like, I know there's still, like, it's still kind of stuck to that 50 50, but it's definitely has, like, moments where it branches off from that, which is what. Yeah, like, wow. That was a really big one, actually. I did like that one. It branched off really far, but not, like, too far. yeah.
+
+[00:48:02] Interviewer: Very cool.
+
+[00:48:04] Participant_Walt: Very. Really, I think I like this one so far and I definitely think I'm, probably for next time, because I can't think of anything at the top of my head, but next time, hopefully, I will try, like, think of something else, not like.
+
+[00:48:30] Interviewer: We have.
+
+[00:48:30] Participant_Walt: Another aspect of it.
+
+[00:48:30] Interviewer: Sounds good, I will now create a web version of this. I will send you a link.
+
+[00:48:37] Participant_Walt: Okay.
+
+[00:48:37] Interviewer: Because I think this is, like, we don't have any more bugs to fix right now. Let's see. And so, when, when, do you have any other thoughts or comments before I stop recording?
+
+[00:48:58] Participant_Walt: Umm, no. That, that whole, like, that whole thing that I just gave, like, a minute ago, yeah, that's, that's pretty much all I had in mind, actually. 
+
+[00:49:07] Interviewer: Yeah, perfect. Let me stop recording.
+

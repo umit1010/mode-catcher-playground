@@ -1,0 +1,320 @@
+[00:00:00] Interviewer: _Let me stop on my video too, so it doesn't distract you._ Before we start working, you said you have two ideas. You want to tell your ideas to me?
+
+[00:00:14] Participant_Kim: Yes. So first is to, first I want to make sure that the program stops when everybody turns purple. So I want there to be, that's to be like the end point.
+
+[00:00:30] Interviewer: Mm hmm.
+
+[00:00:30] Participant_Kim: Of the program. I don't think we had that before. I think we're always manually stopping. So as soon as everyone turns purple, I want to see if I can randomly choose two people in the program and see by how many lines they're separated, like how many steps. I don't know if that's possible, like how many links. And then if it's like three or four or whatever, and then like iterate it like to a certain amount and make an average. Like iterate it maybe like 100 times, 200 times. I don't know how many times. It depends on how many people we have in the system because we've been also playing around with that. And then to see from that average if it's really like under six.
+
+[00:01:26] Interviewer: Okay.
+
+[00:01:27] Participant_Kim: And I think that will really show that it's, whether the six degrees of separation has been reached.
+
+[00:01:38] Interviewer: Perfect. Yeah, let's do this. So let me share my screen with you.
+
+[00:01:42] Participant_Kim: I hope it's possible.
+
+[00:01:44] Interviewer: Yeah, I think it's possible. Yeah. 
+
+[00:01:45] Participant_Kim: OK.
+
+[00:01:46] Interviewer: Let's give it a try. So the first thing you said is when everyone turns purple, the model should stop. I think I implemented it, but let's see how it works. _And then we will figure it out._ You commented it at the end of the last meeting. But it takes a second because we give birth to some new people. Okay, there's still a few more colorless ones. Oh, it does stop. 
+
+[00:02:20] Participant_Kim: Okay, perfect. I thought it did not.
+
+[00:02:24] Interviewer: So now you want to choose two people randomly? Do you want the code to choose those people randomly or do you want to choose them by hand?
+
+[00:02:32] Participant_Kim: I want there to be a code to just choose two random people and see how many lines they're separated by.
+
+[00:02:38] Interviewer: _OK, perfect. So let's do that. Let me write a little bit of, like, there's this button that says show lines. And then let's write another button. Let's put another button that says pick randomly. Do randomly. And then, so. And let's write the code for it. And as usual, I will leave the code on the side so that they can see that I'm doing something there, you know? So. So here I will say, I will do is I will, let's see if I had that, okay. I will do this way._ I will do some like random simple highlighting when those people are ticked. but you can change the visualization. So I haven't implemented. _So._
+
+[00:04:34] Participant_Kim: Okay.
+
+[00:04:36] Interviewer: I implement a very simple algorithm that will like do this. When you pick two randomly, it will highlight two people. I_ think two is too much. Speed this up so that it can happen fast. Can always speed it up._ So, model ended, everyone is purple. 
+
+[00:05:04] Participant_Kim: Yeah. 
+
+[00:05:05] Interviewer: _Sorry, sorry, sorry. I think sometimes, let's try again. _Okay, there we are. So it will highlight two people, one here, one there._ _I just want to make sure the visualization is easy for you to follow. So you see two people are picked. They are shown every single time you pick two people.
+
+[00:05:54] Participant_Kim: Yeah.
+
+[00:05:58] Interviewer: They are shown with the highlights. Sometimes multiple people are overlapping. I mean, you ~can't be too much~ about it.
+
+[00:06:09] Participant_Kim: So you cannot pick individual elements? It has to be based on patch?
+
+[00:06:15] Interviewer: No, we can pick individual elements. So do you want to change the instead of? I was just going with this visualization. Maybe it will be easier. But we can also, for example, start changing the patch color.
+
+[00:06:25] Participant_Kim: No, no, no. It's OK. No, I think whichever. I was just curious. It's not that one way is better than the other. I was just curious. 
+
+[00:06:31] Interviewer: Yeah. We can, for example, make them a specific color or. Add a shape around them, like a circle or something. For example, we can make them something like this. So it can be just picking two people. I currently made them red. We can make them a different color. It was just suggesting a visualization. Which visualization would be more preferable? We can make them larger, for example.
+
+[00:07:10] Participant_Kim: Oh, I like that, changing the color of the two people.
+
+[00:07:20] Interviewer: Let's try the size thingy. So when I pick two people randomly, it will just make them large, you know, so it will be easier to see. Is this good?
+
+[00:07:37] Participant_Kim: Yes.
+
+[00:07:38] Interviewer: You can make any changes you want. I'm just making suggestions. And now we need to trace these people's connections and their connections to the connections and then see if they are connected in any sort of way, right?
+
+[00:07:51] Participant_Kim: Yes. 
+
+[00:07:52] Interviewer: Okay. _So_. I'm doing this one by one for you to be able to see it more easily. so that you can see more easily who's connected. I can implement the whole code and then run it and say, does this work? But I want to just implement one thing, get your feedback, implement another, get your feedback. Does this look good, how the lines are shown?
+
+[00:09:19] Participant_Kim: Yeah, but it's only showing the people that this person has touched? 
+
+[00:09:23] Interviewer: Yeah. 
+
+[00:09:27] Participant_Kim: So that means that these two people that we picked, they never connected?
+
+[00:09:32] Interviewer: No, this is just one line.
+
+[00:09:35] Participant_Kim: Oh, it's a one degree. OK.
+
+[00:09:36] Interviewer: From these following people, I need to connect.
+
+[00:09:39] Participant_Kim: Ah, I see, I see, I see.
+
+[00:09:43] Interviewer: _So for example, I can do this. If I do this, now I will have the secondary degree lines. Oh, it picks two people randomly, anyways. It will connect to friends, friends will connect to friends. _Okay, sorry. every time I click pick randomly picks a new set of two random people. So the links will change, but so now we have this person who's connected to just one other person. And that person is connected to this other person. So now we have two degrees, right? One degree, two degrees. So we can go for the third, third degree. And I am writing this code a bit less elegantly. Of course I can write it like re and its repetitions, but I wanna make sure that it works the way you want it to work. _So there's that._
+
+[00:11:05] Participant_Kim: Okay.
+
+[00:11:08] Interviewer: _So let's do this now. That's there. We did three degrees so far._ So with the two degrees so far, there's still no connection with this person and this person.
+
+[00:11:40] Participant_Kim: So there's no way ? So, so instead of like tracing, okay, like the first person, like, like going one degree and then seeing where all everybody that that person on the one degree goes, like, you know what I mean? Instead of doing that, you can, there's no way. to code two people directly, just like linking how many steps they have to go to meet each other?
+
+[00:12:06] Interviewer: Yeah, we can do that. I was just trying to, you know, like, I guess I was doing what I had in mind instead of listening to what you had in mind. I was just implementing it to show to you, like, is this what you do? And only just show you this person is connected to the other person through these links.
+
+[00:12:24] Participant_Kim: Yeah, because I don't want to see where all the second person is going and third person is going. I just want to see between the two people, like how many steps they need to take to connect with each other, you know, directly just that. Like, so, okay, this person is connected to person A and then B and then jump to D and then, yeah. So just like direct link between the two, those two people, but I don't know if that's possible.
+
+[00:12:54] Interviewer: No, no, that's perfectly possible. 
+
+[00:12:56] Participant_Kim: Okay.
+
+[00:13:49] Interviewer: Oh, this will be like, this will be taking me like five, five minutes to make sure that I write correctly.
+
+[00:13:55] Participant_Kim: Okay. No worries. Do you, do you mind if I could go get a glass of water? I'll be back in a second. I'm back. 
+
+[00:15:03] Interviewer: _Okay, perfect. Yeah, okay. okay. This will work. Let's see. sorry, now I need to, so this is enough of an edge case for me to search a little bit of a code on. In our manuals. Then I need to write like a different code, okay._ Sorry about that. It wasn't supposed to sound .
+
+[00:17:45] Participant_Kim: No worries. I'm patient. And I think I wouldn't know how to code anything that I just said.
+
+[00:17:56] Interviewer: Yeah. I mean, it is a complicated thing because we have these set of links. And then each person that I'm connected to has their own set of links. And then I have to search through that._ Let's see. OK. Try this._
+
+[00:18:30] Participant_Kim: And maybe the challenge is also finding the most optimal route because Maybe there is a way to connect to this person again in eight steps as well, not just in four steps or six steps, right? Yeah, I think finding the optimal route is probably a challenge as well. But I wouldn't know how it works.
+
+[00:18:53] Interviewer: Yeah, for example, currently, I have to eliminate those okay yeah that's definitely like challenging because doing that calculation is a complex one right when you do for example show lines sorry I wanna show you what I mean by that. And I guess looking at the idea for a second, now I'm understanding what you mean by the difficulty of it. So I picked two people randomly. And I only show their lines, right? It's only like a manageable number of clients. But if I create another code. so if I do the next level . 
+
+[00:21:14] Participant_Kim: It becomes . 
+
+[00:21:16] Interviewer: Super complicated, right? So let me do it again, one second. _Oh, sorry. So pick two randomly, show their link neighbors, show the links of the links, show the links of those links, show the links of those links._ It gets complicated. So, and if I do this in a manner that you say, let's find the closest, the most optimal, that will be me writing the code and coming up with a solution. which will be me imposing my thoughts on your model. So I think we should first talk about like, how would you even go about doing this? You know, how would you even go about finding the closest, the shortest, most optimum distance in terms of the connection, degrees of connections between these two? Do you hear me, KJ? 
+
+[00:22:34] Participant_Kim: Yeah, I'm thinking. Sorry. 
+
+[00:22:36] Interviewer: Oh, sorry, sorry. Yeah, of course.
+
+[00:22:42] Participant_Kim: Yeah, I'm really not sure. I think it's very complicated mathematically to find links for how to find the optimal, the shortest pathway, you know?
+
+[00:23:00] Interviewer: Mm 
+
+[00:23:01] Participant_Kim: hmm.
+
+[00:23:07] Participant_Kim: And maybe we'll make things very slow. I'm not sure.
+
+[00:23:10] Interviewer: The slowness is not as much as an issue. And I'm sure if I put some time, I will figure it out. But my concern is that throughout this process, I should never impact the way you think or I should never think on behalf of you. Does it make sense? or for researchers, I first jumped, let me do it because it's my intention. Usually it's my habit, but then I'm thinking, give me a second. If I find a solution, then that will not be you doing the, me recording the way you go about reasoning about these things.
+
+[00:23:50] Participant_Kim: Yeah, I guess my idea is like to figure out the shortest path between the two knots. If I think of them as points, And then, but then if it's like a mathematical, like actual physical length, of course, then I can just find the minimum length, but that's not the point. It's to get to the other point by through the fewest possible knots. Like if I think of them as points, it will be finding the fewest, like a pathway between the first and the second, but in the fewest, um yeah few is not but I don't know how we could do that. i'm looking up like mathematical ways of doing that finding the shortest path between multiple no knots. 
+
+[00:24:48] Interviewer: And you're an engineer so it's your I guess perhaps maybe it is your um it's your style to look for a mathematical solution. But if you were to think about a conceptual solution, a hypothetical conceptual solution, how would you go about figuring out who is, what's, if these two red people are six degrees apart from each other or not, or what's the degree of separation between each, and run it again?
+
+[00:25:19] Participant_Kim: Yeah, I guess we don't even have to see the connection. We can just see how many dots they have to, how many people they have to. So if I think of each person as a dot, I just want to count the shortest number of dots that it has to pass to get to each other. And that number is actually the degree of separation, you know?
+
+[00:25:45] Interviewer: Yeah. But turns out it's a really complicated question. And yeah, I guess like these like two little tools that they implemented for you to just pick any two people randomly, show the links that they immediately have to other people and also show the links for anyone who has links. These are just for demonstration purposes. For example, in this one, And I ran this, I noticed that they are like, I keep saying, show the links of links and that's pretty much it. So they are actually not connected to each other. What do you think about this outcome? In this specific case, we were able to see like, for example, like these two are not connected to each other at all.
+
+[00:26:45] Participant_Kim: Yeah. So the six degrees doesn't work. Right? So maybe there's an error in the way we color coded the people. So we didn't include every possible outcome. Like the purple doesn't represent that everybody is really connected by six degrees.
+
+[00:27:13] Interviewer: So yeah, the way we programmed it, it wasn't just about connections, but it was about meeting people who have connections. But I don't know why some of them, well, you know, purple only represents that they either met in your code, at least the way we wrote it. They either met six different people themselves, or they met someone who met, they met two people, but one of them had met four people before. So when you look at this person in his network, let's really zoom in to make it really highlighted. there are six people in this network, right?
+
+[00:27:59] Participant_Kim: Yeah, so maybe we have to change the code as well.
+
+[00:28:02] Interviewer: And this one has six people in the network too. So they are connected to six people. So your purple almost represents people who know six people, not necessarily six degrees of separation.
+
+[00:28:15] Participant_Kim: No, but purple actually represented that at least one person has six degrees of separation. 
+
+[00:28:26] Interviewer: I see. 
+
+[00:28:27] Participant_Kim: So the purple was like if you know the person of the person of the person already and but then if a white meets purple then they also turned purple because they know someone six degrees so I think what happened here was probably like a white person met the purple, you know? 
+
+[00:28:46] Interviewer: Yeah. Very interesting let's try one more 
+
+[00:28:57] Participant_Kim: So I should maybe say that white shouldn't turn purple when they meet. But that doesn't make sense. Yeah, I don't know. I don't know. I don't know how to make it better. Let's think.
+
+[00:29:13] Interviewer: I mean, to be fair, for the purposes of my study, you don't need to make it better. I am more interested in the way you think about these things. So let's try again. These two people were picked, their immediate links. This one is, for example, connected to three people at the moment immediately. This one is only, and I show their links of their links. So they are connected to some more people. This one is not connected to more people. Okay. Okay, there's more. And for this case, for example, it really keeps going on and on and on. 
+
+[00:29:56] Participant_Kim: Yeah. 
+
+[00:29:57] Interviewer: So these two are probably one way or the other like there's more likelihood because they are pretty much connected to the whole world. 
+
+[00:30:06] Participant_Kim: Yeah. 
+
+[00:30:07] Interviewer: But in the previous case we picked an outlier I guess but I don't know if it's outlier. Let's try one more. Maybe this this this current one was an outlier. Let's pick two of them randomly show their links and links of their links. So these ones are definitely very connected with the world._ Change the title. And I want to actually move these and make them larger for you to be seen easily. To randomly show their connections._ This one is the third step showing connections of connections. Okay. So we pick any two randomly. Oh, sorry. That was of course wrong. Right, the first random one. We pick any two randomly. We show their immediate connections. Then we start tracing connections of connections. What do you think?
+
+[00:31:42] Participant_Kim: But this doesn't really let us see, like, how they're separated, by how many degrees they're separated.
+
+[00:31:49] Interviewer: It is true. I mean, we need to find a way to really make it possible to be able to see them.
+
+[00:31:59] Participant_Kim: Ah, but here we already see. Ah, you know what? We already see how many steps, how they're separated already.
+
+[00:32:10] Interviewer: Hmm.
+
+[00:32:11] Participant_Kim: Because you see P2 randomly show their connections, and they show connections of connections, and then et cetera. So that's two steps. And you already see that the red is already connected to the other red.
+
+[00:32:25] Interviewer: Yeah. I mean, visually, probably, this one is our best bet on the right side. These lines come all the way here. Maybe that one is.
+
+[00:32:34] Participant_Kim: No, no. Umit, so you know what we can do? You pick not, so we put two people randomly, but only show one person's connections, not both of them. So only show one person's connection, and then their connections of connections, and then their connections of connections, and see if the other red meets the line. And then you can actually count the steps.
+
+[00:33:00] Interviewer: Great idea.
+
+[00:33:00] Participant_Kim: But I don't know how, huh?
+
+[00:33:02] Interviewer: That's a great idea.
+
+[00:33:04] Participant_Kim: Yeah, and then you know at what point that the red actually got connected. And then you can see how many degrees they're separated by.
+
+[00:33:14] Interviewer: Yeah. And to make it easier, so this will work the way, just one of them. _Oh, sorry. I think that is wrong. Scratch. Once I click this, I should click it again._ Pick two randomly, show one of their conditions. connections of connections, connections of connections. And to make it even easier for you to see, not only just show the links, but perhaps change color as well to indicate that they are one of the connections. For example, _let's see if this will be helpful for you to see visually. One of their connections. So now anyone who's connected will turn green. _So I'm assuming if this person is connected, they will turn green at some point. Does it work for you? 
+
+[00:34:09] Participant_Kim: Yeah, that does.
+
+[00:34:11] Interviewer: So we keep connecting. We can count the steps later. Let's just see if they are connected. This person is really connected with the whole world. It's definitely not 6 degrees. Hmm. Wow. Oh, there you go. So they were actually connected with each other. I don't know if it was six degrees, though. For that, I will implement one.
+
+[00:34:43] Participant_Kim: But instead of clicking Show Connections of Connections of Connections, can we make the point like one is first degree, two is second degree, and three is third degree and have multiple buttons?
+
+[00:34:59] Interviewer: Oh, yeah, of course.
+
+[00:35:01] Participant_Kim: And then you don't even have to count. You can see already at which point it connected instead of just clicking on the one button over and over again.
+
+[00:35:11] Interviewer: Yeah, we can definitely do that.
+
+[00:35:13] Participant_Kim: OK.
+
+[00:35:16] Interviewer: So what I will do is it will count the degrees for us here._ randomness at degrees to zero it will show you will do this forever so it will keep going until this one so let me see if this is what you had in mind. Ooh, I need an error. So let's restart. Run our model. Pick two randomly. Show only one person's connection. So this should continue, but let's see if it works. Oh, no. It's three. Okay. _Sorry, again, I need to really fix a little bit more code. let's start again. If not, I can keep clicking and clicking until we get to the point. It's not too much work for me.
+
+[00:37:47] Participant_Kim: No but I mean, like, so you see, you clicked on show one person's connections. And then the second was show connections of connections, right? Yeah. And then. But instead of naming and show connections of connection, you can just say second degree. And then you can have the exact same code, but then name it like third degree, fourth degree, fifth degree, sixth degree.
+
+[00:38:14] Interviewer: Oh, like buttons, separate buttons for each one?
+
+[00:38:16] Participant_Kim: Yeah. And then you don't have to count, but you can already see where it went.
+
+[00:38:22] Interviewer: _OK, perfect. Hit this.. _Um, this is what you mean, right?
+
+[00:39:07] Participant_Kim: Yeah.
+
+[00:39:08] Interviewer: Okay.
+
+[00:39:14] Participant_Kim: So, and then we can click one by one.
+
+[00:39:19] Interviewer: Perfect. Let's do that. So can we restart again, run the model, two persons. This is the second degree. This is the third degree. Fourth degree. Fifth degree.
+
+[00:39:42] Participant_Kim: There's nothing.
+
+[00:39:43] Interviewer: There's nothing. There's something going on.
+
+[00:39:47] Participant_Kim: We stopped after just with each other. It didn't work.
+
+[00:39:51] Interviewer: It didn't work. So there was a little bug. So we can then discard these runs where there was a little bug. Then we can rerun the model, make sure that everything went correctly. 
+
+[00:40:01] Participant_Kim: But I think there is a bug in the buttons, no? 
+
+[00:40:04] Interviewer: Let's see. Second degree. Third degree. Fourth degree. Fifth degree. Sixth degree. So they are not connected at six degrees.
+
+[00:40:18] Participant_Kim: No, but it was weird because it didn't change colors.
+
+[00:40:22] Interviewer: Yeah, let's do that again.
+
+[00:40:24] Participant_Kim: Like it changed only the colors. Like if it's a fifth degree person, they only change colors on the sixth degree.
+
+[00:40:33] Interviewer: _Yeah, that was not working properly as well. That was my call. _There we go. Let's try again. So they mingled. We are picking two people randomly, showing one of their connections. So yeah, here's an issue. This one turned green. Oh, but the green one is behind a purple one. Sometimes that happens. It's just a little thingy.
+
+[00:42:04] Participant_Kim: OK.
+
+[00:42:05] Interviewer: Yeah, that's why it seems like that. So it's there. It's green.
+
+[00:42:09] Participant_Kim: OK.
+
+[00:42:10] Interviewer: Let's do a second degree, third degree, fourth degree, fifth degree, sixth degree. What do you think?
+
+[00:42:25] Participant_Kim: Good, but I think the sixth degrees of separation is not working.
+
+[00:42:31] Interviewer: So they are not connected at least in the six degrees.
+
+[00:42:34] Participant_Kim: But also it's weird because, ah, it's saying third degree one, four degree 16 because of the color change. I see.
+
+[00:42:41] Interviewer: Yeah.
+
+[00:42:42] Participant_Kim: On the left side.
+
+[00:42:44] Interviewer: And then I can also add a button, end degree, where we can just keep clicking that button and then find how many degrees they are separated. If you're interested. If we keep going, we can stop when this person turns green or if. 
+
+[00:43:03] Participant_Kim: Oh my God, they will never turn green. They're separated by like 200.
+
+[00:43:11] Interviewer: Super connected world. So maybe they will get all these connections.
+
+[00:43:19] Participant_Kim: But they're not meeting. That's crazy.
+
+[00:43:24] Interviewer: It's very interesting. Wow, I should expect them to, the second one to turn green by now.
+
+[00:43:36] Participant_Kim: Yeah, this is weird.
+
+[00:43:39] Interviewer: But there are so many connections with everybody else.
+
+[00:43:42] Participant_Kim: Yeah, how is this possible?
+
+[00:43:44] Interviewer: Yeah, they are not connected at all.
+
+[00:43:47] Participant_Kim: How did it escape?
+
+[00:43:49] Interviewer: Let's try another one.
+
+[00:43:52] Participant_Kim: You were like, I'm having fun.
+
+[00:43:53] Interviewer: It's very interesting, right? Second degree. third degree you see that sometimes I think it has like buggy runs. You also need to pay attention to that sometimes it just doesn't have connections second degree third degree.
+
+[00:44:14] Participant_Kim: Yeah it makes sense that there's no connection on the third degree it makes no sense.
+
+[00:44:19] Interviewer: Me neither I don't .
+
+[00:44:20] Participant_Kim: I think there's a bug for sure but I don't know 
+
+[00:44:24] Interviewer: but what could be the bug I don't _Third, second degree, third degree, fourth degree, sixth degree. So they are not separated by six degrees. Let's see if they are separated by n degrees. Wow. Okay, maybe there's some error in my code. I gotta double check that. I'm gonna keep clicking until_._ Just to make sure if I get the green or not. That is so interesting. So yeah, I wanna make sure that there's no error in the code in the sense that it gives us an artifact of the output. It's a network, for example, keep running this a little bit. Everyone is connected, but my red one makes no sense. Let me try to see if this person actually has. They have one connection. Very interesting. So what does this make you think?_ Oh, by the way, I need to finish in like two minutes. Sorry. Oh, I have a meeting after this one.
+
+[00:46:56] Participant_Kim: Oh, OK. So do we want to have another meeting to make it better, or do you think we should end it?
+
+[00:47:06] Interviewer: It's up to you.
+
+[00:47:07] Participant_Kim: OK. What do you think? I mean, it's not complete yet, right? Yeah, it's like there's more.
+
+[00:47:16] Interviewer: We can discuss it as complete as it is, or I can send you this version, and then if you have more ideas, we can come back and try to implement again.
+
+[00:47:28] Participant_Kim: OK.
+
+[00:47:29] Interviewer: Whichever you prefer. And you don't need to decide right now. We can communicate.
+
+[00:47:32] Participant_Kim: And for you, right now, what we have so far is already good enough for your studies 
+
+[00:47:37] Interviewer: it's great for my study.
+
+[00:47:40] Participant_Kim: OK. Will you share your feedback with me?
+
+[00:47:46] Interviewer: Yes, definitely.
+
+[00:47:47] Participant_Kim: Like what you learned and what you're studying.
+
+[00:47:50] Interviewer: Yeah. What I will do is I will sit down with this model and analyze the code one by one to make sure that I did not make any silly bugs. And when I'm convinced that the code is implemented the way you described, I will send you the final link. You will review it. If you have any more ideas, we can definitely implement them. if you think this is a good point for you to stop or pause, we can then have one final meeting, which is my exit interview, where we just talk about the model and the process. Sounds good?
+
+[00:48:27] Participant_Kim: Yeah.
+
+[00:48:27] Interviewer: Okay. Anything else you'd like to say before I stop recording? 
+
+[00:48:32] Participant_Kim: No. 
+
+[00:48:33] Interviewer: Okay. Let me stop recording.
+

@@ -1,0 +1,100 @@
+[00:00:00] Interviewer: So in this meeting, and let me turn off my camera, so we can just focus on talking. So, in this meeting, so we did two meetings. We created that simple model, and then last meeting, you did add quite a bit of things to your model. And in this meeting, we will talk about the process of modeling. How did you create your model, what did you think about this model, your reflections on the process, and I will ask you some clarifying questions about your model, because during the modeling process, I didn't want to just slow you down by asking like, why did you want to do it this way, why did you want to do it anyway, but I wanna, I have some questions to ask you to get clarification, which is helpful in data. And then I also have some simple questions to learn a bit more about you, as, as much as you're comfortable with sharing. You should not feel obligated to share anything that you're not comfortable with, or you just don't want to, but it's good to know who is this person creating this model to, to make a good case, you know, like, where is this model going? But, before that, I want to ask you, do you remember what we did in our last meeting?
+
+[00:01:09] Participant_Cory: Umm, we, we made some improvements on, or some some additions, and some improvements, to the model, the fish model.
+
+[00:01:22] Interviewer: Do you remember the last version of your model, like, what it had how it worked?
+
+[00:01:27] Participant_Cory: Umm, I'm sorry, say that one more time?
+
+[00:01:30] Interviewer: Do you remember the latest version of the model we created?
+
+[00:01:35] Participant_Cory: Yeah, it was, uh, we expanded the pond and was trying to, like, find our balance with the fish, like through fishing the fish population, because it was, like, dramatically increasing, trying to, kind of get a balance there by adding some, like, we added some big fish or, I guess, like other fish eating fish and then increased the amount of fishermen to kind of help with that balance there.
+
+[00:02:10] Interviewer: Mm hmm, that's pretty cool. So let me ask one more question before I share the model and start asking specific questions about the model. And, as I said, like it's, it's good to know a little bit more about you, but not too much personal information is needed. Can you tell me a little bit about your background like, What do you do, what are your interests, etc?
+
+[00:02:35] Participant_Cory: Um, I usually work at home, and I'm a freelancer, um, and I do some writing on the side and, so, yeah, I work as an interviewer for the GDCC, and also, I'm also an ad evaluator for another job called Lionbridge, so, yeah, I have two part-time jobs, and, yeah.
+
+[00:03:10] Interviewer: So, if you do work for GDCC, what was GDCC? Is that, like, a company?
+
+[00:03:15] Participant_Cory: Yes, it, it stands for global data, excuse me. But we, like, it's, it's, basically, my job is to be a surveyor. So, I would call and they would, yeah, I would call different, the whatever numbers, they gave me, I will call people and ask if they want to do surveys for research purposes and, and yes, that's pretty much the gist of the job, and sometimes they change it around, so I'm doing different surveys for different reasons, but ultimately it's for research purposes, so. 
+
+[00:04:01] Interviewer: That's kind of cool, and you said you also had an ad evaluator, you said?
+
+[00:04:09] Participant_Cory: Yes, as an ad evaluator, I, well, it's sort of like a, it's like I'm working, kind of, for Google. I guess it's a better way to explain it, because, umm, they give me different, like, they gave me different tasks and I determine, you know, because they need a human being, instead of a robot or the machine or system to determine whether it's, whether it's something that the the person, like, if you look up something into Google, is this what you want, or is this, you know, what, is this the right option to give you as far as and if you are looking for something? So.
+
+[00:04:59] Interviewer: That's pretty cool. That's very interesting, so you do a lot of, like, the options come in front of you, and you decide whether this is. It's a very, very qualitative work.
+
+[00:05:11] Participant_Cory: Yes.
+
+[00:05:13] Interviewer: It's very interesting, and thank you for sharing that information. It's usually very helpful to know where this person is coming from, like, have, because I don't share the participants' name that don't share the participants' images, nothing like that, so I have to create, like, give like a fake name to you in my publications, and then say this participant is coming from this kind of background. So let me share my screen with you to start looking at the model a little bit. Do you want to run the model once to see what was the final output?
+
+[00:05:51] Participant_Cory: Yeah.
+
+[00:05:56] Interviewer: So what do you think about the final version of the model in general?
+
+[00:06:01] Participant_Cory: Uh, I think it, like, especially just thinking about the progress and that, from the beginning, it's, it's, like, it's, it's coming along as far as it really, because like my ideal of it was to make it more realistic as far as how the fish ecosystem is being affected, so I think it's I think, it's pretty well, I think it turned out well, because, like, that's how it is. Like you have the fisherman, and you have the different, other, I'm sure there's more than just, we know one, but we chose one as far as what decreases the population of fish or has that type of effect on it. So, yeah, it really shows how different things can come together to create that effect on fish like that.
+
+[00:07:01] Interviewer: That's pretty cool, and did you think the final version of the model was similar to what you had in mind when you first was sharing this idea with me?
+
+[00:07:11] Participant_Cory: Uh, not I exactly I don't I didn't think it would be this many components ,and I thought it would be a lot more simpler, but i'm glad that it, it is, because I didn't want it to be, perhaps, some type of complexity to it, but, yeah, it's, it's just come along.
+
+[00:07:31] Interviewer: It really has come along. It's, it's, really, is, like, in living ecosystem almost, and what do you think about the outcome of the model? Did it give the outcome that you predicted, or was it a different outcome than you predicted?
+
+[00:07:48] Participant_Cory: A different outcome. I think all I imagined was just a pond and fish, and, and maybe fishermen, but I, I'm pretty, uh, glad that other things were added so they can be more realistic in how it is.
+
+[00:08:06] Interviewer: How about the way the population of fish changes? Did you expect it to be this way like that we observe right now, or did you expect a difference?
+
+[00:08:16] Participant_Cory: I think I expected less fish, as far as the little fish, and you know, maybe, just like a fish over here and over there and, you know, but it's, it's, I think I like it like this, because it's, it's more realistic, because fish populate and also decrease in population, so, yeah. The more I thought about it, the more I saw how realistic it, it was for it to be like that.
+
+[00:08:49] Interviewer: And if you were to add more ideas, if you had more meetings, what would you add to this model? Would you add anything?
+
+[00:08:58] Participant_Cory: Um, I don't think there's anything that, I think one more time, I probably could think of something but it's, I don't know, I guess, like, if there were more maybe more animals, because there are more things affecting, the population, so just drawing on that, it may be things outside of the pond. Maybe, I don't know, maybe, like, how the, because I'm sure there, you know, are different environments of factors that affect fish in the population of fish, so, yeah, I would probably drawn on environmental factors in every other little theme and effects.
+
+[00:09:42] Interviewer: Yeah, and then there are some questions that are, in my mind, for example. The fish in this pond, they do reproduce at random times, but they don't really, for example, like, need any food or anything like that. Why did you not implement, for example, food for the small fish as well?
+
+[00:10:07] Participant_Cory: I didn't think of it, I guess, I don't know. It, I couldn't think of, like, what. I think, in my head, it was just more of a general model, so I didn't think of every little detail. But, yeah, I kind of wish I had have, but I guess then, at that point, you would have to keep going down the food chain, because fish eat fish. If we get eaten, and then they eat something, and they eat something, so I guess it will just be more things to, more little details to pay attention to, I guess.
+
+[00:10:46] Interviewer: So you were thinking, you were also very conscious about how complicated you wanted to make this one?
+
+[00:10:53] Participant_Cory: Right, like, I feel like if, if we just kept going as far as what ate what, it probably would have been a lot of things to consider.
+
+[00:11:02] Interviewer: Did, I mean, that is definitely true. Like, there, you can go all the way to the most miniscule things. And then, going back to the initial part, why did you come up with this model idea? How did you come up? Let's not say why, but how did you come up with this model idea? What made you think, "Oh, this will be a good model idea?"
+
+[00:11:23] Participant_Cory: Um, well, it was a, it was like a choice, out of, out of the four that I had thought of, but I chose this one in particular, because, I guess, it was just more easier to scale, I guess, like, like, I know with the other options that I had written down, they were, you know. It's like, it's not in my head at the time, like, it was probably not as easy to scale. Because, like, for instance, with the COVID-19 in stores, I know, maybe we could have focused on one store, but in my head, I was, like, maybe you would have been better focused on several stores. I think, just the ideal of this just being a pond is easier, I guess. Mentally, it's a picture how I wanted me to play out, I guess. Like this jumped out at me as far as it being an isolated area.
+
+[00:12:27] Interviewer: True, there are not many other things going on, and it is a contained one, and how did you come up with, you know, you came up with those four ideas? I, I do remember the, the, the COVID-19 stores idea, where stores open at different times to limit the spread of other stuff. But how did you come up with this idea and more models for for other ideas like, how did you, you know, like, if you if it came to your mind, and you took a note? Was there a specific thing that you saw or you read that made you think that will be a good idea?
+
+[00:13:04] Participant_Cory: Um, I guess, I just, I just thought of them. I mean, I, I do watch TV shows from time to time, and, I guess, I saw a fish, I don't know, and that's what made me think of fishing. And then, of course, the situation with COVID, with COVID-19, and, and the other one was cleaning the Community and the stray cat increase. So, I guess, like, the fact that there are a few stray cats around here in the Community needs cleaning up. That just is, just a few things that that happened around me.
+
+[00:13:41] Interviewer: It seems like you, almost all of the, I guess, to me, the common thread on those ideas is the resource management. You know, like communal resource management, stray cats. How does this community take care of the stray cats, or increase or decrease their number? Cleaning: how does this Community keep its environment clean? The fish: how do these fishers fish without killing the fish, right?
+
+[00:14:07] Participant_Cory: Yeah, that makes sense, yeah.
+
+[00:14:09] Interviewer: That's very interesting. Do you find usually yourself thinking about these kind of topics?
+
+[00:14:17] Participant_Cory: Not much, so I guess not really, but I guess, I was just thinking of more solutions and the fact that, you know, when you're finding a solution, it's something new that requires different, requires a system or different elements, and that's what I was trying to draw something that brought about that, that need for different steps to fix or to address that certain situation.
+
+[00:14:52] Interviewer: That's pretty cool, too, and now let's finish with a couple, really basic but almost silly questions. You did, for example, have the fisher, fishermen be created with different, like, random colors. Was that just to represent, like, differentiate between one fisherman and the other? Or was there a reason that you wanted them to be with random colors?
+
+[00:15:17] Participant_Cory: Eh, just to show that there are different types of people. In a note, I guess, I guess, in my head, I want to encounter diversity, too, because I know, when people are fishing, like, there are different types of people who fish, and they have their on their own different reasons for fishing. So, yeah, just kind of drawing on that, that little connection there.
+
+[00:15:43] Interviewer: Yeah, and is it, is it the same for the fish that you thought, like, different colors will represent different types of fish or?
+
+[00:15:52] Participant_Cory: Yeah, yeah, different, because, like, I know they're different types, you know I would assume that if they're the same type of fish, they would basically have the same color, but I don't know, I guess to add the color into the pond, just to make it more, I guess, just to add a little illustration here, just to make you look good, I guess.
+
+[00:16:20] Interviewer: And the other thing about the model's outcome is that the number of fishermen really impacts the outcome. There is currently, in this version, seven fishermen, so the fish population kept decreasing and decreasing. But at times when there is, like, for example, when you run it and, let me find the version. When there are five fishermen, it usually ends up with the fish population really growing a lot. What do you think about this dynamic in the model?
+
+[00:16:51] Participant_Cory: Um, it seems like there are, because, like, I feel like the main thing here is the population of the small fish. So, the more big fish, and the more, the more fishermen, the lesser the small fish. Now, that would be, so, you know, it's just to draw. I feel like it was all for a reason to draw on, to draw what, what affects the small fish, or what decreases or increases it? Which is how it is realistically, how you have a certain amount of fishermen and they, the more, there are the, especially if they're efficient, at the same time, the more, I mean, the less smaller fish there would be. So, yeah, just, yeah, that relationship there.
+
+[00:17:54] Interviewer: Really cool. Yeah, sometimes it takes forever for them to take over, but they start taking over, they start grow its way. This is a very interesting model. I really enjoyed constructing it with you, and thank you for participating. It was just a pleasure to meet you and work on this. It's, and I think, like, this meeting, some of the things you said, are really helpful for me to, you know make a case, and, you know, write my findings. For example, you mentioning some of the things that you consciously and with it versus some different things that they wanted to focus on. What did you think about this process in general, like you creating this model with my help?
+
+[00:18:35] Participant_Cory: Uh, I thought it was pretty neat, you know? Well, I do want to say that I am kind of new to the whole freelance thing, so I thought it was pretty neat to to get this position, to be contributing towards this this research, as it's really creative, and, and something I'm, I'm glad to be part of.
+
+[00:19:00] Interviewer: Yeah, I'm glad you enjoyed the process. Do you have any final thoughts that you would like to show me?
+
+[00:19:08] Participant_Cory: I don't think so. I enjoyed myself.
+
+[00:19:11] Interviewer: Great, great. Thank you very much. Let me stop recording now. yeah the great fish really took over. Okay, let me stop recording.
+
+[00:19:22] Interviewer: 
+

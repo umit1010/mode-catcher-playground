@@ -1,0 +1,162 @@
+[00:00:00] Interviewer: Sorry about that. So, this meeting, we will talk about the process of modeling, your model specifically, and then, in general, you know, like, like what do you think about the present, what do you think about the model, what do you think about the relevance thing that's happening actually in the real life. So it's, it is to just also get some more clarification, so when we are doing the model. I tried to not interrupt you and ask you a bunch of like, why, why did you want to do this, why did you want to do that? I want to get your ideas on the model. So here, I will try to ask you that kind of questions, but I usually start with a very simple question that helps me situate my findings. This is about your, you know, like what's your personal background, but you should only reveal as much as you feel comfortable, you know, like what's your background, in general. Can you tell me a bit about yourself, that's the question actually. I couldn't put it together.
+
+[00:00:55] Participant_Lena: Sure. Let's see like as far as demographics go, like early 30s, Caucasian, young professional, I would probably consider myself. I work in the HR field. So my job is a lot of kind of the analytics around how we pay people with their compensation. Why people's different amounts like looking at backgrounds. Comp field for about eight years. My level of education, I've got a bachelor's in business. So, as far as like, kind of how I think, it's more structured. Which kind of goes against my boyfriend is much more creative. So. Between the two, I'm definitely more analytical, so I think that the model that I chose. It being, you know, pretty. I would say, we did get creative, but it was more, you know, probably a typical model, you would see you know, like putting in homes and trees, plants, and weather. But I learned a lot, I thought it was really cool. I haven't seen like a modeling program before, so for you to able to put into that exactly what I said and asked clarifying questions of just even size, color, placement in seconds was really cool. I didn't know that there were programs out there that existed that way. So yeah, I mean that, I'd say that's about my background. I think. What might be most important is that more like a structured, analytical thinker. 
+
+[00:03:09] Interviewer: Yeah.
+
+[00:03:09] Participant_Lena: So does that kind of?
+
+[00:03:09] Interviewer: Yeah, yeah. Perfectly.
+
+[00:03:10] Participant_Lena: Helpful information?
+
+[00:03:10] Interviewer: Yes, perfectly. So, it just gives me a little bit more, you know, like when I present these data, are usually, of course, I never reveal your real name, any sensitive information, or anything like that, or your or your likeness, but I make a case the person who created this model, you know. This kind of a background, it orients people like, what might they might say [.]. Another int-, another interesting thing is that you mentioned that you do quite a bit of work on, on analyzing data, right? 
+
+[00:03:49] Participant_Lena: Yes. 
+
+[00:03:49] Interviewer: So what does your day to day job entail?
+
+[00:03:51] Participant_Lena: So. I. My title's a compensation consultant. So, it's kind of like mostly analytical work, but I also consult with leaders in my company. 
+
+[00:04:07] Interviewer: Yeah.
+
+[00:04:09] Participant_Lena: Help them understand and their organization, educate them on kind of compensation, best practices. But I work a lot in Excel. Like pivot tables. You look up formulas. Doing data audits. Looking for trends in data. That's a lot of what I do. And, I also work a lot on like job descriptions outside of the Excel. So, functions of a job, what knowledge and skills and abilities are needed for the job, what education experience level is needed for a job. And then taking all that information and then looking at what we call market data which is like an external data about the labor market to see like why other companies anonymously report for a similar kind of job. So that, I do what's called market pricing a job which is essentially just that. And then, talk with the manager and let them know my recommendation for the compensation and then kind of circling back to like best practices, things like that.
+
+[00:05:26] Interviewer: It's very fascinating, so you basically do a little bit of, a lot of quantitative but also a lot of qualitative stuff. You have to read it description and then match it with the data and then try to make, try to estimate what will be the fair compensation for this specific job. That's, that's very fascinating. So. yeah sorry I didn't get interactive. The connection sometimes cuts off, but that's okay.
+
+[00:05:56] Participant_Lena: Yeah. I was noticing it seemed a little bit behind today. I don't know if it's on my end.
+
+[00:06:01] Interviewer: Do you see my bars as low? Do you see like low connection? It doesn't show me. It looks low Internet thing but. 
+
+[00:06:10] Participant_Lena: No. Works. Do mine?
+
+[00:06:15] Interviewer: No, not really currently it's just all white and four bars so. Anyways it happens, sometimes.
+
+[00:06:21] Participant_Lena: Okay.
+
+[00:06:21] Interviewer: Yeah. Yeah, it freezes when it says like fully, it seems like the Internet is good. Yeah, okay that's perfectly fine. I mean it is okay. So, and I will ask you if I didn't catch something.
+
+[00:06:33] Participant_Lena: Sounds good.
+
+[00:06:34] Interviewer: Yeah. So, this is really interesting and then when we started this, this project, when we started these interviews. You, you did mention that you had a few hobbies, you know, like you mentioned that you did like horseback riding. I may be wrong I'm doing a lot of interviews.
+
+[00:06:53] Participant_Lena: Yeah. 
+
+[00:06:54] Interviewer: Okay.
+
+[00:06:54] Participant_Lena: Just let me know if you need me to repeat anything because it just froze. But, so, I have like a lot of outdoor hobbies. I do a ton of horseback riding, road biking, hiking, running. Very, very active. 
+
+[00:07:15] Interviewer: Yeah. And then transitioning to your model before I ask you questions about the model, how well do you remember your model, like the final version?
+
+[00:07:27] Participant_Lena: I think well. I can describe it. We built the model. In general of, it was, it was on like one screen, but there were kind of like three independent rows. One was like houses with flowers in between. The other was houses with logs and trees and then the third was farmers on with houses and I'm thinking it was vegetables, in between. And we took a look at the weather and how lightning strike the middle house, catch fire, and there's also rain. And the farmers walking around, and then we added some birds.
+
+[00:08:17] Interviewer: And I do remember you mentioning a reason, but I don't remember exactly. Why did you want to build this kind of a model, instead of another model? Why did you want to work on this topic?
+
+[00:08:31] Participant_Lena: Yeah. So I think what originally sparked the idea was I talked about like Hurricane Ida had just happened. So as a recent news story and then with that, I mean our kickoff was sort of weather related to with the wildfires. So I'm going to taking those two together and helping form the idea of our model. I think that's what we do like adding by the farmers for my background of course adding trees, because I love nature and yeah. I think, I think that's probably what drove the idea.
+
+[00:09:20] Interviewer: That's pretty cool and did you imagine a specific town you're familiar with, or a specific image you are familiar with when you were constructing this model or you were really just free flowing with the ideas?
+
+[00:09:36] Participant_Lena: Sorry?
+
+[00:09:37] Interviewer: So, I was saying, like you created a very interesting visualization, right?
+
+[00:09:43] Participant_Lena: Yeah. 
+
+[00:09:44] Interviewer: Was it based on a town you're familiar with, or, or an image you're familiar with, or was it more like we were just free flowing with ideas. 
+
+[00:09:50] Participant_Lena: No. We were free flowing with ideas but also it's kind of interesting because I mentioned I'm very structured, so you know even the layout of the houses, I think, was structured. Like you know two. Two in each quarter. Yeah, I mean it was very symmetrical in, in the placement of everything. I didn't have like a certain town in mind. I think I'm, I was just thinking along the lines of like equal spacing, like it's a lot more organized, maybe?
+
+[00:10:32] Interviewer: Yeah and, and you did mention at some point, like, you do like very symmetry and well-aligned stuff. That's pretty cool. And how do you think your model, like the final version. We will start looking at the model in a bit, but I want to get your ideas before we start seeing the model and it impacts the way you think or maybe just you know like it's. Because of sometimes you just see the image and you forget about. How you think your model connects with the origin that you mentioned that you started thinking about the Ida, Hurricane Ida just happening. It was a very significant hurricane or like it was very scary. And then, did the rain from Ida come to where you were?
+
+[00:11:16] Participant_Lena: It froze. What did you say after Hurricane Ida?
+
+[00:11:19] Interviewer: Just to make sure. That. You know the rain from Ida went to New York and flooded, etc. Did it come to where you are located, or no?
+
+[00:11:28] Participant_Lena: No.
+
+[00:11:29] Interviewer: Okay.
+
+[00:11:30] Participant_Lena: I got some rainstorms. I'm in St Louis, so I'm kind of in the Midwest. 
+
+[00:11:36] Interviewer: Yeah. I'm in Chicago to you.
+
+[00:11:38] Participant_Lena: Yeah. So you know, sometimes, we get rain from those storms, but not like. 
+
+[00:11:43] Interviewer: Okay. How do you think your model. How do you think your model compares to something like Ida that was in real life?
+
+[00:11:51] Participant_Lena: Well, I think a couple things. I mean, well, one of like the main catastrophes of my model was a house catching fire and spreading. With a hurricane, it's more like wind damage, flooding, things like that. So. Well, I think. You know, fires pu. I don't really see that as one of the like primary remnants of a hurricane. But. It's actually interesting because now that I'm thinking of it, a situation like a house catching fire happens more likely in the Midwest, I would say. 
+
+[00:12:39] Interviewer: Yeah. 
+
+[00:12:40] Participant_Lena: Because, you know, we have these crazy rainstorms, every so often, and you can have lightning strike a tree. It goes off in flames. So maybe that, maybe that's more of an actual origin is that direct experience with like a natural disaster. Because in the Midwest, it's either, you know, something like that, or like a tornado. Tornados are pretty common around St. Louis cause it's very flat.
+
+[00:13:12] Interviewer: Yeah. It's it. So Ida was mostly just to, just triggered you to think about climate. But it seems like you did mostly like model something that you are more familiar with from your own environment.
+
+[00:13:26] Participant_Lena: I think now that we're talking through it, it makes more sense. Which is interesting because I didn't think about it that way, originally.
+
+[00:13:37] Interviewer: He. Do you remember how we were thinking about it originally?
+
+[00:13:42] Participant_Lena: Well, I was reading the news. Ida was on the news, so that. I mean it's, it's the most recent natural disaster. I would say we haven't had any issues or flooding or anything like that in St Louis you know, in the last few months. 
+
+[00:14:03] Interviewer: That's pretty cool. Yeah. This is very interesting because the transition from reading about Ida to creating a climate model of your own environment is very interesting to you like your own climate or like things that are very particular for the Midwest. Let me present the my share my screen and let's talk about the model a little bit. I have a few things that I would like to just ask in general. So. When it comes to specific visualizations, for example, why did you decide to create, let's say. Let me set up it again. Just 2,5,7 houses only? Why not 70 houses? Why not treehouses? Was there a specific reason you wanted just seven houses?
+
+[00:14:57] Participant_Lena: I think it helps keep it clean. In my mind, I was looking at the placement of the houses and, like in my mind, like how to space them out and then how to kind of create the different lines of scenarios.
+
+[00:15:22] Interviewer: And speaking of the place you live. Is this similar to what the neighborhood looks like? 
+
+[00:15:29] Participant_Lena: Around me?
+
+[00:15:30] Interviewer: Yeah. Like the area that you live, is it like, do you live in an area where you're like rows of houses and stuff.
+
+[00:15:37] Participant_Lena: Sort of. Yeah. Actually I do. I don't live in like straight farm country, but I live close enough to it where we're gonna ride my bike I can you know go on a 20 mile bike ride and get to farm country. But I kind of live in like suburbia. So yeah. These kinds of houses, too.
+
+[00:16:00] Interviewer: So it was almost like. If it rains and the thunderstorm and your House catches fires right next door. What happens? So, it's very interesting. And I know some of the things like we just, it was, as you said, free flowing for association, you know, like we just looked at the shapes and picked flowers and you know like the budding flowers or we picked leaves, etc. So, there is no need to read too much into those, of course, we were just constructing a model. But. A few interesting things. For example, you implemented these birds and the birds are flying, but they are not really doing anything else. Why did you want to not give birds any other relationship with them running around.
+
+[00:16:35] Participant_Lena: I don't know that I really gave it a whole lot of thought or really knew like what I could do with them is a bit like bigger purpose. I think it was a way to include animals.
+
+[00:17:11] Interviewer: Yeah. And then the fire. That's very interesting too. So the fire always strikes the same house. Why not just going randomly?
+
+[00:17:27] Participant_Lena: Probably because I wanted to have control of where it was striking. So if it's striking one house, I know where, it's, like after effect to kind of spread randomly as long as there were trees and logs. But I think the initial point of impact, I wanted to have control over where that hit. I'm not sure why, though. 
+
+[00:18:01] Interviewer: Yeah. 
+
+[00:18:03] Participant_Lena: Then.
+
+[00:18:05] Interviewer: I mean, these are not questions to really like question you like, how dare you not do anything. It's more to just get an idea on where does where did the association came, came and you know, like it's quite normal to especially in this process to come up with an idea and eventually discard it and then you're thinking changes throughout the time as we implement something you see how it, what's the outcome, and then you think, okay, maybe this. So another thing, but I just want to ask you, in case you had that reflection, or you had a specific reason like I wanted birds, because it reminded me of the area, but I don't care about others what did. So you can be more open to it, if you have that kind of tells. You don't need to worry about, you know, generated task. Another thing we implemented here was, there's rains condition, of course, it's raining, but there was also sunny condition, where we really did not do much in the sunny condition. We just, we just ignored the sunny condition to what. Why did you want to implement sunny condition, but not do anything in sunny condition?
+
+[00:19:05] Participant_Lena: So, I think the original idea was I wanted different like weather scenarios. But as we got going through lightning and things like that. I don't know. When I came back to like the sun one, in my mind, it just seemed like kind of boring.
+
+[00:19:33] Interviewer: Mmhmm.
+
+[00:19:33] Participant_Lena: Like there wasn't a lot that would be going on. At least with the rain, like you've got something catching fire. You know, we probably could have put more animals on this one but I just like strike me as building on it. I think focusing in on like the rain one was kind of what drew my attention. Or not rain. Yeah rain? Fire?
+
+[00:20:07] Interviewer: The fire doesn't do anything. We didn't implement anything for the fire condition. I think you just embedded the fire in the rain, I guess.
+
+[00:20:17] Participant_Lena: Oh gotcha. 
+
+[00:20:18] Interviewer: Right?
+
+[00:20:19] Participant_Lena: Yeah.
+
+[00:20:19] Interviewer: Just, yeah, catches fire. And then another thing again like it's raining and it's sending the thunderstorms that start catching a fire, but the rain, other than being a representation of there's a storm going on, it doesn't like, these water droplets doesn't do anything else with them. Why. Did you again just figure that it will be more like a reminder that it's raining or did you think about adding something with regards to rain and then decide to change?
+
+[00:20:50] Participant_Lena: Oh, I think it was a mixture of a couple of things like the initial idea kind of thing in that rain, you know, with hurricanes. But then coming back to the Midwest like we have rain too, but I, I didn't see much of a purpose outside of it just raining for it to generate the lightning, to start by the fire.
+
+[00:21:22] Interviewer: Yeah. So these are the specific questions that I had about and, I can, we can keep going right? Like the what. Why do pumpkins do nothing? You know like we can keep going through this questions, but I just wanted to get at least like a, some parts about a range of objects in the model that you implemented, you know. Are there any thougts that this interaction brought you?
+
+[00:21:47] Participant_Lena: Yeah. You know, I mean, it's plain as day now that I see it, that I pretty much did a model of, you know, my own environment. But, I have to say, I, that way when I was creating it with you, I was going more just off, you know, ideas that came to mind. It wasn't like, let's create my environment. So to see that tie is really interesting. Even like the farmers, the weather, the style of houses. What? Can I ask like what are a lot of your models that you're building with this project of? 
+
+[00:22:33] Interviewer: It is really. Yeah. So we be, I basically do the same thing that I do with everyone, with you, with everyone else. They just come up with any idea, they would like to. So for example, there are similar ideas. One of the participants created a model of a farm land, where there are animals. There's grass. The grass grows, based on the animal by products, etc, but one of the participants is creating a model of a medieval battle. You know. It really depends on what they find interesting. Because I, because this is a study that we are doing right now is more about. Because this is never done before something like this and we don't have much data on how do people construct this kind of models. And how do people construct their mental models in the first place to construct this kind of models. So I, we want this to be as diverse and as generated as possible. This is more to almost like a field server you can say a small scale, you know, like. If we just gave them an open ended construction medium what will they create with it and what will it look like, so that you know, like hopefully this will be helpful for us. For example, one of the things that we can say is like it's kind of important to start from where people are familiar with. You know, like in your case, it was very important in your modeling process that you started thinking about what you're familiar with, right? Like that kind of stuff and you can stop, you, but we don't have any principles and design principles, any you know, like any findings like that yet, so we are just building that along the way. So I am going to make a case. This is the diversity of thinking, and like, and this is the level of diversity and people thinking so that's most important for.
+
+[00:24:23] Participant_Lena: That's really neat. Yeah. I wasn't sure if like, there was like a psychology kind of component to the study, you know anything like that of a kind of models that people create, how it comes back to their experiences, their background. So.
+
+[00:24:41] Interviewer: Yeah. That there is a cognitive science component here. Yeah. And what are your reflections after finishing the study? Like what did you think about the process and also what do you think about your model?
+
+[00:24:57] Participant_Lena: So the process, at first. It was a lot of information and so I'm not familiar at all with modeling, but after you went through the wildfire sample, it's started to make a little bit more sense, and then, as I kind of got to be thinking about I would create a model and what the idea would look like, having brother helps like guide my model and then, you know, how I know now is that I drove a lot of it for my immediate, for my immediate environment, I guess. And I like how it turned out. It's pretty cool, I think that you could do a lot of things with these models. Like, I think it would be so interesting to see everyone else's in the study, although I know probably confidential. But, I also think that the questions that you asked and how you asked them, helped me still think independently. Like there wasn't any kind of, what's the right word. It's not like bias, but there wasn't any maybe they're not like leaning one way or the other with my idea. It was like what are your thoughts and helping me bring those to life so, I really enjoyed being part of the study and found it really interesting.
+
+[00:26:38] Interviewer: Cool. So I will stop the sharing now. We are pretty much done. Do you have any final thoughts, final reflections?
+
+[00:26:48] Participant_Lena: I mean nothing more than I already, you are doing an amazing job on this. I, you're very easy to work with. Very clearly communicate. I also appreciate your flexibility with moving the meeting times. If you have any other kind of research projects, feel free to let me know. I'd love to help you out and partner with those, that there any are available in the future.
+
+[00:27:12] Interviewer: Let me stop recording.
+

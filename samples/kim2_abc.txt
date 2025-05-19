@@ -1,0 +1,358 @@
+[00:00:00] Interviewer: Okay, perfect. So before I share my screen, I want to ask you to tell me what you remember from the last meeting. Like however much you remember?
+
+[00:00:17] Participant_Kim: We created a model for the six degrees, or how do you call it? The six degrees of separation.
+
+[00:00:29] Interviewer: Mm hmm.
+
+[00:00:30] Participant_Kim: But we came up with a basic way of seeing how we color coded the people so that we can see how the color changes when one person meets another person. And then when it becomes a sixth, like if the person knows, I guess, up to a sixth degree, when the person reaches sixth degree, it changed into a certain color. I think it was red or something like this.
+
+[00:00:54] Interviewer: OK.
+
+[00:00:59] Participant_Kim: Yeah.
+
+[00:01:00] Interviewer: Yes, and do you remember the specific mechanisms, or would you like to review the model a little bit?
+
+[00:01:13] Participant_Kim: Well, by the mechanism, I do remember if one person meets another person, then the color changed to a certain color. And then we also had different colors for each degree of separation. And yeah, for me, I mean, I think the mechanism is clear, but I forget what the colors were. It was like, yeah.
+
+[00:01:39] Interviewer: Yes, let's look at the code a little bit to try to remember. Do you see my screen?
+
+[00:01:46] Participant_Kim: Yes.
+
+[00:01:47] Interviewer: OK. So we created 250 people. 
+
+[00:01:54] Participant_Kim: Yeah. 
+
+[00:01:57] Interviewer: So we have marks for them. Are they travelers? Are they slow travelers? And will they die eventually, I guess?
+
+[00:02:05] Participant_Kim: Yeah.
+
+[00:02:07] Interviewer: We created how many? Let's see. 250 travelers. 250 non travelers. 375 people who stay in the same area. 
+
+[00:02:22] Participant_Kim: Yeah. 
+
+[00:02:22] Interviewer: And another 125 people who will eventually die.
+
+[00:02:26] Participant_Kim: Yeah.
+
+[00:02:27] Interviewer: And we made these people move around. If they are traveler, they move fast. If they are slow travelers, they move really slow, but they still move around. And if they are staying in the same area, they just basically almost never move, like just a tiny bit of like wiggling to see that they are actually not frozen. And then people, every tick, one of the people who will die, dies. And then So the white people, if they touch another white person, they turn yellow. Two people, if two whites touch the yellow. If a yellow person meets another yellow person, they turn orange. The other person doesn't change color. If a yellow person meets another orange person, they turn red. If they meet another white person, they turn green. If they meet another green, they turn blue. If they meet another blue person, they turn violet. Violet means purple. If they meet a purple person, they still turn purple. They remain purple. And we did propagate this for all the other people. So for the white people, we have the yellow code. For the yellow people, it starts from the red people and so on. And then from the orange people, it goes like that. _I think we are missing one of them._ So it happens the same way, but it's like, of course, for green people, there are less possibilities. If they meet a blue, they turn purple. Yeah, and then for the blue people, it goes like that. So does this help for you to remember how it works?
+
+[00:04:29] Participant_Kim: Yeah. And can we run it on once again? Yeah. Yeah, for us, we felt like the number was changing so quickly, right?
+
+[00:04:43] Interviewer: Mm hmm.
+
+[00:04:46] Participant_Kim: And for example, we wanted to make sure that like, I think the first improvement that I wanted to make was that it's not realistic that people are evenly distributed like this.
+
+[00:04:57] Interviewer: Yeah.
+
+[00:04:58] Participant_Kim: So we wanted to put like the people that are likely not travel or stay in the same area to really stay in the same corner. And like certain only the travelers will like, um like individually entered that little square of people who live in the same area so to say. 
+
+[00:05:20] Interviewer: So, where should we put the non travelers in this view? 
+
+[00:05:24] Participant_Kim: Um maybe in the left corner like left top. 
+
+[00:05:28] Interviewer: Left top. Okay, so.
+
+[00:05:30] Participant_Kim: Yeah.
+
+[00:05:30] Interviewer: _This one is slow traveler this one is the people who stay in the same._ 
+
+[00:05:36] Participant_Kim: Yeah, like, yeah, like, countryside. I guess that represents sort of the countryside. And people who can meet them only through entering one by one into that square.
+
+[00:05:48] Interviewer: _Let's see if this works. _So we have this group here. Those are the people who just don't travel at all. How about the slow travelers?
+
+[00:06:19] Participant_Kim: I guess they can exit out of that square, but I think since the number is so big in the left corner to make, yeah, I don't know. What do you think? Because I'm thinking that's a lot of people in one corner. Maybe we can make two like Yeah, I don't know.
+
+[00:06:45] Interviewer: We can do a couple little things. We can either decrease the number of people or we can make this world much bigger. For example, I can really make. _Let's see how this will look._ We can make it like this big when the people are really tiny.
+
+[00:07:02] Participant_Kim: Okay.
+
+[00:07:04] Interviewer: Would you prefer that or would you prefer making it less people?
+
+[00:07:09] Participant_Kim: Yeah, maybe we can make it this way.
+
+[00:07:11] Interviewer: Okay, but it's totally up to you.
+
+[00:07:14] Participant_Kim: And last time we also said that we want to improve it so that people are not just walking, people have to fly. And that takes also time and drive and, you know.
+
+[00:07:25] Interviewer: Yeah, we can do that too. How would you like to conceptualize that in the model?
+
+[00:07:31] Participant_Kim: I think first to make this little square represent the world? Maybe we should make like a couple of patches or areas where people don't enter or like people don't move and they just stay in the little corner. Maybe we can distribute this little traveler square into like eight small squares around, you know, like around, like randomly distributed. 
+
+[00:07:59] Interviewer: Yeah, let's do that. 
+
+[00:08:00] Participant_Kim: Among the 250 people.
+
+[00:08:04] Interviewer: So for example, the eight squares randomly distributed in the whole area or other than this static area? 
+
+[00:08:15] Participant_Kim: The whole area. OK.
+
+[00:08:18] Interviewer: So let me try it. Let's see how it looks. And what should be the color of those squares?
+
+[00:08:24] Participant_Kim: What? Color, you said?
+
+[00:08:26] Interviewer: Yeah, those little squares that we will put.
+
+[00:08:30] Participant_Kim: Do you think it should have colors?
+
+[00:08:32] Interviewer: No, it doesn't have to be. I thought it would be easier to see. You know what I mean?
+
+[00:08:36] Participant_Kim: Yeah, maybe. Maybe that's true. Maybe we can make it into gray zones.
+
+[00:08:41] Interviewer: There will be like these little patches in random places, will this be better? Or would you just want to keep them like hidden from the view?
+
+[00:09:08] Participant_Kim: Yeah.
+
+[00:09:11] Interviewer: And every time I click set up, it's there in the random places. Which one would you prefer?
+
+[00:09:18] Participant_Kim: So I think I want it to be like representative of like countryside. So it won't move around. It will stay in the same, let's say eight, randomized corners. But if you have to specify, because if it's random, then it always changes every time we run the model, right?
+
+[00:09:37] Interviewer: Yes.
+
+[00:09:38] Participant_Kim: So maybe we can just set up like, maybe we can just put four patches in each corner. So each on top, in the top two corners and the bottom two corners. And those are, they, and how many do we say? We had 250 slow travelers, or we had 250 same area people, right? Oh, 375.
+
+[00:10:02] Interviewer: So. 
+
+[00:10:02] Participant_Kim: I'll divide it by. 
+
+[00:10:09] Interviewer: Sorry.
+
+[00:10:10] Participant_Kim: So it's 95 people. Let's say 95 people in each corner. OK. And then that's about 375. It's more than 1,000 people, but whatever. And those people don't move out of that square ever. 
+
+[00:10:23] Interviewer: OK. Oh, so we did, for example, put this slow travelers in, in this one corner, but you want to have like, in each corner, slow travelers.
+
+[00:10:36] Participant_Kim: Or each corner, same area people, not slow travelers, but same area people because they slow travelers move around, but same area people don't move around.
+
+[00:10:47] Interviewer: Okay. So let me take this out first and then we said 95 people on each right? 
+
+[00:10:55] Participant_Kim: Yeah 95 people on each corner and they don't move. 
+
+[00:11:01] Interviewer: _That's four okay so these will be okay i'll make another 95 like this This should have 95._ So it's going to be hard to see, of course, because they're now distributed on the corners. But each corner, almost you can say quadrant, each block, when you divide this world to four, have exactly 495 non moving people.
+
+[00:12:09] Participant_Kim: OK.
+
+[00:12:11] Interviewer: Is this what you meant? 
+
+[00:12:13] Participant_Kim: Sure. And I also think that maybe like every five iterative process, iteration, maybe there should be like another person being born because there could be like babies being born, right? Hello?
+
+[00:12:45] Interviewer: Sorry, I was moving my desk and I didn't want it to make noise. Yeah, sure. Every five little ticks, someone will be born.
+
+[00:12:56] Participant_Kim: Yeah.
+
+[00:12:58] Interviewer: Of course. And they will be slow travelers?
+
+[00:13:03] Participant_Kim: Randomized. Can we choose to be random?
+
+[00:13:07] Interviewer: Sure, yeah._ Let's see. Okay_. So they will either be slow travelers, fast travelers, or the same area people by just random chance so every five.
+
+[00:14:34] Participant_Kim: And they will be white.
+
+[00:14:37] Interviewer: Yeah.
+
+[00:14:38] Participant_Kim: They'll have to be white. And will they go through iteration after as well? Like if they meet while walking into different places, like they'll change colors?
+
+[00:14:51] Interviewer: Yes, they will.
+
+[00:14:52] Participant_Kim: Okay. Um yeah and .Then yeah I don't know how like I don't know how I would represent like the traffic of people moving around places. Like so I said the four corners in the in the on the sides like don't move those people don't ever move out of that quadrant But then other people can, like slow travelers or travelers, can jump around those areas, right?
+
+[00:15:31] Interviewer: These people, for example, this is a non moving person. Let me show you. Let's click watch too. So that person is a non moving person. It just never moves. But others can move around, right?
+
+[00:15:47] Participant_Kim: Uh huh.
+
+[00:15:48] Interviewer: And currently everybody's moving randomly instead of the way you want to do it. They go from one place to the other. So there can be multiple ways to represent it, but what will be the best for you?
+
+[00:16:03] Participant_Kim: I'm not sure. I think that was one way. And also like another thing is that the way that people move, they just kind of like jump in circles or jump around. meet other people but I thought that if they are traveling from one side to the other side. Like it will have to they will have to show up maybe after a couple of iterations to show that traveling takes time or, you know? Okay. But I don't know how to represent.
+
+[00:16:41] Interviewer: So for example, these people here are moving really randomly all over the place and very fast. You don't want them to move like that. You want them to jump around?
+
+[00:16:53] Participant_Kim: But maybe disappear and show up on other sides or something like this.
+
+[00:16:58] Interviewer: We can do that. And how often do they do that? 
+
+[00:17:04] Participant_Kim: Between 5 to 20 iterations, but it's random maybe. Those are only for travelers, like the real travelers.
+
+[00:17:19] Interviewer: So the ones who are not travelers will continue doing the same things. But the travelers will be? 
+
+[00:17:29] Participant_Kim: Maybe only a quarter of them because not everybody's going to be flying all the time.
+
+[00:17:34] Interviewer: And then when they're not flying, they're staying in the same place? 
+
+[00:17:38] Participant_Kim: Yeah maybe. 
+
+[00:17:39] Interviewer: Okay _so um about 25 percent of them quarter of them randomly picked._ And you said, what will be the range like between them staying there and then jumping to the other side? 
+
+[00:18:01] Participant_Kim: Um ranged Like how long? From 0 to 20. Like it can be ticks between ticks of 0 and 20. And they can jump from, yeah, I guess if it's the longer the ticks, the further distance they should travel.
+
+[00:18:25] Interviewer: Oh, I see._ OK. Let's give them a thing. So. So then they will move to an area. _They will just disappear from one place and jump to the other._ _And then they will take another 1 to 20 ticks to wait, 1 to 20 iterations to wait before jumping into another area.
+
+[00:19:41] Participant_Kim: Yeah.
+
+[00:19:48] Interviewer: And then in between these jumps, they will just stay where they are?
+
+[00:19:53] Participant_Kim: Yeah.
+
+[00:19:54] Interviewer: They will not even slow down. So you should start seeing some of them disappearing, popping and unpopping. Are you able to see them? Is it too small right now?
+
+[00:20:02] Participant_Kim: Yeah. Yeah.
+
+[00:20:04] Interviewer: It probably did.
+
+[00:20:05] Participant_Kim: It looks like a Christmas tree.
+
+[00:20:08] Interviewer: Yeah, with the zooms. So I will make this smaller. 
+
+[00:20:12] Participant_Kim: Yeah. 
+
+[00:20:16] Interviewer: And, you know, Zoom is probably compressing the video to make it really hard to see.
+
+[00:20:23] Participant_Kim: Yeah, I think this is better.
+
+[00:20:28] Interviewer: So you will see some of them jumping from place to places.
+
+[00:20:34] Participant_Kim: But it says, like, although Y is representing, like, people who are turning were born that's why they're random white people right? 
+
+[00:20:50] Interviewer: Yeah they are newly born. Yes. 
+
+[00:20:53] Participant_Kim: And they don't move because they're newly born? 
+
+[00:20:56] Interviewer: No some of them move for example like this one. It's just there's a there's a random chance of becoming, um, becoming uh slow traveler fast traveler etc but if you watch this one. 
+
+[00:21:09] Participant_Kim: It's weird because we why do we only have 907 people it should always . 
+
+[00:21:16] Interviewer: Because we also have some people who will die. We created 125 people who will die, and every iteration, we kill one of them. That's why our numbers decrease.
+
+[00:21:29] Participant_Kim: Okay.
+
+[00:21:32] Interviewer: It decreases, but it also increases, but increases slower, I guess. What do you think?
+
+[00:21:39] Participant_Kim: Yeah, I guess it really shows that quite quickly you reach you do reach six degrees of separation right? 
+
+[00:21:49] Interviewer: Yeah. Do you still see think this is ?
+
+[00:21:51] Participant_Kim: What if we make it into . 
+
+[00:21:53] Interviewer: Go ahead.
+
+[00:21:56] Participant_Kim: Ah because this one. i, I don't know if i'm really happy with the model. 
+
+[00:22:04] Interviewer: Okay. 
+
+[00:22:05] Participant_Kim: Because really. Um. It's just because what we show is that we know people who we can reach through six degrees of separation, but it doesn't really satisfy my assumption of the six degrees of separation that says if you go six degrees from whoever you know around your circle, then you know everyone in the world. Like, this doesn't show that whoever is purple knows everyone in the entire population that's represented here. You know what I mean? Or does it, like? Cause the idea behind is that when you go six degrees, you know, everybody in the world. So this each person, when they're purple, then it should mean that they know everybody through six. When you jump six degrees, you know, everyone in this whole square, but I don't know if that really means in this model that represents it, it does represent that.
+
+[00:23:15] Interviewer: So, the way you programmed it is someone who is yellow is someone who, um, know someone else, right? It's like two white people met they become yellow each of them know one other person someone who's red can be someone who met two people. 
+
+[00:23:36] Participant_Kim: Yeah. 
+
+[00:23:37] Interviewer: Or someone who met another person who knows another person so they know two people but by the virtue of the other person sometimes and so on. You know, like someone who's purple, maybe someone who just met one person, but that one person knows another five people. Something like that. That's how the code works in this version.
+
+[00:24:02] Participant_Kim: Yeah, so that doesn't really show that the purple person necessarily knows everybody in the entire system. It doesn't show that. It just shows that you know someone who knows also person who knows another person to another person. So up to six degrees. You know what I mean?
+
+[00:24:28] Interviewer: Yeah, I definitely get that. And we can work on changing things in the model. 
+
+[00:24:38] Participant_Kim: Yeah. I feel a bit lost because I think my. Maybe my model, the initial model, wasn't the correct thinking.
+
+[00:24:53] Interviewer: So you think the way you structured it initially with the mechanism?
+
+[00:25:03] Participant_Kim: Yeah. How could I think?
+
+[00:25:16] Interviewer: Let's think about it. What will make the model more closer to what you had in mind?
+
+[00:25:23] Participant_Kim: If we can really see. Did we say that we can see them in lines? How they're interconnected?
+
+[00:25:32] Interviewer: Yeah, we can do that. We can connect people with links.
+
+[00:25:38] Participant_Kim: Because I was thinking. I would love to see. If I look at a person. 327 and then once they turn purple if they really are connected if that person is connected to everybody in the world or in this system. 
+
+[00:25:54] Interviewer: Do you want the lines to be shown immediately once they are connected to another person or do you want to only see the lines?
+
+[00:26:00] Participant_Kim: Maybe at the end. Yeah. 
+
+[00:26:05] Interviewer: Okay. So like when they actually meet with people we don't really actually see? 
+
+[00:26:10] Participant_Kim: Maybe once everyone turns purple.
+
+[00:26:13] Interviewer: Once everyone turns purple. Okay. So with that one, I will actually initially decrease the number of people a little bit because it may be too much, too many links. Slow down the computer and let me save the model. So I'm going to just keep 10% of the people for now, just for the simplicity. 
+
+[00:26:34] Participant_Kim: Yeah. 
+
+[00:26:39] Interviewer: But then we can revert this, okay? Just a small number of people. It's solely because of my internet being slow. _Okay, so now I will implement that function. Okay, and blue. Technically, let's see. Any other people here? Okay. It's gonna take me a second. See. I was like, something was off. It was supposed to be hide link, not hide. Let's see. And if I, for example, did write the code that says. _There you go. Does this look good when they're from connections?
+
+[00:28:43] Participant_Kim: Yeah.
+
+[00:28:44] Interviewer: Okay. So because everything is not implemented not all the links there. 
+
+[00:28:47] Participant_Kim: So let's say let's say the line only shows when everyone has turned into purple. 
+
+[00:28:53] Interviewer: Yeah that's exactly what i'm gonna do. I just currently like a little code usually originally just to test if it works originally when they, when they are when they create the lines. They actually don't show the lines. 
+
+[00:29:07] Participant_Kim: Okay. 
+
+[00:29:09] Interviewer: Now I have to copy and paste take a second but .
+
+[00:29:16] Participant_Kim: No worries
+
+[00:29:36] Interviewer: It also seems like I made a little error here in the call. It does not equal to what they were supposed to be equals to. almost done. 
+
+[00:31:23] Participant_Kim: No worries.
+
+[00:31:24] Interviewer: _Okay, so let's check this out. It should work. Oh, link cannot create. Oh. Other people. Must have made another simpler. Okay, so they are turning. It's one turning white. Purple, that is real._
+
+[00:32:16] Participant_Kim: It's a baby?
+
+[00:32:20] Interviewer: It's like, okay. _So I was running it fast enough. So we created an output to place. Okay, those are the new ones created, but they don't go to random places. Give me one second. People here. Oh yeah, I don't put them in random places. They are created in the center. That was the mistake. Let's start from scratch. So this is of course a smaller number. When everyone turns purple, it will stop. And then we can create a button that makes the new ones are being created. They are meeting with people._
+
+[00:33:30] Participant_Kim: Maybe they will never reach all purple?
+
+[00:33:33] Interviewer: That may be the case, you know, because of the, maybe we can't stop the model when there's just a specific number of people.
+
+[00:33:44] Participant_Kim: Yeah. Because the babies are
+
+[00:33:53] Interviewer: _So let me start from scratch. It's going to start when it's 300 people for now. Our original model had a thousand people, but we will adjust. Created._
+
+[00:34:16] Participant_Kim: The green is not moving at all.
+
+[00:34:32] Interviewer: Because it may have been just a stationary person. So when I click Show Lines, let's see what this will show. It showed all these connections. What do you think?
+
+[00:34:46] Participant_Kim: Yeah, that's really cool. But for example, the people in the middle, do you see that they don't have any lines in the middle between the two white? Yeah. 
+
+[00:34:59] Interviewer: These ones, right?
+
+[00:35:00] Participant_Kim: Yeah. They don't have any lines.
+
+[00:35:03] Interviewer: _Why are they purple? _
+
+[00:35:10] Participant_Kim: Because they made it. Oh, yeah. I don't know. That's a good question.
+
+[00:35:18] Interviewer: _Let's see if any other people here . Let's see. because I didn't catch one of the bugs as I was writing this code. I was using the wrong sign. Okay, that's very interesting. Let me see. that's definitely a bug. That's not supposed to happen. This one's supposed to have links. But I don't know why that happened. _I can't really tell why it's doing that. Let's run it one more time. _Now we're running fast to complete early. Okay. And then show the lines._ Yeah, there is one here, for example, it doesn't have any links. _Oh no, there's a link. It's just hard to see. Let me see. Can we see any other without a link?_ Perhaps it was just a, either it was a small bug or. 
+
+[00:38:05] Participant_Kim: Yeah, maybe. 
+
+[00:38:07] Interviewer: _Actually not visible links. Let's try again. Yeah, this one definitely doesn't have links. But these ones can show, we can see how many links they have also._ What do you think?
+
+[00:38:25] Participant_Kim: This looks like it's quite connected, right?
+
+[00:38:28] Interviewer: Mm hmm. 
+
+[00:38:29] Participant_Kim: Yeah, so maybe it does represent what we were trying to answer or model. 
+
+[00:38:36] Interviewer: Yeah. So every time they form a link they definitely interacted with a person right? Like uh and then this doesn't even tell like this person has only one link. Yeah but they're connected to this person who has many many links.
+
+[00:38:52] Participant_Kim: Yeah. Maybe, I can think I really didn't have time last time but maybe I can think of like ways to really improve this to make it more a bit more structured and maybe that could be our last meeting next time because you said times, right? 
+
+[00:39:10] Interviewer: Of course yeah I mean we can't meet as many times as you want until you are happy with your model, you know? 
+
+[00:39:15] Participant_Kim: Okay. Yeah. Cause I think I'm like happy, but I think I'm sure there are some ways that I can like tweak it and make it better. So maybe I can like take my time and think more. Cause right now, so far it looks really good, but maybe we can take one more session to make it even better. And then I think I'll be happy with the model.
+
+[00:39:39] Interviewer: That sounds great. And let me actually revert this to 1000 people. Sorry, let's make that 1,500 and then let's take out that 10% thingy that I put to make sure that the computer doesn't slow down. _Try this with 1,500 people. Let's make this one 1,200. _Let's run this, and then I will run it really fast. Oh, what happened? Everyone got purple when I ran it with 1,005 people. I didn't even need to. OK. Show the line, and there are all these things. So what I will do is I will save this as a web file, and then I will send the link to you right now. So that you can tinker with this model. You can run the model. What you need to do is click Setup first, then click Home. And then when everything is done 
+
+[00:40:52] Participant_Kim: I don't need to download any platform?
+
+[00:40:57] Interviewer: It's gonna be on the web. Okay. You want to download anything, yeah. And then, yeah, I will send you a link within like 10 minutes of our meeting. Any more thoughts before we wrap up today?
+
+[00:41:10] Participant_Kim: No, I think I will try and think of it on my own and then see if I can improve it. And I think hopefully next time we'll have a model.
+
+[00:41:21] Interviewer: Oh, I did stop the share. Did I stop the share?
+
+[00:41:28] Participant_Kim: Yeah, I don't see anything anymore.
+
+[00:41:30] Interviewer: Okay, I'm stopping the recording.
+
