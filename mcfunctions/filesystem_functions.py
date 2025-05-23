@@ -14,6 +14,7 @@ EXCLUDED_TOKENS_FILENAME = "excluded_tokens.pickle"
 EXCLUDED_ROWS_FILENAME = "excluded_rows.pickle"
 ASSIGNED_CODES_FILENAME = "assigned_deductive_codes.pickle"
 USER_ACTIONS_FILENAME = "user_actions.pickle"
+GRAPH_FILENAME = "graph.pickle"
 
 def get_model_path(mode_name, spacy_model, is_sentencized):
     ## create the models folder if it doesn't exist already

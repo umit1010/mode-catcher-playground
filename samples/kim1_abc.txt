@@ -2,9 +2,9 @@
 
 [00:00:15] Participant_Kim: Yeah, so my idea, my very broad and general idea is coming from my curiosity that whether we can test the idea behind six degrees of separation. And what it means is that there's a theory that that's called six degrees of separation that says basically that if you go six degrees in your group of friends or group of influences, then you will get to know the entire population. Like you basically have the entire population in the world. So it's a really interesting model. So, like I thought maybe that there's a way to like visually be able to see the change through movements and colors that maybe at one point everybody gets to know one another?
 
-[00:01:07] Interviewer: Yeah, we can totally do that. So, let me share my screen then. Let's just get started. You shoot some ideas, and I will show you I will try to implement them. And then you will tell me, oh, that's what I meant, or no, that's not what I meant. I meant something slightly different. By the way, the screen is like, there's a larger screen that I'm presenting here. So I'm looking up. I hope it's not too distracting. Yeah, no worries. So I did create like an empty net logo model. And I think the best way to get started with your idea is to just ask you, what is in this model, you know? 
+[00:01:07] Interviewer: Yeah, we can totally do that. So, let me share my screen then. Let's just get started. You shoot some ideas, and I will show you I will try to implement them. And then you will tell me, oh, that's what I meant, or no, that's not what I meant. I meant something slightly different. By the way, the screen is like, there's a larger screen that I'm presenting here. So I'm looking up. I hope it's not too distracting. Yeah, no worries. So I did create like an empty net logo model. And I think the best way to get started with your idea is to just ask you, what is in this model, you know?
 
-[00:01:47] Participant_Kim: Yeah. 
+[00:01:47] Participant_Kim: Yeah.
 
 [00:01:51] Interviewer: What kind of things? Like in the last meeting, we made trees, humans, animals, birds, et cetera.
 
@@ -24,9 +24,9 @@
 
 [00:02:32] Interviewer: This one? Or we have also these fun people shapes, person, business, construction, former, et cetera.
 
-[00:02:43] Participant_Kim: Soldier. 
+[00:02:43] Participant_Kim: Soldier.
 
-[00:02:45] Interviewer: Soldier? 
+[00:02:45] Interviewer: Soldier?
 
 [00:02:46] Participant_Kim: We can do graduates to represent.
 
@@ -36,9 +36,9 @@
 
 [00:02:50] Interviewer: Okay. Let's do graduates. And where are they in this? First, currently when I create them, they will be right in the center. Where should they be?
 
-[00:03:05] Participant_Kim: So, okay, so just not going into order, can I just explain my idea that I have? 
+[00:03:05] Participant_Kim: So, okay, so just not going into order, can I just explain my idea that I have?
 
-[00:03:11] Interviewer: Yes, of course. 
+[00:03:11] Interviewer: Yes, of course.
 
 [00:03:12] Participant_Kim: Or we have to go in order like this?
 
@@ -58,9 +58,9 @@
 
 [00:04:41] Participant_Kim: Okay. Because I thought maybe like it would be cool to see like visually if. For example, if 1,000 people all become red at some point if they've touched each other, but I think it doesn't necessarily represent the six degrees of separation, you know?
 
-[00:04:58] Interviewer: But, you can start from that idea. We can implement that idea first, and then you can decide on how to implement the next level, the six degrees of separation aspect. Does that make sense? 
+[00:04:58] Interviewer: But, you can start from that idea. We can implement that idea first, and then you can decide on how to implement the next level, the six degrees of separation aspect. Does that make sense?
 
-[00:05:10] Participant_Kim: Yeah. 
+[00:05:10] Participant_Kim: Yeah.
 
 [00:05:11] Interviewer: Whichever way you want to go. I'm literally your translator between your ideas and the computer. So which one would you prefer?
 
@@ -116,7 +116,7 @@
 
 [00:07:50] Interviewer: Or they are just moving slowly?
 
-[00:07:52] Participant_Kim: Yeah, let's do that. And then like maybe, but then, like. I think there, we can divide them into like four, four, four sections. So like one quarter is like big travelers, people travel around a lot. And the other quarter are people who stay in their own area. So they walk around a bit, but they stay in the same area. And then the other quarter is like moving a bit more. So between cities or you know? 
+[00:07:52] Participant_Kim: Yeah, let's do that. And then like maybe, but then, like. I think there, we can divide them into like four, four, four sections. So like one quarter is like big travelers, people travel around a lot. And the other quarter are people who stay in their own area. So they walk around a bit, but they stay in the same area. And then the other quarter is like moving a bit more. So between cities or you know?
 
 [00:08:21] Interviewer: Okay. So.
 
@@ -126,17 +126,17 @@
 
 [00:08:42] Participant_Kim: Yeah. So travelers, slow travelers, same area. And then maybe o e-fourth of them or like one eighth of them. So, out of the one fourth that we have left, so half of that, so one eighth of them is gonna die from some of these unfortunate situations.
 
-[00:09:08] Interviewer: 5% will die. They will die gradually, right? Like not all of them will die immediately. 
+[00:09:08] Interviewer: 5% will die. They will die gradually, right? Like not all of them will die immediately.
 
-[00:09:16] Participant_Kim: Yeah. 
+[00:09:16] Participant_Kim: Yeah.
 
-[00:09:17] Interviewer: Okay. 
+[00:09:17] Interviewer: Okay.
 
-[00:09:17] Participant_Kim: Yeah. And then maybe one eighth could be what could be a good representation of something that could happen in the maybe then it could be 37.5% in the same area. Yeah. 
+[00:09:17] Participant_Kim: Yeah. And then maybe one eighth could be what could be a good representation of something that could happen in the maybe then it could be 37.5% in the same area. Yeah.
 
-[00:09:39] Interviewer: Okay. Perfect. And, you know, you can always change these things. You know, you are currently just coming up with ideas, seeing how it works. So let's implement that. To simplify this, I will just _1,000. Okay. I will make them. 25% is 250 people. Traveler through set. All set. So let's do the same for 25% slow travelers. This is going to be true. Okay. And now we will do the 37 and a half percent same area people. and then 12 and a half percent, they will die. Just scream. Okay, perfect. So now I can do something like, if traveler, let's make it like, make them fast. They are slow travelers. They will be just maybe 0.5 speed._ And I don't know what it will look like either. I will implement this and then we will look into how it works. And then you will tell me, okay, travelers are moving too fast. Traveler is going too slow, right? _If I'm saying, all right. for example, five. Okay, so let's do it this way_. Every tick, every time everyone just moves once, one of them will die, people will die. It's a funny way to say it. So, and let me put a number of people so that we can see. 
+[00:09:39] Interviewer: Okay. Perfect. And, you know, you can always change these things. You know, you are currently just coming up with ideas, seeing how it works. So let's implement that. To simplify this, I will just _1,000. Okay. I will make them. 25% is 250 people. Traveler through set. All set. So let's do the same for 25% slow travelers. This is going to be true. Okay. And now we will do the 37 and a half percent same area people. and then 12 and a half percent, they will die. Just scream. Okay, perfect. So now I can do something like, if traveler, let's make it like, make them fast. They are slow travelers. They will be just maybe 0.5 speed._ And I don't know what it will look like either. I will implement this and then we will look into how it works. And then you will tell me, okay, travelers are moving too fast. Traveler is going too slow, right? _If I'm saying, all right. for example, five. Okay, so let's do it this way_. Every tick, every time everyone just moves once, one of them will die, people will die. It's a funny way to say it. So, and let me put a number of people so that we can see.
 
-[00:12:16] Participant_Kim: Okay. 
+[00:12:16] Participant_Kim: Okay.
 
 [00:12:17] Interviewer: If people are dying, right?
 
@@ -160,11 +160,11 @@
 
 [00:14:33] Interviewer: Yes, exactly.
 
-[00:14:36] Participant_Kim: So how should I color that? I don't know. Because I was thinking that maybe the higher degrees of separation you get, the color gets darker or like it goes from yellow to orange to red or something like this. And eventually everyone will be red, right? And then. 
+[00:14:36] Participant_Kim: So how should I color that? I don't know. Because I was thinking that maybe the higher degrees of separation you get, the color gets darker or like it goes from yellow to orange to red or something like this. And eventually everyone will be red, right? And then.
 
-[00:14:52] Interviewer: Yeah. We can definitely do that. 
+[00:14:52] Interviewer: Yeah. We can definitely do that.
 
-[00:14:54] Participant_Kim: But I don't know. Like, I don't know if our goal is to see the time how long it takes for six degrees of separation to be reached or, you know? What is our goal? 
+[00:14:54] Participant_Kim: But I don't know. Like, I don't know if our goal is to see the time how long it takes for six degrees of separation to be reached or, you know? What is our goal?
 
 [00:15:13] Interviewer: Um, it sounds like a good goal, but you also do not have to define a final goal just yet either. It's really up to you. Yeah.
 
@@ -184,7 +184,7 @@
 
 [00:16:00] Interviewer: We can maybe like make it, and I'm giving this idea to just give you an idea that that is possible.
 
-[00:16:06] Participant_Kim: But it makes sense that everybody at least knows one person. 
+[00:16:06] Participant_Kim: But it makes sense that everybody at least knows one person.
 
 [00:16:09] Interviewer: Yeah. I'm not trying to influence your thinking, but you can really make it much more larger spaces in between. Which one would be more preferable?
 
@@ -198,7 +198,7 @@
 
 [00:17:01] Participant_Kim: Because I'm writing it down. So let's say, like, if one one meets, it's yellow. And then if one and two meets?
 
-[00:17:08] Interviewer: Mm 
+[00:17:08] Interviewer: Mm
 
 [00:17:09] Participant_Kim: hmm.
 
@@ -210,9 +210,9 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:17:36] Interviewer: Okay.
 
-[00:17:38] Participant_Kim: Okay, so. Wait. Okay, can you see me? 
+[00:17:38] Participant_Kim: Okay, so. Wait. Okay, can you see me?
 
-[00:17:48] Interviewer: Yes I can. 
+[00:17:48] Interviewer: Yes I can.
 
 [00:17:50] Participant_Kim: So, here I guess this is like like this is a person who's already yellow because it already has one contact and then this one has a contact. So, if they meet, they only gain two degrees of separation. But then if for this person, I guess it's one, two, three. Oh, actually, but it does make sense because. I think I'm getting it.
 
@@ -238,7 +238,7 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:20:22] Interviewer: Yes, OK.
 
-[00:20:23] Participant_Kim: So if white and white meet, then it becomes yellow. And if yellow and white meet, then yellow stays the same, but white becomes yellow. 
+[00:20:23] Participant_Kim: So if white and white meet, then it becomes yellow. And if yellow and white meet, then yellow stays the same, but white becomes yellow.
 
 [00:20:45] Interviewer: OK. Perfect. Let me, okay. Any other thoughts or should I implement this?
 
@@ -262,17 +262,17 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:23:17] Interviewer: I think it's getting there.
 
-[00:23:19] Participant_Kim: One, two, three. And then if orange and orange meet, they become red. So yellow represents one degree, orange represents two degrees, and red already represents three degrees. So, we can put that on the left side as well. 
+[00:23:19] Participant_Kim: One, two, three. And then if orange and orange meet, they become red. So yellow represents one degree, orange represents two degrees, and red already represents three degrees. So, we can put that on the left side as well.
 
-[00:23:41] Interviewer: Yes. Okay, so let's do that. _One degree at the monitor. So we implemented it. Now we have some red ones, some yellow ones._ 
+[00:23:41] Interviewer: Yes. Okay, so let's do that. _One degree at the monitor. So we implemented it. Now we have some red ones, some yellow ones._
 
-[00:24:37] Participant_Kim: OK. 
+[00:24:37] Participant_Kim: OK.
 
-[00:24:39] Interviewer: Mm hmm. 
+[00:24:39] Interviewer: Mm hmm.
 
-[00:24:40] Participant_Kim: And then. Yeah, it looks cool. We have to %%% change the whites later, if white meets other colors. But, let's just do the easy ones first. So if red and red meet, then it becomes green. And that's already four degrees. 
+[00:24:40] Participant_Kim: And then. Yeah, it looks cool. We have to %%% change the whites later, if white meets other colors. But, let's just do the easy ones first. So if red and red meet, then it becomes green. And that's already four degrees.
 
-[00:24:56] Interviewer: Yes. 
+[00:24:56] Interviewer: Yes.
 
 [00:24:57] Participant_Kim: And then if green and green meet, it becomes blue, and that's five degrees.
 
@@ -322,17 +322,17 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:31:15] Interviewer: Okay. _Let me see. That's people. Okay. Okay. I will actually do it this way. No, that's not going to work either. Sorry. I think there is an issue with the order with which I wrote the code. I will move it on the other way around. Because I don't want it to be like a Artifact of my programming, you know, like I did something wrong and then it makes you think that it works a certain way. Okay. Orange._ Yes, I think if it's reserved, a reverse order in terms of execution. Because I think people, they meet with a white, they become yellow. And then we are checking if they are yellow, they should do this and become orange. They automatically become orange and so on. And I think that was like a little order of code issue that I made. Because it didn't make sense. They immediately turned purple. So there you go. Now they are gradually turning purple and so on. The result is pretty much the same or similar, but it's actually, it's not happening immediately. Because it happened immediately was a little error on my end. What do you think?
 
-[00:33:11] Participant_Kim: I think there's still a chance that like, for example, yellow meets green or yellow meets purple, things like ~that. So. One, two.~ 
+[00:33:11] Participant_Kim: I think there's still a chance that like, for example, yellow meets green or yellow meets purple, things like ~that. So. One, two.~
 
-[00:33:27] Interviewer: So for example. 
+[00:33:27] Interviewer: So for example.
 
 [00:33:28] Participant_Kim: If yellow meets any color, like if yellow meets red, then yellow has four degrees. So yellow becomes green.
 
 [00:33:42] Interviewer: OK. Is it the same with pretty much any other color, including white? Or is it only green, red, orange, et cetera, when it becomes four degrees?
 
-[00:33:56] Participant_Kim: Yeah, it's for everything, but I'll just say it just because I'm confused. 
+[00:33:56] Participant_Kim: Yeah, it's for everything, but I'll just say it just because I'm confused.
 
-[00:34:00] Interviewer: Okay. 
+[00:34:00] Interviewer: Okay.
 
 [00:34:01] Participant_Kim: If yellow and red meets, then yellow becomes green, but red stays the same. And if yellow meets green, then it becomes blue. And if yellow meets blue, then it becomes purple.
 
@@ -402,7 +402,7 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:39:06] Interviewer: Nice. We already have the first version of your model. That was pretty cool. I'm glad you gave that thought into all these little, if this person meets this, that happens. It's very nice. So what do you think about this first version?
 
-[00:39:28] Participant_Kim: I like it. It really represents how quickly, like this shows that everybody knows everyone at some point through six degrees of separation. But yeah, we can maybe next time try to quantify more because I didn't take into consideration, for example, people who know two people, but one degree, you know? Because if somebody gets to know you, who already know two people, then they actually get to know two people, like through two degrees of separation, you already get to know two people, not just one person, you know? So this model doesn't, do you see what I mean? 
+[00:39:28] Participant_Kim: I like it. It really represents how quickly, like this shows that everybody knows everyone at some point through six degrees of separation. But yeah, we can maybe next time try to quantify more because I didn't take into consideration, for example, people who know two people, but one degree, you know? Because if somebody gets to know you, who already know two people, then they actually get to know two people, like through two degrees of separation, you already get to know two people, not just one person, you know? So this model doesn't, do you see what I mean?
 
 [00:40:15] Interviewer: Yeah, I do see what you mean. Yeah. You know, we can, I also showed you some examples. For example, we can start creating links between people to keep track of that. You know, like we can connect to people who know each other with little lines that link them. We can save them in a variable or something. For example, like this person in the background can know, they know this person, that person, that person.
 
@@ -420,7 +420,7 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:41:44] Participant_Kim: Okay. Maybe also another idea that I have to improve is seeing the link is first because it doesn't really represent how many people you get to know through that person. But also. Maybe modeling the population more realistically? Because I just said 25% are travelers, the other 25% are this. I would like to make it more realistic that represents how the world's population move.
 
-[00:42:17] Interviewer: Yeah, we can, for example, add sliders instead of hard coding those numbers, how many travelers. 
+[00:42:17] Interviewer: Yeah, we can, for example, add sliders instead of hard coding those numbers, how many travelers.
 
 [00:42:24] Participant_Kim: Can we put them in a world map?
 
@@ -438,11 +438,11 @@ Then, let's say, if I just make both of them orange, then if two and two meet, s
 
 [00:43:27] Interviewer: But yeah, I'm assuming it's going to be slightly different, but it's going to be similar to, of course.
 
-[00:43:32] Participant_Kim: Oh, yeah, but that's a good point. Because six degrees of separation doesn't just necessarily mean that you've touched that person or been in the same place. It's like really knowing that person. So maybe the same two elements have to meet at least, let's say, three times to change colors and something like that. 
+[00:43:32] Participant_Kim: Oh, yeah, but that's a good point. Because six degrees of separation doesn't just necessarily mean that you've touched that person or been in the same place. It's like really knowing that person. So maybe the same two elements have to meet at least, let's say, three times to change colors and something like that.
 
-[00:43:53] Interviewer: Oh, OK. 
+[00:43:53] Interviewer: Oh, OK.
 
-[00:43:54] Participant_Kim: You know? 
+[00:43:54] Participant_Kim: You know?
 
 [00:43:55] Interviewer: Yeah. Yeah, we can do that, too. These are great ideas. Definitely take a note of these ideas. They are recorded in the video too. And of course, in the beginning of next meeting, I will ask you these ideas and we will maybe discuss and then start implementing.
 

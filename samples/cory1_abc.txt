@@ -14,17 +14,17 @@
 
 [00:01:58] Interviewer: So this is, for example, like, not like a pond. But closer, right? Let me actually make it so that it's a bit more granular. So there's a pond in the center and somewhat of a pond, but is it too big? Too small?
 
-[00:02:19] Participant_Cory: I would imagine it'll, just a little bigger. Maybe twice as big as that is. Yeah. Twice as big. 
+[00:02:19] Participant_Cory: I would imagine it'll, just a little bigger. Maybe twice as big as that is. Yeah. Twice as big.
 
-[00:02:30] Interviewer: How about? 
+[00:02:30] Interviewer: How about?
 
-[00:02:30] Participant_Cory: Yeah, that's good. 
+[00:02:30] Participant_Cory: Yeah, that's good.
 
 [00:02:31] Interviewer: And let's make it a little bit irregular. As you said, let's see if this will work. Well, let's make it a bit more irregular. How about now? Is it better?
 
 [00:03:00] Participant_Cory: Yeah, that's, that's fine.
 
-[00:03:02] Interviewer: Okay. But if you wanted a bit more, like, different shapes, we can take a note and I can make it exactly that shape. What's next? 
+[00:03:02] Interviewer: Okay. But if you wanted a bit more, like, different shapes, we can take a note and I can make it exactly that shape. What's next?
 
 [00:03:12] Participant_Cory: Um, there are fish in the pond.
 
@@ -36,11 +36,11 @@
 
 [00:04:40] Participant_Cory: Can you add two different fish?
 
-[00:04:40] Interviewer: Yeah, of course. 
+[00:04:40] Interviewer: Yeah, of course.
 
-[00:04:40] Participant_Cory: So maybe like out of the 20, I will say, like, 18 of them be the first type of fish. Yeah. Then the rest of them be fish two. 
+[00:04:40] Participant_Cory: So maybe like out of the 20, I will say, like, 18 of them be the first type of fish. Yeah. Then the rest of them be fish two.
 
-[00:04:57] Interviewer: Okay, that. 
+[00:04:57] Interviewer: Okay, that.
 
 [00:04:58] Participant_Cory: Just to add that little diversity, I guess.
 
@@ -62,7 +62,7 @@
 
 [00:06:29] Interviewer: Is this better or a bit bigger?
 
-[00:06:34] Participant_Cory: Yes, that's better. 
+[00:06:34] Participant_Cory: Yes, that's better.
 
 [00:06:36] Interviewer: Okay. And, oh, I know how to grow this, sorry. I can't really, like, make it larger for you to be able to see easier. Also, what's next? We have a pond, we have fish. What do we add more?
 
@@ -82,7 +82,7 @@
 
 [00:09:16] Interviewer: Okay, so, I will, you said five people by a fisherman?
 
-[00:09:22] Participant_Cory: Yes, probably, like, surrounding the pond. 
+[00:09:22] Participant_Cory: Yes, probably, like, surrounding the pond.
 
 [00:09:31] Interviewer: This is going to be interesting. So they will move to one of these dark patches. But they, did you also want to change the color of the normal ground? We left it as black ,but did you want to change that too?
 
@@ -94,9 +94,9 @@
 
 [00:10:13] Interviewer: Okay, perfect. And then, they will move to green patch. That is, what's that blue patch? Let's see if this works. It gives inter. I didn't change the shape of course. I think they will be too small. Yeah, they are here, but they're very small. How large should I make them?
 
-[00:11:01] Participant_Cory: It's bigger than the fish, I guess? 
+[00:11:01] Participant_Cory: It's bigger than the fish, I guess?
 
-[00:11:05] Interviewer: Is this good? 
+[00:11:05] Interviewer: Is this good?
 
 [00:11:05] Participant_Cory: Yeah. Yeah, that's good.
 
@@ -128,41 +128,41 @@
 
 [00:13:34] Participant_Cory: Yeah, that's, that's better.
 
-[00:13:36] Interviewer: Okay. Yeah, we can make them even more straightforward. They are now going to be moving. Okay. So what else do fish do? Do you want to add more behavior for the fish? 
+[00:13:36] Interviewer: Okay. Yeah, we can make them even more straightforward. They are now going to be moving. Okay. So what else do fish do? Do you want to add more behavior for the fish?
 
-[00:14:08] Participant_Cory: Um, I guess, like they, I don't know if it'll be too much attention to detail, but I know like, sometimes, they randomly come to a stop. 
+[00:14:08] Participant_Cory: Um, I guess, like they, I don't know if it'll be too much attention to detail, but I know like, sometimes, they randomly come to a stop.
 
-[00:14:20] Interviewer: The fish? 
+[00:14:20] Interviewer: The fish?
 
 [00:14:20] Participant_Cory: Especially like, yeah, just, I guess, like, when they pad. Or when they see. Because they're all fishing. So they probably notice the bait. Some of them may stop, and some of them may not.
 
 [00:14:33] Interviewer: Okay, some of them may stop and turn back for the bait or just stop there?
 
-[00:14:38] Participant_Cory: They stop and turn back from the bait. 
+[00:14:38] Participant_Cory: They stop and turn back from the bait.
 
-[00:14:40] Interviewer: Okay. Let's see. 
+[00:14:40] Interviewer: Okay. Let's see.
 
 [00:14:43] Participant_Cory: And then some of them would actually stop and get caught.
 
 [00:14:48] Interviewer: Okay, I see. So let's do that then. And then, when they get caught today, do they just disappear?
 
-[00:14:53] Participant_Cory: Ah, yes. 
+[00:14:53] Participant_Cory: Ah, yes.
 
-[00:14:55] Interviewer: Okay, I will put this monitor here that will count the number of fish for us, the model, so we can see if they ever disappeared, if it's hard to see with the model. So what will happen is, they will go forward. Every step that we take, and then, if there's a, if there's a human nearby, basically, if there's a bait. And then they will see ahead of them, right, like they will not see. and then they will see ahead of them right like they will not see or they will either stop Or so once once they stop do they stop forever Or do they wait a little bit and then back Or do they just they don't 
+[00:14:55] Interviewer: Okay, I will put this monitor here that will count the number of fish for us, the model, so we can see if they ever disappeared, if it's hard to see with the model. So what will happen is, they will go forward. Every step that we take, and then, if there's a, if there's a human nearby, basically, if there's a bait. And then they will see ahead of them, right, like they will not see. and then they will see ahead of them right like they will not see or they will either stop Or so once once they stop do they stop forever Or do they wait a little bit and then back Or do they just they don't
 
-[00:16:01] Participant_Cory: Yeah they would have imagined they would stick on And if they're you know they've gotten basically to show that they've gotten caught 
+[00:16:01] Participant_Cory: Yeah they would have imagined they would stick on And if they're you know they've gotten basically to show that they've gotten caught
 
-[00:16:10] Interviewer: And what is the likelihood of a fish getting out Is it 50-50 Is it more likely less likely 
+[00:16:10] Interviewer: And what is the likelihood of a fish getting out Is it 50-50 Is it more likely less likely
 
-[00:16:23] Participant_Cory: I would say probablility of them actually getting caught I'll say 40 chance out of a 100 
+[00:16:23] Participant_Cory: I would say probablility of them actually getting caught I'll say 40 chance out of a 100
 
-[00:16:40] Interviewer: 40 of the time they will be getting caught and 60 of the time they will just return yes back down and then turn around and leave Let's see if it works If it works Okay So the return so they they are not going Not one of them Some of them got caught Yeah now they are kind of avoiding and sometimes they're just falling in Does it look like the way you wanted it to work 
+[00:16:40] Interviewer: 40 of the time they will be getting caught and 60 of the time they will just return yes back down and then turn around and leave Let's see if it works If it works Okay So the return so they they are not going Not one of them Some of them got caught Yeah now they are kind of avoiding and sometimes they're just falling in Does it look like the way you wanted it to work
 
-[00:17:16] Participant_Cory: Um I think I missed one thing I want to add to so like I want this to be more like to show maybe if this possible some of the fish could actually be populating So so there are fish coming in you know into the pond as well So yeah and I don't know exactly how that would I guess some of the colors of fish could be the ones that that could be doing the populating 
+[00:17:16] Participant_Cory: Um I think I missed one thing I want to add to so like I want this to be more like to show maybe if this possible some of the fish could actually be populating So so there are fish coming in you know into the pond as well So yeah and I don't know exactly how that would I guess some of the colors of fish could be the ones that that could be doing the populating
 
-[00:17:53] Interviewer: Mm hmm So for example like would you want each fish to have a random chance of making a baby or would you you know sprouting another fish Would you like okay so for example what will be the chance of let's do every fish the populating again but then eventually we may move to like only this colored fish can populate again So what will be the chance of them populating like how frequently it will be Let's see Let me try something and see if it works for you So let's see if they will So you see the numbers are increasing 20 to 26 They're getting caught And then of course each one that makes a baby will the baby will have the same color So the blues are very higher right now for example and I guess because we started having so much fish that the fishermen cannot catch it first This is overpopulating right now what do you think 
+[00:17:53] Interviewer: Mm hmm So for example like would you want each fish to have a random chance of making a baby or would you you know sprouting another fish Would you like okay so for example what will be the chance of let's do every fish the populating again but then eventually we may move to like only this colored fish can populate again So what will be the chance of them populating like how frequently it will be Let's see Let me try something and see if it works for you So let's see if they will So you see the numbers are increasing 20 to 26 They're getting caught And then of course each one that makes a baby will the baby will have the same color So the blues are very higher right now for example and I guess because we started having so much fish that the fishermen cannot catch it first This is overpopulating right now what do you think
 
-[00:19:12] Participant_Cory: It looks like it overpopulated pretty fast I would think either increasing how much they catch or decreasing how much they populate just to I guess so it won't be so cluttered 
+[00:19:12] Participant_Cory: It looks like it overpopulated pretty fast I would think either increasing how much they catch or decreasing how much they populate just to I guess so it won't be so cluttered
 
 [00:19:30] Interviewer: Which one will be more realistic I guess Like decreasing how fast they repopulate Okay let's make it this way 10 times less likely for them to populate at any given time This time.
 
@@ -174,9 +174,9 @@
 
 [00:20:20] Interviewer: Yeah, it's coming together. Okay. It does seem to be well balanced. Right?
 
-[00:20:30] Participant_Cory: It looks like it's, it's really getting balanced. Yeah. I was gonna say, based on the chart, it looks like it, you know, up and down. But, But yeah, that's just the nature of things, I guess. 
+[00:20:30] Participant_Cory: It looks like it's, it's really getting balanced. Yeah. I was gonna say, based on the chart, it looks like it, you know, up and down. But, But yeah, that's just the nature of things, I guess.
 
-[00:20:45] Interviewer: Yeah. And do you have anything else to add? Right now? What, what's next? 
+[00:20:45] Interviewer: Yeah. And do you have anything else to add? Right now? What, what's next?
 
 [00:20:52] Participant_Cory: Um, I would think this is, like, the whole system, I guess. Just catching the fish. Some of them get caught. Some of them don't.
 
@@ -198,5 +198,5 @@
 
 [00:24:54] Interviewer: Okay, okay, let me stop.
 
-[00:24:56] Interviewer: 
+[00:24:56] Interviewer:
 

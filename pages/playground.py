@@ -6,7 +6,6 @@ import tomllib
 from collections import Counter
 from datetime import datetime
 from itertools import combinations
-from pathlib import Path
 
 import dash
 import dash_ag_grid as dag
@@ -16,10 +15,9 @@ import numpy as np
 import plotly.graph_objects as go
 import spacy
 
-from dash import Dash, ALL, callback, ctx, dcc, html, Input, Output, State
+from dash import ALL, callback, ctx, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
-from spacy.tokens import Doc
 from spacy.vocab import Vocab
 
 # ---- INTERNAL MODULES
@@ -54,7 +52,7 @@ def flush_globals():
     user_actions = list()
 
 
-async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens):
+async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, deductive_codes, stopped_tokens, unstopped_tokens, graph):
     global tokens_excluded_from_lines
 
     model_path = fs.get_model_path(mode_name, spacy_model, is_sentencized)
@@ -78,6 +76,10 @@ async def pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, de
     # pickle the user actions log
     with open(model_path / fs.USER_ACTIONS_FILENAME, "wb") as f:
         pickle.dump(user_actions, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle the graph object to use in the stats view
+    with open(model_path / fs.GRAPH_FILENAME, "wb") as f:
+        pickle.dump(graph, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def unpickle_defaults_and_model(mode_name, spacy_model, is_sentencized):
@@ -363,7 +365,7 @@ def generate_token_buttons(row_data, row, vocab=None):
     global nlp
     global tokens_excluded_from_lines
 
-    if vocab == None:
+    if vocab is None:
         global nlp
         vocab = nlp.vocab
 
@@ -488,20 +490,20 @@ def generate_utterance_table(data, display_options, in_sents=False):
 
 # ---- NETWORK ANALYSIS
 
-def combine_token_nodes(G, node1, node2):
+def combine_token_nodes(graph, node1, node2):
     # combine the node counts
-    G.nodes[node1]["count"] += G.nodes[node2]["count"]
+    graph.nodes[node1]["count"] += graph.nodes[node2]["count"]
 
     # add the label of the second node to the first node
-    G.nodes[node1]["label"] += f" <sup>+{G.nodes[node2]['label']}</sup>"
+    graph.nodes[node1]["label"] += f" <sup>+{graph.nodes[node2]['label']}</sup>"
 
     # Umit's NOTE: I did not implement any code that adjusts the weights of the 1st node's edges
     #       based on the weights of the 2nd node's edges yet (because time :)
 
     # finally combine the two tokens, which keeps the properties of the 1st node
-    G = nx.contracted_nodes(G, node1, node2, self_loops=True, copy=True)
+    graph = nx.contracted_nodes(graph, node1, node2, self_loops=True, copy=True)
 
-    return G
+    return graph
 
 
 def generate_token_graph_object(
@@ -609,7 +611,7 @@ def draw_token_graph_plotly_object(
         sentencized=False,
         spacy_model="en_core_web_sm",
         with_codes=False,
-        layout=1,
+        graph_layout=1,
         spring_iterations=30,
         spring_k=0.2,
         min_co_occurrence=1,
@@ -708,20 +710,20 @@ def draw_token_graph_plotly_object(
         spring_iterations = 1
 
     layout_title = "Spring"
-    if layout == "1":
+    if graph_layout == "1":
         pos = nx.spring_layout(
             G, iterations=spring_iterations, seed=layout_seed, k=spring_k
         )
 
-    if layout == "2":
+    if graph_layout == "2":
         layout_title = "Random"
         pos = nx.random_layout(G, seed=layout_seed)
 
-    if layout == "3":
+    if graph_layout == "3":
         layout_title = "Shell"
         pos = nx.shell_layout(G)
 
-    if layout == "4":
+    if graph_layout == "4":
         layout_title = "Circular"
         pos = nx.circular_layout(G)
 
@@ -799,7 +801,7 @@ def draw_token_graph_plotly_object(
 
     timestamp = datetime.today().replace(microsecond=0)
 
-    subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | weak={min_co_occurrence}; strong={min_strong_co_occurrence}+ | {layout_title if layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: {spacy_model.lstrip('en_core_web_')} | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes Deductive Codes' if with_codes else ''}{' | Includes the Interviewer' if show_interviewer else ''} | {timestamp}"
+    subtitle_user_choices = f"{'Sentences: ' if sentencized else 'Lines: '} [{start_line}, {end_line}] | weak={min_co_occurrence}; strong={min_strong_co_occurrence}+ | {layout_title if graph_layout != '1' else f'Spring (k={spring_k}, {spring_iterations} iterations)'} | Model: {spacy_model.lstrip('en_core_web_')} | {f' Similarity < {min_similarity}' if combine_by_similarity else ''}{' | Includes Deductive Codes' if with_codes else ''}{' | Includes the Interviewer' if show_interviewer else ''} | {timestamp}"
 
     graph_config_options = dict(
         displaylogo=False,
@@ -907,9 +909,14 @@ def draw_token_graph_plotly_object(
                     log_x = math.log10(i)
                     log_y = math.log10(degree_histogram[i])
 
-                    if log_y > 0:
-                        loglog_points_x.append(log_x)
-                        loglog_points_y.append(log_y)
+                    loglog_points_x.append(log_x)
+                    loglog_points_y.append(log_y)
+
+                    # if log_y > 0:
+                    #     loglog_points_x.append(log_x)
+                    #     loglog_points_y.append(log_y)
+
+
 
             loglog_fit = np.polynomial.Polynomial.fit(loglog_points_x, loglog_points_y, 2)
             loglog_fitline_x = np.arange(0.01, max(loglog_points_x), 0.01)
@@ -1995,12 +2002,6 @@ def generate_graph_button_callback(
 ):
     global user_actions
 
-    if ctx.triggered_id == "graph-button":
-        # pickle the user's work
-        #   and do it asynchronously so that it doesn't slow down the graphing process
-        asyncio.run(pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens,
-                                 unstopped_tokens))
-
     # prevents runtime errors if the user manually removed the values in these input ones to enter a new one
     if min_co_occurrence is None: min_co_occurrence = 1
     if min_strong_co_occurrence is None: min_strong_co_occurrence = 2
@@ -2021,11 +2022,11 @@ def generate_graph_button_callback(
 
     # determine the start and end of the range that the user picked
     #    unless they are (somehow) outside the available selection range
-    min = int(list_of_marks[0])
-    max = int(list_of_marks[-1])
+    lowest = int(list_of_marks[0])
+    highest = int(list_of_marks[-1])
 
-    start = selected_range[0] if selected_range[0] != 0 and selected_range[0] > min else min
-    end = selected_range[1] if selected_range[1] != 0 and selected_range[1] < max else max
+    start = selected_range[0] if selected_range[0] != 0 and selected_range[0] > lowest else lowest
+    end = selected_range[1] if selected_range[1] != 0 and selected_range[1] < highest else highest
 
     selected_range = list([start, end])
 
@@ -2040,7 +2041,7 @@ def generate_graph_button_callback(
         spacy_model=spacy_model,
         with_codes=use_deductive_codes,
         assigned_codes=assigned_codes,
-        layout=graph_layout,
+        graph_layout=graph_layout,
         spring_iterations=spring_iterations,
         spring_k=spring_k,
         min_co_occurrence=min_co_occurrence,
@@ -2053,10 +2054,11 @@ def generate_graph_button_callback(
         min_similarity=min_similarity,
     )
 
-    # ToDo: this algorithm does not work properly :(
-    #           because I implemented it the most quick way possible
-    #           I need to fix it
-    #           -umit on 05/11/2025
+    # pickle the user's work when the graph button is clicked
+    #   and do it asynchronously so that it doesn't slow down the graphing process
+    if ctx.triggered_id == "graph-button":
+        asyncio.run(pickle_model(mode_name, full_row_data, spacy_model, is_sentencized, assigned_codes, stopped_tokens,
+                                 unstopped_tokens, graph))
 
     slider_marks = {m: '' for m in list_of_marks}
 
